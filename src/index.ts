@@ -129,6 +129,7 @@ export class AlgeoSdk {
     this.iframe = document.createElement('iframe');
     this.iframe.id = 'algeo-embed';
     this.iframe.src = src;
+    this.iframe.allow = 'fullscreen';
     this.iframe.style.width = '100%';
     this.iframe.style.height = '100%';
     this.iframe.style.border = 'none';

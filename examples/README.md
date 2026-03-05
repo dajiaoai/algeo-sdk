@@ -35,6 +35,10 @@ npx serve examples
 | 04-load-file.html    | loadFile：输入 JSON 文本或导入 .json 文件        |
 | 05-repl.html         | REPL：执行 REPL 指令，获取面向 AI 的文档/文本内容 |
 
+## 全屏支持
+
+所有示例中的 iframe 均添加了 `allow="fullscreen"`，以支持内嵌画板的全屏功能。SDK 方式（02、03、04、05）创建的 iframe 由 SDK 自动设置该属性。
+
 ## 测试说明
 
 - 将示例中的 `E8NHN7OP` 替换为真实分享 ID 进行测试
