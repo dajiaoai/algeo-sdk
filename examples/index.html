@@ -4,6 +4,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function () {
+      var path = location.pathname;
+      var dir = /\.\w+$/.test(path) ? path.replace(/[^/]*$/, '') || '/' : path;
+      if (!dir.endsWith('/')) dir += '/';
+      var base = location.origin + dir;
+      document.write('<base href="' + base + '">');
+    })();
+  </script>
   <title>Algeo SDK 示例</title>
   <style>
     * {
@@ -62,7 +71,7 @@
 
 <body>
   <h1>Algeo SDK 示例</h1>
-  <p>选择以下案例查看内嵌画板的不同用法。运行方式：<code>npx serve .</code> 或 <code>npx serve examples</code> 后访问。</p>
+  <p>选择以下案例查看内嵌画板的不同用法。</p>
   <div class="grid">
     <a href="01-basic-iframe.html">
       <h3>01 基础嵌入</h3>
