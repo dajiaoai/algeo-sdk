@@ -33,6 +33,7 @@ npx serve examples
 | 02-sdk-usage.html    | SDK 方式：使用 AlgeoSdk 封装                     |
 | 03-switch-slide.html | 切换画板：switchSlide 多画板切换                  |
 | 04-load-file.html    | loadFile：输入 JSON 文本或导入 .json 文件        |
+| 05-repl.html         | REPL：执行 REPL 指令，获取面向 AI 的文档/文本内容 |
 
 ## 测试说明
 

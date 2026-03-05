@@ -82,18 +82,23 @@ sdk.switchSlide(1).then(() => console.log('切换画板'));
 
 切换到指定索引的画板。
 
+### `sdk.repl(command: string): Promise<ReplResult>`
+
+执行 REPL 指令，返回面向 AI 的文档/文本内容。`command` 为 REPL 可用的单个指令，如 `help`、`list`、`list_slides`、`eval` 等。返回 `{ output: string }`。
+
 ### `sdk.destroy(): void`
 
 销毁实例，移除 iframe 与事件监听。
 
 ## postMessage 协议
 
-| 方法             | 请求 payload                                                | 说明           |
-| ---------------- | ----------------------------------------------------------- | -------------- |
-| `loadShareById`  | `{ type: 'loadShareById', id: string, requestId? }`          | 按分享 ID 加载 |
-| `loadFile`       | `{ type: 'loadFile', content: FileContentV10, requestId? }` | 加载文件数据   |
-| `getSlideCount`  | `{ type: 'getSlideCount', requestId? }`                    | 查询画板数量   |
-| `switchSlide`    | `{ type: 'switchSlide', index: number, requestId? }`       | 切换画板       |
+| 方法            | 请求 payload                                                | 说明                                    |
+| --------------- | ----------------------------------------------------------- | --------------------------------------- |
+| `loadShareById` | `{ type: 'loadShareById', id: string, requestId? }`         | 按分享 ID 加载                          |
+| `loadFile`      | `{ type: 'loadFile', content: FileContentV10, requestId? }` | 加载文件数据                            |
+| `getSlideCount` | `{ type: 'getSlideCount', requestId? }`                     | 查询画板数量                            |
+| `switchSlide`   | `{ type: 'switchSlide', index: number, requestId? }`        | 切换画板                                |
+| `repl`          | `{ type: 'repl', command: string, requestId? }`             | 执行 REPL 指令，返回面向 AI 的文档/文本 |
 
 响应格式：
 

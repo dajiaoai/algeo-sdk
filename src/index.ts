@@ -41,6 +41,10 @@ export interface GetSlideCountResult {
   count: number;
 }
 
+export interface ReplResult {
+  output: string;
+}
+
 export interface AlgeoErrorPayload {
   code: string;
   message: string;
@@ -209,6 +213,14 @@ export class AlgeoSdk {
    */
   getSlideCount(): Promise<GetSlideCountResult> {
     return this.post<GetSlideCountResult>('getSlideCount', {});
+  }
+
+  /**
+   * 执行 REPL 指令，返回面向 AI 的文档/文本内容
+   * @param command REPL 可用的单个 command 指令，如 help、list、list_slides、eval 等
+   */
+  repl(command: string): Promise<ReplResult> {
+    return this.post<ReplResult>('repl', { command });
   }
 
   /**

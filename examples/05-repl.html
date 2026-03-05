@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>05 REPL - Algeo SDK</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      margin: 0 0 8px;
+    }
+
+    .desc {
+      color: #666;
+      font-size: 0.875rem;
+      margin-bottom: 12px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    button.primary:hover {
+      background: #1d4ed8;
+    }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    button.secondary:hover {
+      background: #d1d5db;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 200px;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.875rem;
+    }
+
+    .embed-wrap {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      height: 320px;
+      background: #fafafa;
+      margin-top: 12px;
+    }
+
+    .embed-wrap>div {
+      width: 100%;
+      height: 100%;
+    }
+
+    .output {
+      margin-top: 12px;
+      font-size: 0.8125rem;
+      font-family: monospace;
+      white-space: pre-wrap;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 12px;
+      border-radius: 6px;
+      max-height: 200px;
+      overflow: auto;
+    }
+
+    .output.empty {
+      color: #888;
+    }
+
+    .log {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      font-family: monospace;
+      max-height: 60px;
+      overflow: auto;
+      background: #f5f5f5;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .log div {
+      margin: 2px 0;
+    }
+
+    .log .err {
+      color: #c00;
+    }
+
+    .log .ok {
+      color: #0a0;
+    }
+
+    a {
+      color: #06c;
+    }
+
+    .hint {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="index.html">← 返回示例列表</a>
+  <h1>05 REPL</h1>
+  <p class="desc">通过 sdk.repl(command) 执行 REPL 指令，获取面向 AI 的文档/文本内容。常用指令：help、list、list_slides、eval 等。</p>
+
+  <div class="toolbar" style="margin-bottom: 8px;">
+    <input type="text" id="shareIdInput" placeholder="分享 ID，如 E8NHN7OP" value="E8NHN7OP" style="max-width: 200px;">
+    <button class="primary" id="loadBtn">加载</button>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" id="commandInput" placeholder="输入 REPL 指令，如 help 或 list" value="help">
+    <button class="primary" id="runBtn">执行</button>
+    <button class="secondary" id="helpBtn">help</button>
+    <button class="secondary" id="listBtn">list</button>
+    <button class="secondary" id="listSlidesBtn">list_slides</button>
+  </div>
+
+  <div class="embed-wrap">
+    <div id="algeo-container"></div>
+  </div>
+
+  <div class="output empty" id="output">执行 REPL 指令后，输出将显示在此处（面向 AI 的文档/文本格式）</div>
+  <p class="hint">提示：需先加载内容（如通过 loadShareById 或 loadFile），list 等指令才有数据可查。</p>
+  <div class="log" id="log"></div>
+
+  <script src="../dist/algeo-sdk.umd.js"></script>
+  <script>
+    const logEl = document.getElementById('log');
+    const outputEl = document.getElementById('output');
+    const commandInput = document.getElementById('commandInput');
+    const shareIdInput = document.getElementById('shareIdInput');
+    const container = document.getElementById('algeo-container');
+
+    function log(msg, isErr = false) {
+      const div = document.createElement('div');
+      div.className = isErr ? 'err' : 'ok';
+      div.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    const sdk = new AlgeoSdk.AlgeoSdk(container, {
+      baseUrl: 'http://localhost:8080',
+      initialId: '',
+    });
+
+    function runRepl(command) {
+      const cmd = (command || commandInput.value || '').trim();
+      if (!cmd) {
+        log('请输入 REPL 指令', true);
+        return;
+      }
+      sdk.repl(cmd)
+        .then(({ output }) => {
+          outputEl.textContent = output || '(无输出)';
+          outputEl.classList.remove('empty');
+          log('repl 执行成功');
+        })
+        .catch((e) => {
+          outputEl.textContent = '错误: ' + (e.message || String(e));
+          outputEl.classList.remove('empty');
+          log('repl 失败: ' + e.message, true);
+        });
+    }
+
+    document.getElementById('loadBtn').onclick = () => {
+      const id = shareIdInput.value.trim();
+      if (!id) {
+        log('请输入分享 ID', true);
+        return;
+      }
+      sdk.loadShareById(id)
+        .then(() => log('加载成功: ' + id))
+        .catch((e) => log('加载失败: ' + e.message, true));
+    };
+
+    document.getElementById('runBtn').onclick = () => runRepl();
+    document.getElementById('helpBtn').onclick = () => runRepl('help');
+    document.getElementById('listBtn').onclick = () => runRepl('list');
+    document.getElementById('listSlidesBtn').onclick = () => runRepl('list_slides');
+
+    commandInput.onkeydown = (e) => {
+      if (e.key === 'Enter') runRepl();
+    };
+  </script>
+</body>
+
+</html>
