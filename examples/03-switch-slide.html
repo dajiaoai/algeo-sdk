@@ -67,12 +67,23 @@
       background: #d1d5db;
     }
 
+    .slide-btn-list {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .embed-wrap {
       border: 1px solid #e0e0e0;
       border-radius: 8px;
       overflow: hidden;
       height: 400px;
       background: #fafafa;
+    }
+
+    .embed-wrap > div {
+      width: 100%;
+      height: 100%;
     }
 
     iframe {
@@ -119,20 +130,21 @@
     <input type="text" id="shareId" value="E8NHN7OP" placeholder="输入分享 ID">
     <button class="primary" id="reload">加载</button>
     <span style="margin-left: 8px;">画板：</span>
-    <button class="secondary" data-index="0">画板 1</button>
-    <button class="secondary" data-index="1">画板 2</button>
-    <button class="secondary" data-index="2">画板 3</button>
+    <div id="slideBtnList" class="slide-btn-list"></div>
   </div>
   <div class="embed-wrap">
-    <iframe id="algeo-embed"></iframe>
+    <div id="algeo-container"></div>
   </div>
   <div class="log" id="log"></div>
 
+  <script src="../dist/algeo-sdk.umd.js"></script>
   <script>
-    const EMBED_BASE = 'http://localhost:8080';
     const logEl = document.getElementById('log');
     const shareIdEl = document.getElementById('shareId');
-    const iframe = document.getElementById('algeo-embed');
+    const container = document.getElementById('algeo-container');
+    const slideBtnListEl = document.getElementById('slideBtnList');
+
+    let sdk = null;
 
     function log(type, msg) {
       const div = document.createElement('div');
@@ -142,25 +154,68 @@
       logEl.scrollTop = logEl.scrollHeight;
     }
 
-    function load() {
-      const id = shareIdEl.value.trim() || 'E8NHN7OP';
-      iframe.src = EMBED_BASE + '/e/' + encodeURIComponent(id);
+    function waitForReady() {
+      return new Promise((resolve) => {
+        const check = () => {
+          if (sdk && sdk.ready) resolve();
+          else setTimeout(check, 50);
+        };
+        check();
+      });
     }
 
-    function switchTo(index) {
-      const req = { type: 'switchSlide', index, requestId: 'req-' + Date.now() };
-      log('send', req);
-      iframe.contentWindow?.postMessage(req, '*');
+    function refreshSlideButtons() {
+      if (!sdk) return;
+      sdk.getSlideCount()
+        .then((r) => {
+          const count = r?.count ?? 0;
+          renderSlideButtons(count);
+        })
+        .catch(() => renderSlideButtons(0));
+    }
+
+    function renderSlideButtons(count) {
+      slideBtnListEl.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'secondary';
+        btn.dataset.index = String(i);
+        btn.textContent = '画板 ' + (i + 1);
+        btn.onclick = () => {
+          if (sdk) sdk.switchSlide(parseInt(btn.dataset.index, 10))
+            .then(() => log('send', { type: 'switchSlide', index: parseInt(btn.dataset.index, 10) }))
+            .catch((e) => log('recv', { error: e.message }));
+        };
+        slideBtnListEl.appendChild(btn);
+      }
+    }
+
+    function load() {
+      const id = shareIdEl.value.trim() || 'E8NHN7OP';
+      slideBtnListEl.innerHTML = '';
+
+      if (!sdk) {
+        sdk = new AlgeoSdk.AlgeoSdk(container, {
+          baseUrl: 'http://localhost:8080',
+          initialId: id,
+        });
+        waitForReady().then(() => refreshSlideButtons());
+      } else {
+        sdk.loadShareById(id)
+          .then(() => refreshSlideButtons())
+          .catch((e) => {
+            log('recv', { error: e.message });
+            renderSlideButtons(0);
+          });
+      }
     }
 
     window.addEventListener('message', (e) => {
-      if (e.data?.type === 'ready' || e.data?.type === 'response') log('recv', e.data);
+      const d = e.data;
+      if (d?.type === 'ready' || d?.type === 'response') log('recv', d);
     });
 
     document.getElementById('reload').onclick = load;
-    document.querySelectorAll('[data-index]').forEach(btn => {
-      btn.onclick = () => switchTo(parseInt(btn.dataset.index, 10));
-    });
     load();
   </script>
 </body>

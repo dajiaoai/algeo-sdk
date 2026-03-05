@@ -35,33 +35,28 @@ window.addEventListener('message', (e) => {
 });
 
 // 调用方法
-sdk.loadById('E8NHN7OP').then(() => console.log('加载成功'));
+sdk.loadShareById('E8NHN7OP').then(() => console.log('加载成功'));
+sdk.getSlideCount().then(({ count }) => console.log('画板数量:', count));
 sdk.switchSlide(1).then(() => console.log('切换画板'));
 
 // 销毁
 // sdk.destroy();
 ```
 
-### 方式二：轻量 iframe-only（无 SDK）
+### 方式二：直接 iframe（无 SDK）
 
-直接使用 iframe + postMessage，无需引入 SDK：
+直接在 iframe 的 `src` 中指定分享 ID，无需引入 SDK：
 
 ```html
 <iframe id="algeo-embed" src="https://dajiaoai.com/e/E8NHN7OP"></iframe>
 <script>
-  const iframe = document.getElementById('algeo-embed');
   window.addEventListener('message', (e) => {
-    if (e.data.type === 'ready') console.log('就绪', e.data.version);
-    if (e.data.type === 'response') console.log('响应', e.data);
+    if (e.data?.type === 'ready') console.log('就绪', e.data.version);
   });
-  iframe.contentWindow.postMessage(
-    { type: 'loadById', id: 'E8NHN7OP', requestId: 'req-1' },
-    '*',
-  );
 </script>
 ```
 
-详见 [postMessage 协议](#postmessage-协议)。
+如需动态加载、切换画板等能力，请使用方式一（SDK）。详见 [postMessage 协议](#postmessage-协议)。
 
 ## API
 
@@ -71,13 +66,17 @@ sdk.switchSlide(1).then(() => console.log('切换画板'));
 - `options.baseUrl`: 内嵌页基础 URL，默认 `https://dajiaoai.com`
 - `options.initialId`: 初始加载的分享 ID，可选
 
-### `sdk.loadById(id: string): Promise<LoadByIdResult>`
+### `sdk.loadShareById(id: string): Promise<LoadShareByIdResult>`
 
 按分享 ID 加载内容。
 
 ### `sdk.loadFile(content: FileContent): Promise<LoadFileResult>`
 
 加载完整文件数据（覆盖式）。
+
+### `sdk.getSlideCount(): Promise<GetSlideCountResult>`
+
+查询当前画板数量。返回 `{ count: number }`。
 
 ### `sdk.switchSlide(index: number): Promise<SwitchSlideResult>`
 
@@ -89,11 +88,12 @@ sdk.switchSlide(1).then(() => console.log('切换画板'));
 
 ## postMessage 协议
 
-| 方法          | 请求 payload                                                | 说明         |
-| ------------- | ----------------------------------------------------------- | ------------ |
-| `loadById`    | `{ type: 'loadById', id: string, requestId? }`              | 按 id 加载   |
-| `loadFile`    | `{ type: 'loadFile', content: FileContentV10, requestId? }` | 加载文件数据 |
-| `switchSlide` | `{ type: 'switchSlide', index: number, requestId? }`        | 切换画板     |
+| 方法             | 请求 payload                                                | 说明           |
+| ---------------- | ----------------------------------------------------------- | -------------- |
+| `loadShareById`  | `{ type: 'loadShareById', id: string, requestId? }`          | 按分享 ID 加载 |
+| `loadFile`       | `{ type: 'loadFile', content: FileContentV10, requestId? }` | 加载文件数据   |
+| `getSlideCount`  | `{ type: 'getSlideCount', requestId? }`                    | 查询画板数量   |
+| `switchSlide`    | `{ type: 'switchSlide', index: number, requestId? }`       | 切换画板       |
 
 响应格式：
 

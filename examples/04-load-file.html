@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>04 loadFile - Algeo SDK</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
+    h1 { font-size: 1.25rem; margin: 0 0 8px; }
+    .desc { color: #666; font-size: 0.875rem; margin-bottom: 12px; }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button.primary { background: #2563eb; color: white; }
+    button.primary:hover { background: #1d4ed8; }
+    button.secondary { background: #e5e7eb; color: #374151; }
+    button.secondary:hover { background: #d1d5db; }
+    label.as-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #e5e7eb;
+      color: #374151;
+    }
+    label.as-btn:hover { background: #d1d5db; }
+    input[type="file"] { display: none; }
+    textarea {
+      width: 100%;
+      height: 160px;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 0.8125rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      resize: vertical;
+    }
+    .embed-wrap {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      height: 400px;
+      background: #fafafa;
+      margin-top: 12px;
+    }
+    .embed-wrap > div { width: 100%; height: 100%; }
+    .log {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      font-family: monospace;
+      max-height: 80px;
+      overflow: auto;
+      background: #f5f5f5;
+      padding: 8px;
+      border-radius: 6px;
+    }
+    .log div { margin: 2px 0; }
+    .log .err { color: #c00; }
+    .log .ok { color: #0a0; }
+    a { color: #06c; }
+  </style>
+</head>
+
+<body>
+  <a href="index.html">← 返回示例列表</a>
+  <h1>04 loadFile</h1>
+  <p class="desc">通过 loadFile 加载 JSON 内容，支持粘贴 JSON 文本或导入 .json / .algeo 文件。需符合 FileContentV10 格式（slides、messages、metadata）。</p>
+
+  <div class="toolbar">
+    <button class="primary" id="loadBtn">加载</button>
+    <label for="fileInput" class="as-btn">导入文件</label>
+    <input type="file" id="fileInput" accept=".json,.algeo,application/json">
+  </div>
+
+  <textarea id="jsonInput" placeholder="粘贴 JSON 或导入文件后点击加载"></textarea>
+
+  <div class="embed-wrap">
+    <div id="algeo-container"></div>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <script src="../dist/algeo-sdk.umd.js"></script>
+  <script>
+    const logEl = document.getElementById('log');
+    const jsonInput = document.getElementById('jsonInput');
+    const fileInput = document.getElementById('fileInput');
+    const container = document.getElementById('algeo-container');
+
+    function log(msg, isErr = false) {
+      const div = document.createElement('div');
+      div.className = isErr ? 'err' : 'ok';
+      div.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function parseContent(text) {
+      const raw = JSON.parse(text);
+      if (!raw || typeof raw !== 'object') throw new Error('无效 JSON');
+      if (!raw.metadata) throw new Error('缺少 metadata');
+      return {
+        slides: Array.isArray(raw.slides) ? raw.slides : [],
+        messages: Array.isArray(raw.messages) ? raw.messages : [],
+        metadata: { ...raw.metadata, version: raw.metadata.version || '10' },
+      };
+    }
+
+    let sdk = new AlgeoSdk.AlgeoSdk(container, {
+      baseUrl: 'http://localhost:8080',
+      initialId: '',
+    });
+
+    function doLoad(content) {
+      sdk.loadFile(content)
+        .then(() => log('loadFile 成功'))
+        .catch((e) => log('loadFile 失败: ' + e.message, true));
+    }
+
+    document.getElementById('loadBtn').onclick = () => {
+      try {
+        const content = parseContent(jsonInput.value.trim() || '{}');
+        doLoad(content);
+      } catch (e) {
+        log('解析失败: ' + e.message, true);
+      }
+    };
+
+    fileInput.onchange = (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const content = parseContent(reader.result);
+          jsonInput.value = JSON.stringify(content, null, 2);
+          doLoad(content);
+          log('已导入并加载: ' + file.name);
+        } catch (err) {
+          log('导入失败: ' + err.message, true);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    };
+  </script>
+</body>
+
+</html>

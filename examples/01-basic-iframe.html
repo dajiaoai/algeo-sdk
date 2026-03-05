@@ -6,119 +6,131 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>01 基础嵌入 - Algeo SDK</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: system-ui, sans-serif;
-      margin: 0;
-      padding: 16px;
-    }
-
-    h1 {
-      font-size: 1.25rem;
-      margin: 0 0 8px;
-    }
-
-    .desc {
-      color: #666;
-      font-size: 0.875rem;
-      margin-bottom: 12px;
-    }
-
-    .toolbar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      align-items: center;
-    }
-
-    input {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      width: 200px;
-    }
-
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
+    h1 { font-size: 1.25rem; margin: 0 0 8px; }
+    .desc { color: #666; font-size: 0.875rem; margin-bottom: 12px; }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+    input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; width: 200px; }
+    .layout-section { margin-bottom: 20px; }
+    .layout-section h2 { font-size: 0.9375rem; margin: 0 0 4px; color: #333; }
+    .layout-section .layout-desc { font-size: 0.8125rem; color: #888; margin-bottom: 6px; }
     .embed-wrap {
       border: 1px solid #e0e0e0;
       border-radius: 8px;
       overflow: hidden;
-      height: 400px;
+      height: 320px;
       background: #fafafa;
     }
+    iframe { width: 100%; height: 100%; border: none; }
 
-    iframe {
+    /* 1. 100% 宽度 */
+    .layout-full .embed-wrap { width: 100%; }
+
+    /* 2. 居中 + max-width */
+    .layout-center .embed-wrap {
+      max-width: 800px;
       width: 100%;
-      height: 100%;
-      border: none;
+      margin: 0 auto;
+    }
+
+    /* 3. 视口高度 vh */
+    .layout-vh .embed-wrap {
+      width: 100%;
+      height: 50vh;
+      min-height: 280px;
+    }
+
+    /* 4. 双列布局 */
+    .layout-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .layout-cols .embed-wrap { height: 280px; }
+    @media (max-width: 640px) {
+      .layout-cols { grid-template-columns: 1fr; }
     }
 
     .log {
       margin-top: 12px;
       font-size: 0.75rem;
       font-family: monospace;
-      max-height: 120px;
+      max-height: 80px;
       overflow: auto;
       background: #f5f5f5;
       padding: 8px;
       border-radius: 6px;
     }
-
-    .log div {
-      margin: 2px 0;
-    }
-
-    .log .recv {
-      color: #0a0;
-    }
-
-    .log .send {
-      color: #06c;
-    }
-
-    a {
-      color: #06c;
-    }
+    .log div { margin: 2px 0; }
+    .log .recv { color: #0a0; }
+    a { color: #06c; }
   </style>
 </head>
 
 <body>
   <a href="index.html">← 返回示例列表</a>
   <h1>01 基础嵌入</h1>
-  <p class="desc">iframe src 直接带分享 ID，页面加载即展示内容。输入真实分享 ID 测试。</p>
+  <p class="desc">iframe src 直接带分享 ID，下方为高频布局测试场景。</p>
   <div class="toolbar">
     <label>分享 ID</label>
     <input type="text" id="shareId" value="E8NHN7OP" placeholder="输入分享 ID">
     <button id="reload">重新加载</button>
   </div>
-  <div class="embed-wrap">
-    <iframe id="algeo-embed"></iframe>
-  </div>
+
+  <section class="layout-section layout-full">
+    <h2>100% 宽度</h2>
+    <p class="layout-desc">width: 100%，占满容器</p>
+    <div class="embed-wrap"><iframe id="algeo-full"></iframe></div>
+  </section>
+
+  <section class="layout-section layout-center">
+    <h2>居中 + max-width</h2>
+    <p class="layout-desc">max-width: 800px，居中，小屏自适应</p>
+    <div class="embed-wrap"><iframe id="algeo-center"></iframe></div>
+  </section>
+
+  <section class="layout-section layout-vh">
+    <h2>视口高度 vh</h2>
+    <p class="layout-desc">height: 50vh，min-height: 280px</p>
+    <div class="embed-wrap"><iframe id="algeo-vh"></iframe></div>
+  </section>
+
+  <section class="layout-section layout-cols">
+    <h2 style="grid-column: 1 / -1;">双列布局</h2>
+    <p class="layout-desc" style="grid-column: 1 / -1;">两列并排，小屏单列</p>
+    <div class="embed-wrap"><iframe id="algeo-col1"></iframe></div>
+    <div class="embed-wrap"><iframe id="algeo-col2"></iframe></div>
+  </section>
+
   <div class="log" id="log"></div>
 
   <script>
     const EMBED_BASE = 'http://localhost:8080';
     const logEl = document.getElementById('log');
     const shareIdEl = document.getElementById('shareId');
-    const iframe = document.getElementById('algeo-embed');
-
-    function log(type, msg) {
-      const div = document.createElement('div');
-      div.className = type;
-      div.textContent = new Date().toLocaleTimeString() + ' ' + (type === 'recv' ? '←' : '→') + ' ' + JSON.stringify(msg);
-      logEl.appendChild(div);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
+    const iframes = [
+      document.getElementById('algeo-full'),
+      document.getElementById('algeo-center'),
+      document.getElementById('algeo-vh'),
+      document.getElementById('algeo-col1'),
+      document.getElementById('algeo-col2'),
+    ];
 
     function load() {
       const id = shareIdEl.value.trim() || 'E8NHN7OP';
-      iframe.src = EMBED_BASE + '/e/' + encodeURIComponent(id);
+      const src = EMBED_BASE + '/e/' + encodeURIComponent(id);
+      iframes.forEach((el) => { if (el) el.src = src; });
     }
 
     window.addEventListener('message', (e) => {
-      if (e.data?.type === 'ready' || e.data?.type === 'response') log('recv', e.data);
+      if (e.data?.type === 'ready' || e.data?.type === 'response') {
+        const div = document.createElement('div');
+        div.className = 'recv';
+        div.textContent = new Date().toLocaleTimeString() + ' ' + JSON.stringify(e.data);
+        logEl.appendChild(div);
+        logEl.scrollTop = logEl.scrollHeight;
+      }
     });
 
     document.getElementById('reload').onclick = load;

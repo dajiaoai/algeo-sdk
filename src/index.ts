@@ -25,7 +25,7 @@ export interface AlgeoSdkOptions {
   initialId?: string;
 }
 
-export interface LoadByIdResult {
+export interface LoadShareByIdResult {
   success: true;
 }
 
@@ -35,6 +35,10 @@ export interface LoadFileResult {
 
 export interface SwitchSlideResult {
   success: true;
+}
+
+export interface GetSlideCountResult {
+  count: number;
 }
 
 export interface AlgeoErrorPayload {
@@ -182,8 +186,8 @@ export class AlgeoSdk {
   /**
    * 按分享 ID 加载内容
    */
-  loadById(id: string): Promise<LoadByIdResult> {
-    return this.post<LoadByIdResult>('loadById', { id });
+  loadShareById(id: string): Promise<LoadShareByIdResult> {
+    return this.post<LoadShareByIdResult>('loadShareById', { id });
   }
 
   /**
@@ -198,6 +202,13 @@ export class AlgeoSdk {
    */
   switchSlide(index: number): Promise<SwitchSlideResult> {
     return this.post<SwitchSlideResult>('switchSlide', { index });
+  }
+
+  /**
+   * 查询画板数量
+   */
+  getSlideCount(): Promise<GetSlideCountResult> {
+    return this.post<GetSlideCountResult>('getSlideCount', {});
   }
 
   /**
