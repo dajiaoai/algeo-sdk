@@ -110,7 +110,7 @@
 <body>
   <a href="index.html">← 返回示例列表</a>
   <h1>02 SDK 方式</h1>
-  <p class="desc">使用 AlgeoSdk 封装 iframe 与 postMessage，通过 Promise 调用 loadShareById、switchSlide。</p>
+  <p class="desc">使用 AlgeoSdk 封装 iframe 与 postMessage，通过 Promise 调用 loadShareById。</p>
   <div class="status" id="status"></div>
   <div class="toolbar" id="createToolbar">
     <label>分享 ID</label>
@@ -118,8 +118,6 @@
     <button class="primary" id="createBtn">创建</button>
   </div>
   <div class="toolbar" id="sdkToolbar" style="display: none;">
-    <button class="primary" id="slide0">画板 1</button>
-    <button class="primary" id="slide1">画板 2</button>
     <button class="danger" id="destroyBtn">销毁</button>
   </div>
   <div class="embed-wrap" id="embedWrap" style="display: none;">
@@ -173,13 +171,6 @@
         statusEl.textContent = '创建失败: ' + e.message;
         log('错误: ' + e.message);
       }
-    };
-
-    document.getElementById('slide0').onclick = () => {
-      if (sdk) sdk.switchSlide(0).then(() => log('switchSlide(0) 成功')).catch(e => log('switchSlide 失败: ' + e.message));
-    };
-    document.getElementById('slide1').onclick = () => {
-      if (sdk) sdk.switchSlide(1).then(() => log('switchSlide(1) 成功')).catch(e => log('switchSlide 失败: ' + e.message));
     };
 
     document.getElementById('destroyBtn').onclick = () => {

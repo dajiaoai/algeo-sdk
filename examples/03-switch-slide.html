@@ -81,7 +81,7 @@
       background: #fafafa;
     }
 
-    .embed-wrap > div {
+    .embed-wrap>div {
       width: 100%;
       height: 100%;
     }
@@ -127,7 +127,7 @@
   <p class="desc">多画板内容，通过 switchSlide 切换。需分享 ID 对应多画板文件。</p>
   <div class="toolbar">
     <label>分享 ID</label>
-    <input type="text" id="shareId" value="E8NHN7OP" placeholder="输入分享 ID">
+    <input type="text" id="shareId" value="OOBY2DCZ" placeholder="输入分享 ID">
     <button class="primary" id="reload">加载</button>
     <span style="margin-left: 8px;">画板：</span>
     <div id="slideBtnList" class="slide-btn-list"></div>
@@ -213,6 +213,7 @@
     window.addEventListener('message', (e) => {
       const d = e.data;
       if (d?.type === 'ready' || d?.type === 'response') log('recv', d);
+      if (d?.type === 'ready' && sdk) refreshSlideButtons();
     });
 
     document.getElementById('reload').onclick = load;
