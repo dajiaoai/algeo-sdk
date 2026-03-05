@@ -4,15 +4,63 @@
 
 ## 安装
 
+### npm
+
 ```bash
+# 安装最新版本
 npm install @dajiaoai/algeo-sdk
+
+# 安装指定版本（推荐生产环境锁定版本）
+npm install @dajiaoai/algeo-sdk@1.0.0
 ```
 
-或通过 CDN（部署至 api.dajiaoai.com 后）：
+在 `package.json` 中：
+
+```json
+{
+  "dependencies": {
+    "@dajiaoai/algeo-sdk": "1.0.0"     // 精确版本，生产推荐
+  }
+}
+```
+
+或使用 semver 范围：
+
+```json
+{
+  "dependencies": {
+    "@dajiaoai/algeo-sdk": "^1.0.0"    // 兼容 1.x 的更新
+  }
+}
+```
+
+### CDN
+
+**api.dajiaoai.com（推荐）**：
 
 ```html
-<script src="https://api.dajiaoai.com/algeo-sdk.min.js"></script>
+<!-- 引用具体版本（推荐生产环境） -->
+<script src="https://api.dajiaoai.com/js/algeo-sdk@1.0.0/algeo-sdk.umd.js"></script>
+
+<!-- 引用最新版本 -->
+<script src="https://api.dajiaoai.com/js/algeo-sdk@latest/algeo-sdk.umd.js"></script>
 ```
+
+**unpkg**：
+
+```html
+<script src="https://unpkg.com/@dajiaoai/algeo-sdk@1.0.0/dist/algeo-sdk.umd.js"></script>
+<script src="https://unpkg.com/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
+```
+
+**jsDelivr**：
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@1.0.0/dist/algeo-sdk.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
+```
+
+> 生产环境建议使用**具体版本号**，避免自动升级带来的兼容性风险。
 
 ## 使用方式
 
@@ -59,6 +107,15 @@ sdk.switchSlide(1).then(() => console.log('切换画板'));
 如需动态加载、切换画板等能力，请使用方式一（SDK）。详见 [postMessage 协议](#postmessage-协议)。
 
 ## API
+
+### `VERSION`
+
+SDK 版本号字符串，构建时注入，可用于运行时校验：
+
+```javascript
+import { VERSION } from '@dajiaoai/algeo-sdk';
+console.log('Algeo SDK version:', VERSION);
+```
 
 ### `new AlgeoSdk(container, options?)`
 

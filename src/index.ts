@@ -3,6 +3,9 @@
  * 绑定 DOM 容器，自动创建 iframe 并封装 postMessage 通信
  */
 
+/** SDK 版本号，构建时由 rollup 注入 */
+export const VERSION = '__ALGEO_SDK_VERSION__';
+
 const DEFAULT_EMBED_BASE = 'http://localhost:8080';
 
 let requestIdCounter = 0;
