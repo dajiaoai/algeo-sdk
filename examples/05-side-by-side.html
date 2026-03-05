@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>05 并排对比 - Algeo SDK</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      margin: 0 0 8px;
+    }
+
+    .desc {
+      color: #666;
+      font-size: 0.875rem;
+      margin-bottom: 12px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      width: 180px;
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .col {
+      flex: 1;
+    }
+
+    .col label {
+      display: block;
+      font-size: 0.875rem;
+      margin-bottom: 4px;
+      color: #666;
+    }
+
+    .embed-wrap {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      height: 360px;
+      background: #fafafa;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    a {
+      color: #06c;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="index.html">← 返回示例列表</a>
+  <h1>05 并排对比</h1>
+  <p class="desc">两个 iframe 并排展示，便于对比不同分享内容。</p>
+  <div class="toolbar">
+    <div class="field">
+      <label>左侧 ID</label>
+      <input type="text" id="idLeft" value="E8NHN7OP">
+    </div>
+    <div class="field">
+      <label>右侧 ID</label>
+      <input type="text" id="idRight" value="E8NHN7OP">
+    </div>
+    <button id="apply">应用</button>
+  </div>
+  <div class="row">
+    <div class="col">
+      <label>左侧</label>
+      <div class="embed-wrap">
+        <iframe id="embed-left"></iframe>
+      </div>
+    </div>
+    <div class="col">
+      <label>右侧</label>
+      <div class="embed-wrap">
+        <iframe id="embed-right"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const EMBED_BASE = 'http://localhost:8080';
+    const leftEl = document.getElementById('embed-left');
+    const rightEl = document.getElementById('embed-right');
+    const idLeftEl = document.getElementById('idLeft');
+    const idRightEl = document.getElementById('idRight');
+
+    function apply() {
+      const idL = idLeftEl.value.trim() || 'E8NHN7OP';
+      const idR = idRightEl.value.trim() || 'E8NHN7OP';
+      leftEl.src = EMBED_BASE + '/e/' + encodeURIComponent(idL);
+      rightEl.src = EMBED_BASE + '/e/' + encodeURIComponent(idR);
+    }
+
+    document.getElementById('apply').onclick = apply;
+    apply();
+  </script>
+</body>
+
+</html>

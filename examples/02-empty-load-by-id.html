@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>02 空画板 + loadById - Algeo SDK</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      margin: 0 0 8px;
+    }
+
+    .desc {
+      color: #666;
+      font-size: 0.875rem;
+      margin-bottom: 12px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    input {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      width: 200px;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .embed-wrap {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      height: 400px;
+      background: #fafafa;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .log {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      font-family: monospace;
+      max-height: 120px;
+      overflow: auto;
+      background: #f5f5f5;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .log div {
+      margin: 2px 0;
+    }
+
+    .log .recv {
+      color: #0a0;
+    }
+
+    .log .send {
+      color: #06c;
+    }
+
+    a {
+      color: #06c;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="index.html">← 返回示例列表</a>
+  <h1>02 空画板 + loadById</h1>
+  <p class="desc">iframe 先加载空画板 /e，就绪后通过 postMessage 发送 loadById 加载内容。</p>
+  <div class="toolbar">
+    <label>分享 ID</label>
+    <input type="text" id="shareId" value="E8NHN7OP" placeholder="输入分享 ID">
+    <button id="loadBtn">加载</button>
+  </div>
+  <div class="embed-wrap">
+    <iframe id="algeo-embed"></iframe>
+  </div>
+  <div class="log" id="log"></div>
+
+  <script>
+    const EMBED_BASE = 'http://localhost:8080';
+    const logEl = document.getElementById('log');
+    const shareIdEl = document.getElementById('shareId');
+    const iframe = document.getElementById('algeo-embed');
+
+    function log(type, msg) {
+      const div = document.createElement('div');
+      div.className = type;
+      div.textContent = new Date().toLocaleTimeString() + ' ' + (type === 'recv' ? '←' : '→') + ' ' + JSON.stringify(msg);
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    iframe.src = EMBED_BASE + '/e';
+
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'ready' || e.data?.type === 'response') log('recv', e.data);
+    });
+
+    document.getElementById('loadBtn').onclick = () => {
+      const id = shareIdEl.value.trim() || 'E8NHN7OP';
+      const req = { type: 'loadById', id, requestId: 'req-' + Date.now() };
+      log('send', req);
+      iframe.contentWindow?.postMessage(req, '*');
+    };
+  </script>
+</body>
+
+</html>
