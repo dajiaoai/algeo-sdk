@@ -164,63 +164,64 @@
 
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script>
-    const logEl = document.getElementById('log');
-    const outputEl = document.getElementById('output');
-    const commandInput = document.getElementById('commandInput');
-    const shareIdInput = document.getElementById('shareIdInput');
-    const container = document.getElementById('algeo-container');
+    (async function(){
+      const logEl = document.getElementById('log');
+      const outputEl = document.getElementById('output');
+      const commandInput = document.getElementById('commandInput');
+      const shareIdInput = document.getElementById('shareIdInput');
+      const container = document.getElementById('algeo-container');
 
-    function log(msg, isErr = false) {
-      const div = document.createElement('div');
-      div.className = isErr ? 'err' : 'ok';
-      div.textContent = new Date().toLocaleTimeString() + ' ' + msg;
-      logEl.appendChild(div);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    const sdk = new AlgeoSdk.AlgeoSdk(container, {
-      baseUrl: 'http://localhost:8080',
-      initialId: '',
-    });
-
-    function runRepl(command) {
-      const cmd = (command || commandInput.value || '').trim();
-      if (!cmd) {
-        log('请输入 REPL 指令', true);
-        return;
+      function log(msg, isErr = false) {
+        const div = document.createElement('div');
+        div.className = isErr ? 'err' : 'ok';
+        div.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+        logEl.appendChild(div);
+        logEl.scrollTop = logEl.scrollHeight;
       }
-      sdk.repl(cmd)
-        .then(({ output }) => {
-          outputEl.textContent = output || '(无输出)';
-          outputEl.classList.remove('empty');
-          log('repl 执行成功');
-        })
-        .catch((e) => {
-          outputEl.textContent = '错误: ' + (e.message || String(e));
-          outputEl.classList.remove('empty');
-          log('repl 失败: ' + e.message, true);
-        });
-    }
 
-    document.getElementById('loadBtn').onclick = () => {
-      const id = shareIdInput.value.trim();
-      if (!id) {
-        log('请输入分享 ID', true);
-        return;
+      const sdk = await AlgeoSdk.AlgeoSdk.create(container, {
+        baseUrl: 'http://localhost:8080',
+      });
+
+      function runRepl(command) {
+        const cmd = (command || commandInput.value || '').trim();
+        if (!cmd) {
+          log('请输入 REPL 指令', true);
+          return;
+        }
+        sdk.repl(cmd)
+          .then(({ output }) => {
+            outputEl.textContent = output || '(无输出)';
+            outputEl.classList.remove('empty');
+            log('repl 执行成功');
+          })
+          .catch((e) => {
+            outputEl.textContent = '错误: ' + (e.message || String(e));
+            outputEl.classList.remove('empty');
+            log('repl 失败: ' + e.message, true);
+          });
       }
-      sdk.loadShareById(id)
-        .then(() => log('加载成功: ' + id))
-        .catch((e) => log('加载失败: ' + e.message, true));
-    };
 
-    document.getElementById('runBtn').onclick = () => runRepl();
-    document.getElementById('helpBtn').onclick = () => runRepl('help');
-    document.getElementById('listBtn').onclick = () => runRepl('list');
-    document.getElementById('listSlidesBtn').onclick = () => runRepl('list_slides');
+      document.getElementById('loadBtn').onclick = () => {
+        const id = shareIdInput.value.trim();
+        if (!id) {
+          log('请输入分享 ID', true);
+          return;
+        }
+        sdk.loadShareById(id)
+          .then(() => log('加载成功: ' + id))
+          .catch((e) => log('加载失败: ' + e.message, true));
+      };
 
-    commandInput.onkeydown = (e) => {
-      if (e.key === 'Enter') runRepl();
-    };
+      document.getElementById('runBtn').onclick = () => runRepl();
+      document.getElementById('helpBtn').onclick = () => runRepl('help');
+      document.getElementById('listBtn').onclick = () => runRepl('list');
+      document.getElementById('listSlidesBtn').onclick = () => runRepl('list_slides');
+
+      commandInput.onkeydown = (e) => {
+        if (e.key === 'Enter') runRepl();
+      };
+    })();
   </script>
 </body>
 

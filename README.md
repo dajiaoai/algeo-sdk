@@ -97,14 +97,9 @@ sdk.switchSlide(1).then(() => console.log('切换画板'));
 
 ```html
 <iframe id="algeo-embed" src="https://dajiaoai.com/e/E8NHN7OP" allow="fullscreen"></iframe>
-<script>
-  window.addEventListener('message', (e) => {
-    if (e.data?.type === 'ready') console.log('就绪', e.data.version);
-  });
-</script>
 ```
 
-如需动态加载、切换画板等能力，请使用方式一（SDK）。详见 [postMessage 协议](#postmessage-协议)。
+如需动态加载、切换画板等能力，请使用方式一（SDK）。详见 [API](#API)。
 
 > **全屏支持**：建议在 iframe 上添加 `allow="fullscreen"`，以便内嵌画板使用全屏功能。SDK 方式创建的 iframe 已自动包含此属性。
 
@@ -119,7 +114,7 @@ import { VERSION } from '@dajiaoai/algeo-sdk';
 console.log('Algeo SDK version:', VERSION);
 ```
 
-### `new AlgeoSdk(container, options?)`
+### `AlgeoSdk.create(container, options?): Promise<AlgeoSdk>`
 
 - `container`: 挂载的 DOM 元素
 - `options.baseUrl`: 内嵌页基础 URL，默认 `https://dajiaoai.com`
@@ -148,20 +143,3 @@ console.log('Algeo SDK version:', VERSION);
 ### `sdk.destroy(): void`
 
 销毁实例，移除 iframe 与事件监听。
-
-## postMessage 协议
-
-| 方法            | 请求 payload                                                | 说明                                    |
-| --------------- | ----------------------------------------------------------- | --------------------------------------- |
-| `loadShareById` | `{ type: 'loadShareById', id: string, requestId? }`         | 按分享 ID 加载                          |
-| `loadFile`      | `{ type: 'loadFile', content: FileContentV10, requestId? }` | 加载文件数据                            |
-| `getSlideCount` | `{ type: 'getSlideCount', requestId? }`                     | 查询画板数量                            |
-| `switchSlide`   | `{ type: 'switchSlide', index: number, requestId? }`        | 切换画板                                |
-| `repl`          | `{ type: 'repl', command: string, requestId? }`             | 执行 REPL 指令，返回面向 AI 的文档/文本 |
-
-响应格式：
-
-- 成功：`{ type: 'response', requestId, success: true, result? }`
-- 失败：`{ type: 'response', requestId, success: false, error: { code, message, details? } }`
-
-内嵌页就绪时向父页面发送：`{ type: 'ready', version }`

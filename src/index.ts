@@ -95,8 +95,7 @@ function isReadyMessage(msg: unknown): msg is ReadyMessage {
  */
 export class AlgeoSdk {
   private container: HTMLElement;
-  private iframe: HTMLIFrameElement;
-  private baseUrl: string;
+  private iframe?: HTMLIFrameElement;
   private pending = new Map<
     string,
     {
@@ -104,7 +103,7 @@ export class AlgeoSdk {
       reject: (err: AlgeoSdkError) => void;
     }
   >();
-  private messageHandler: (e: MessageEvent) => void;
+  private messageHandler?: (e: MessageEvent) => void;
   private _ready = false;
   private _version: string | null = null;
 
@@ -118,63 +117,83 @@ export class AlgeoSdk {
     return this._version;
   }
 
-  constructor(container: HTMLElement, options: AlgeoSdkOptions = {}) {
+  constructor(container: HTMLElement) {
     this.container = container;
-    this.baseUrl = options.baseUrl ?? DEFAULT_EMBED_BASE;
-    const initialId = options.initialId ?? '';
-    const src = initialId
-      ? `${this.baseUrl}/e/${encodeURIComponent(initialId)}`
-      : `${this.baseUrl}/e`;
+  }
 
-    this.iframe = document.createElement('iframe');
-    this.iframe.id = 'algeo-embed';
-    this.iframe.src = src;
-    this.iframe.allow = 'fullscreen';
-    this.iframe.style.width = '100%';
-    this.iframe.style.height = '100%';
-    this.iframe.style.border = 'none';
-    this.container.appendChild(this.iframe);
+  static async create(container: HTMLElement, options?: AlgeoSdkOptions): Promise<AlgeoSdk> {
+    const ret = new AlgeoSdk(container);
+    await ret.init(options);
+    return ret;
+  }
 
-    this.messageHandler = (e: MessageEvent) => {
-      const { data } = e;
-      if (isReadyMessage(data)) {
-        this._ready = true;
-        this._version = data.version;
-        return;
-      }
-      if (isResponseMessage(data)) {
-        const { requestId, success } = data;
-        const pending = this.pending.get(requestId);
-        if (pending) {
-          this.pending.delete(requestId);
-          if (success) {
-            pending.resolve(data.result);
-          } else {
-            const err = data.error;
-            pending.reject(
-              new AlgeoSdkError(
-                err.message,
-                err.code,
-                err.details,
-              ),
-            );
+  async init(options: AlgeoSdkOptions = {}): Promise<void> {
+    if (this.iframe) {
+      throw new AlgeoSdkError('请勿多次调用init方法。', 'BAD_REQUEST');
+    }
+    return new Promise((resolve, reject) => {
+      const baseUrl = options.baseUrl ?? DEFAULT_EMBED_BASE;
+      const initialId = options.initialId ?? '';
+      const src = initialId
+        ? `${baseUrl}/e/${encodeURIComponent(initialId)}`
+        : `${baseUrl}/e`;
+
+      const iframe = this.iframe = document.createElement('iframe');
+      iframe.id = 'algeo-embed';
+      iframe.src = src;
+      iframe.allow = 'fullscreen';
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+      iframe.addEventListener('error', reject);
+      this.container.appendChild(iframe);
+
+      this.messageHandler = (e: MessageEvent) => {
+        if (e.source !== iframe.contentWindow) return;
+        const { data } = e;
+        if (isReadyMessage(data)) {
+          this._ready = true;
+          this._version = data.version;
+          resolve();
+          return;
+        }
+        if (isResponseMessage(data)) {
+          const { requestId, success } = data;
+          const pending = this.pending.get(requestId);
+          if (pending) {
+            this.pending.delete(requestId);
+            if (success) {
+              pending.resolve(data.result);
+            } else {
+              const err = data.error;
+              pending.reject(
+                new AlgeoSdkError(
+                  err.message,
+                  err.code,
+                  err.details,
+                ),
+              );
+            }
           }
         }
-      }
-    };
+      };
 
-    window.addEventListener('message', this.messageHandler);
+      window.addEventListener('message', this.messageHandler);
+    })
   }
 
   private post<T>(type: string, payload: Record<string, unknown>): Promise<T> {
     const requestId = generateRequestId();
     const msg = { type, requestId, ...payload };
     return new Promise<T>((resolve, reject) => {
+      if (!this._ready) {
+        reject(new AlgeoSdkError('iframe 未加载完成', 'IFRAME_NOT_READY'));
+      }
       this.pending.set(requestId, {
         resolve: resolve as (v: unknown) => void,
         reject,
       });
-      const target = this.iframe.contentWindow;
+      const target = this.iframe?.contentWindow;
       if (!target) {
         this.pending.delete(requestId);
         reject(new AlgeoSdkError('iframe 未加载完成', 'IFRAME_NOT_READY'));
@@ -231,12 +250,15 @@ export class AlgeoSdk {
    * 销毁实例，移除 iframe 与事件监听
    */
   destroy(): void {
-    window.removeEventListener('message', this.messageHandler);
+    if (this.messageHandler) {
+      window.removeEventListener('message', this.messageHandler);
+      this.messageHandler = undefined;
+    }
     this.pending.forEach(({ reject }) =>
       reject(new AlgeoSdkError('SDK 已销毁', 'DESTROYED')),
     );
     this.pending.clear();
-    if (this.iframe.parentNode) {
+    if (this.iframe?.parentNode) {
       this.iframe.parentNode.removeChild(this.iframe);
     }
   }

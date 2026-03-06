@@ -88,67 +88,68 @@
 
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script>
-    const logEl = document.getElementById('log');
-    const jsonInput = document.getElementById('jsonInput');
-    const fileInput = document.getElementById('fileInput');
-    const container = document.getElementById('algeo-container');
+    (async function() {
+      const logEl = document.getElementById('log');
+      const jsonInput = document.getElementById('jsonInput');
+      const fileInput = document.getElementById('fileInput');
+      const container = document.getElementById('algeo-container');
 
-    function log(msg, isErr = false) {
-      const div = document.createElement('div');
-      div.className = isErr ? 'err' : 'ok';
-      div.textContent = new Date().toLocaleTimeString() + ' ' + msg;
-      logEl.appendChild(div);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    function parseContent(text) {
-      const raw = JSON.parse(text);
-      if (!raw || typeof raw !== 'object') throw new Error('无效 JSON');
-      if (!raw.metadata) throw new Error('缺少 metadata');
-      return {
-        slides: Array.isArray(raw.slides) ? raw.slides : [],
-        messages: Array.isArray(raw.messages) ? raw.messages : [],
-        metadata: { ...raw.metadata, version: raw.metadata.version || '10' },
-      };
-    }
-
-    let sdk = new AlgeoSdk.AlgeoSdk(container, {
-      baseUrl: 'http://localhost:8080',
-      initialId: '',
-    });
-
-    function doLoad(content) {
-      sdk.loadFile(content)
-        .then(() => log('loadFile 成功'))
-        .catch((e) => log('loadFile 失败: ' + e.message, true));
-    }
-
-    document.getElementById('loadBtn').onclick = () => {
-      try {
-        const content = parseContent(jsonInput.value.trim() || '{}');
-        doLoad(content);
-      } catch (e) {
-        log('解析失败: ' + e.message, true);
+      function log(msg, isErr = false) {
+        const div = document.createElement('div');
+        div.className = isErr ? 'err' : 'ok';
+        div.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+        logEl.appendChild(div);
+        logEl.scrollTop = logEl.scrollHeight;
       }
-    };
 
-    fileInput.onchange = (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
+      function parseContent(text) {
+        const raw = JSON.parse(text);
+        if (!raw || typeof raw !== 'object') throw new Error('无效 JSON');
+        if (!raw.metadata) throw new Error('缺少 metadata');
+        return {
+          slides: Array.isArray(raw.slides) ? raw.slides : [],
+          messages: Array.isArray(raw.messages) ? raw.messages : [],
+          metadata: { ...raw.metadata, version: raw.metadata.version || '10' },
+        };
+      }
+
+      let sdk = await AlgeoSdk.AlgeoSdk.create(container, {
+        baseUrl: 'http://localhost:8080',
+      });
+
+      function doLoad(content) {
+        sdk.loadFile(content)
+          .then(() => log('loadFile 成功'))
+          .catch((e) => log('loadFile 失败: ' + e.message, true));
+      }
+
+      document.getElementById('loadBtn').onclick = () => {
         try {
-          const content = parseContent(reader.result);
-          jsonInput.value = JSON.stringify(content, null, 2);
+          const content = parseContent(jsonInput.value.trim() || '{}');
           doLoad(content);
-          log('已导入并加载: ' + file.name);
-        } catch (err) {
-          log('导入失败: ' + err.message, true);
+        } catch (e) {
+          log('解析失败: ' + e.message, true);
         }
       };
-      reader.readAsText(file);
-      e.target.value = '';
-    };
+
+      fileInput.onchange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const content = parseContent(reader.result);
+            jsonInput.value = JSON.stringify(content, null, 2);
+            doLoad(content);
+            log('已导入并加载: ' + file.name);
+          } catch (err) {
+            log('导入失败: ' + err.message, true);
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      };
+    })();
   </script>
 </body>
 

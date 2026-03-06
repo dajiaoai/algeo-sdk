@@ -157,10 +157,10 @@
 
     let sdk = null;
 
-    document.getElementById('createBtn').onclick = () => {
+    document.getElementById('createBtn').onclick = async () => {
       const id = shareIdEl.value.trim() || 'E8NHN7OP';
       try {
-        sdk = new AlgeoSdk.AlgeoSdk(container, {
+        sdk = await AlgeoSdk.AlgeoSdk.create(container, {
           baseUrl: 'http://localhost:8080',
           initialId: id,
         });

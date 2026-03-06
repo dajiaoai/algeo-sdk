@@ -154,16 +154,6 @@
       logEl.scrollTop = logEl.scrollHeight;
     }
 
-    function waitForReady() {
-      return new Promise((resolve) => {
-        const check = () => {
-          if (sdk && sdk.ready) resolve();
-          else setTimeout(check, 50);
-        };
-        check();
-      });
-    }
-
     function refreshSlideButtons() {
       if (!sdk) return;
       sdk.getSlideCount()
@@ -190,23 +180,22 @@
       }
     }
 
-    function load() {
+    async function load() {
       const id = shareIdEl.value.trim() || 'E8NHN7OP';
       slideBtnListEl.innerHTML = '';
 
-      if (!sdk) {
-        sdk = new AlgeoSdk.AlgeoSdk(container, {
-          baseUrl: 'http://localhost:8080',
-          initialId: id,
-        });
-        waitForReady().then(() => refreshSlideButtons());
-      } else {
-        sdk.loadShareById(id)
-          .then(() => refreshSlideButtons())
-          .catch((e) => {
-            log('recv', { error: e.message });
-            renderSlideButtons(0);
+      try {
+        if (!sdk) {
+          sdk = await AlgeoSdk.AlgeoSdk.create(container, {
+            baseUrl: 'http://localhost:8080',
+            initialId: id,
           });
+        } else {
+          await sdk.loadShareById(id)
+        }
+        refreshSlideButtons();
+      } catch(e) {
+        renderSlideButtons(0);
       }
     }
 
