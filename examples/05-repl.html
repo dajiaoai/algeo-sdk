@@ -164,7 +164,7 @@
 
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script>
-    (async function(){
+    (async function () {
       const logEl = document.getElementById('log');
       const outputEl = document.getElementById('output');
       const commandInput = document.getElementById('commandInput');
@@ -180,7 +180,7 @@
       }
 
       const sdk = await AlgeoSdk.AlgeoSdk.create(container, {
-        baseUrl: 'http://localhost:8080',
+        baseUrl: 'https://dajiaoai.com',
       });
 
       function runRepl(command) {

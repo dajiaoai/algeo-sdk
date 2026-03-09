@@ -160,8 +160,8 @@
     document.getElementById('createBtn').onclick = async () => {
       const id = shareIdEl.value.trim() || 'E8NHN7OP';
       try {
-        sdk = await AlgeoSdk.AlgeoSdk.create(container, {
-          baseUrl: 'http://localhost:8080',
+        sdk = new AlgeoSdk.AlgeoSdk(container, {
+          baseUrl: 'https://dajiaoai.com',
           initialId: id,
         });
         statusEl.textContent = 'SDK 已初始化，ready: ' + sdk.ready + ', version: ' + (sdk.version || '-');

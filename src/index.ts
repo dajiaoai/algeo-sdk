@@ -6,7 +6,7 @@
 /** SDK 版本号，构建时由 rollup 注入 */
 export const VERSION = '__ALGEO_SDK_VERSION__';
 
-const DEFAULT_EMBED_BASE = 'http://localhost:8080';
+const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
 
 let requestIdCounter = 0;
 

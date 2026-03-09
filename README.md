@@ -11,7 +11,7 @@
 npm install @dajiaoai/algeo-sdk
 
 # 安装指定版本（推荐生产环境锁定版本）
-npm install @dajiaoai/algeo-sdk@1.0.0
+npm install @dajiaoai/algeo-sdk@1.1.0
 ```
 
 在 `package.json` 中：
@@ -19,7 +19,7 @@ npm install @dajiaoai/algeo-sdk@1.0.0
 ```json
 {
   "dependencies": {
-    "@dajiaoai/algeo-sdk": "1.0.0" // 精确版本，生产推荐
+    "@dajiaoai/algeo-sdk": "1.1.0" // 精确版本，生产推荐
   }
 }
 ```
@@ -29,34 +29,24 @@ npm install @dajiaoai/algeo-sdk@1.0.0
 ```json
 {
   "dependencies": {
-    "@dajiaoai/algeo-sdk": "^1.0.0" // 兼容 1.x 的更新
+    "@dajiaoai/algeo-sdk": "^1.1.0" // 兼容 1.x 的更新
   }
 }
 ```
 
 ### CDN
 
-**api.dajiaoai.com（推荐）**：
-
-```html
-<!-- 引用具体版本（推荐生产环境） -->
-<script src="https://api.dajiaoai.com/js/algeo-sdk@1.0.0/algeo-sdk.umd.js"></script>
-
-<!-- 引用最新版本 -->
-<script src="https://api.dajiaoai.com/js/algeo-sdk@latest/algeo-sdk.umd.js"></script>
-```
-
 **unpkg**：
 
 ```html
-<script src="https://unpkg.com/@dajiaoai/algeo-sdk@1.0.0/dist/algeo-sdk.umd.js"></script>
+<script src="https://unpkg.com/@dajiaoai/algeo-sdk@1.1.0/dist/algeo-sdk.umd.js"></script>
 <script src="https://unpkg.com/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
 ```
 
 **jsDelivr**：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@1.0.0/dist/algeo-sdk.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@1.1.0/dist/algeo-sdk.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
 ```
 
@@ -70,7 +60,7 @@ npm install @dajiaoai/algeo-sdk@1.0.0
 import { AlgeoSdk } from '@dajiaoai/algeo-sdk';
 
 const container = document.getElementById('algeo-container');
-const sdk = new AlgeoSdk(container, {
+const sdk = await AlgeoSdk.create(container, {
   baseUrl: 'https://dajiaoai.com',
   initialId: 'E8NHN7OP', // 可选，初始加载的分享 ID
 });
@@ -96,7 +86,11 @@ sdk.switchSlide(1).then(() => console.log('切换画板'));
 直接在 iframe 的 `src` 中指定分享 ID，无需引入 SDK：
 
 ```html
-<iframe id="algeo-embed" src="https://dajiaoai.com/e/E8NHN7OP" allow="fullscreen"></iframe>
+<iframe
+  id="algeo-embed"
+  src="https://dajiaoai.com/e/E8NHN7OP"
+  allow="fullscreen"
+></iframe>
 ```
 
 如需动态加载、切换画板等能力，请使用方式一（SDK）。详见 [API](#API)。
@@ -105,7 +99,9 @@ sdk.switchSlide(1).then(() => console.log('切换画板'));
 
 ## API
 
-### `VERSION`
+### 常量
+
+#### `VERSION`
 
 SDK 版本号字符串，构建时注入，可用于运行时校验：
 
@@ -114,32 +110,151 @@ import { VERSION } from '@dajiaoai/algeo-sdk';
 console.log('Algeo SDK version:', VERSION);
 ```
 
-### `AlgeoSdk.create(container, options?): Promise<AlgeoSdk>`
+---
 
-- `container`: 挂载的 DOM 元素
-- `options.baseUrl`: 内嵌页基础 URL，默认 `https://dajiaoai.com`
-- `options.initialId`: 初始加载的分享 ID，可选
+### 类 `AlgeoSdk`
 
-### `sdk.loadShareById(id: string): Promise<LoadShareByIdResult>`
+#### `AlgeoSdk.create(container, options?): Promise<AlgeoSdk>`
+
+异步创建并初始化 SDK 实例。在 iframe 加载完成并收到 ready 消息后 resolve。
+
+| 参数        | 类型              | 说明                    |
+| ----------- | ----------------- | ----------------------- |
+| `container` | `HTMLElement`     | 挂载 iframe 的 DOM 容器 |
+| `options`   | `AlgeoSdkOptions` | 可选配置                |
+
+**AlgeoSdkOptions：**
+
+| 属性        | 类型     | 默认值                 | 说明                                  |
+| ----------- | -------- | ---------------------- | ------------------------------------- |
+| `baseUrl`   | `string` | `https://dajiaoai.com` | 内嵌页基础 URL                        |
+| `initialId` | `string` | `''`                   | 初始加载的分享 ID，为空则加载空白画板 |
+
+**示例：**
+
+```javascript
+const sdk = await AlgeoSdk.create(container, {
+  baseUrl: 'https://dajiaoai.com',
+  initialId: 'E8NHN7OP',
+});
+```
+
+---
+
+#### 实例属性（只读）
+
+| 属性      | 类型             | 说明                                 |
+| --------- | ---------------- | ------------------------------------ |
+| `ready`   | `boolean`        | 是否已就绪（收到 iframe ready 通知） |
+| `version` | `string \| null` | 内嵌页协议版本                       |
+
+---
+
+#### 实例方法
+
+##### `sdk.loadShareById(id: string): Promise<LoadShareByIdResult>`
 
 按分享 ID 加载内容。
 
-### `sdk.loadFile(content: FileContent): Promise<LoadFileResult>`
+| 参数 | 类型     | 说明                   |
+| ---- | -------- | ---------------------- |
+| `id` | `string` | 分享 ID，如 `E8NHN7OP` |
 
-加载完整文件数据（覆盖式）。
+**返回值：** `{ success: true }`
 
-### `sdk.getSlideCount(): Promise<GetSlideCountResult>`
+---
 
-查询当前画板数量。返回 `{ count: number }`。
+##### `sdk.loadFile(content: FileContent): Promise<LoadFileResult>`
 
-### `sdk.switchSlide(index: number): Promise<SwitchSlideResult>`
+加载完整文件数据（覆盖式），需符合 FileContentV10 格式。
 
-切换到指定索引的画板。
+| 参数      | 类型          | 说明         |
+| --------- | ------------- | ------------ |
+| `content` | `FileContent` | 文件内容对象 |
 
-### `sdk.repl(command: string): Promise<ReplResult>`
+**FileContent 结构：**
 
-执行 REPL 指令，返回面向 AI 的文档/文本内容。`command` 为 REPL 可用的单个指令，如 `help`、`list`、`list_slides`、`eval` 等。返回 `{ output: string }`。
+```typescript
+interface FileContent {
+  slides: unknown[]; // 画板数据数组
+  messages: unknown[]; // 消息数据
+  metadata: {
+    version: string; // 如 '10'
+    shareOptions?: unknown;
+  };
+}
+```
 
-### `sdk.destroy(): void`
+**返回值：** `{ success: true }`
 
-销毁实例，移除 iframe 与事件监听。
+---
+
+##### `sdk.getSlideCount(): Promise<GetSlideCountResult>`
+
+查询当前画板数量。
+
+**返回值：** `{ count: number }`
+
+---
+
+##### `sdk.switchSlide(index: number): Promise<SwitchSlideResult>`
+
+切换到指定索引的画板（索引从 0 开始）。
+
+| 参数    | 类型     | 说明                   |
+| ------- | -------- | ---------------------- |
+| `index` | `number` | 画板索引，0 表示第一页 |
+
+**返回值：** `{ success: true }`
+
+---
+
+##### `sdk.repl(command: string): Promise<ReplResult>`
+
+执行 REPL 指令，返回面向 AI 的文档/文本内容。需先通过 `loadShareById` 或 `loadFile` 加载内容后，部分指令才有数据可查。
+
+| 参数      | 类型     | 说明      |
+| --------- | -------- | --------- |
+| `command` | `string` | REPL 指令 |
+
+**常用指令：**
+
+| 指令          | 说明                          |
+| ------------- | ----------------------------- |
+| `help`        | 查看 REPL 帮助                |
+| `list`        | 列出当前画板中的对象          |
+| `list_slides` | 列出所有画板                  |
+| `eval`        | 执行表达式（具体用法见 help） |
+
+**返回值：** `{ output: string }` — 指令输出的文本内容
+
+---
+
+##### `sdk.destroy(): void`
+
+销毁实例，移除 iframe 与事件监听，并拒绝所有未完成的 pending 请求。
+
+---
+
+### 错误处理
+
+所有异步方法在失败时会 reject `AlgeoSdkError`：
+
+```javascript
+try {
+  await sdk.loadShareById('invalid');
+} catch (e) {
+  if (e.name === 'AlgeoSdkError') {
+    console.error(e.code, e.message, e.details);
+  }
+}
+```
+
+**常见错误码：**
+
+| 错误码             | 说明                        |
+| ------------------ | --------------------------- |
+| `IFRAME_NOT_READY` | iframe 未加载完成即调用方法 |
+| `TIMEOUT`          | 请求超时（30 秒）           |
+| `DESTROYED`        | SDK 已销毁                  |
+| `BAD_REQUEST`      | 非法请求（如重复 init）     |

@@ -187,14 +187,14 @@
       try {
         if (!sdk) {
           sdk = await AlgeoSdk.AlgeoSdk.create(container, {
-            baseUrl: 'http://localhost:8080',
+            baseUrl: 'https://dajiaoai.com',
             initialId: id,
           });
         } else {
           await sdk.loadShareById(id)
         }
         refreshSlideButtons();
-      } catch(e) {
+      } catch (e) {
         renderSlideButtons(0);
       }
     }

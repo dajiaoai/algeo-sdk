@@ -1,13 +1,14 @@
 {
   "name": "@dajiaoai/algeo-sdk",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "大角几何内嵌画板 SDK，支持 iframe 挂载与 postMessage 通信",
   "main": "dist/algeo-sdk.cjs.js",
   "module": "dist/algeo-sdk.esm.js",
   "unpkg": "dist/algeo-sdk.umd.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "scripts": {
     "build": "rollup -c",
@@ -21,7 +22,7 @@
     "embed"
   ],
   "author": "大角几何",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "devDependencies": {
     "@rollup/plugin-replace": "^6.0.1",
