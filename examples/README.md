@@ -27,13 +27,13 @@ npx serve examples
 
 ## 示例列表
 
-| 文件                 | 说明                                             |
-| -------------------- | ------------------------------------------------ |
+| 文件                 | 说明                                                    |
+| -------------------- | ------------------------------------------------------- |
 | 01-basic-iframe.html | 基础嵌入：100% 宽度、居中 max-width、vh、双列等高频布局 |
-| 02-sdk-usage.html    | SDK 方式：使用 AlgeoSdk 封装                     |
-| 03-switch-slide.html | 切换画板：switchSlide 多画板切换                  |
-| 04-load-file.html    | loadFile：输入 JSON 文本或导入 .json 文件        |
-| 05-repl.html         | REPL：执行 REPL 指令，获取面向 AI 的文档/文本内容 |
+| 02-sdk-usage.html    | SDK 方式：使用 AlgeoSdk 封装                            |
+| 03-switch-slide.html | 切换画板：switchSlide 多画板切换                        |
+| 04-load-file.html    | loadFile：输入 JSON 文本或导入 .json 文件               |
+| 05-repl.html         | REPL：执行 REPL 指令，获取面向 AI 的文档/文本内容       |
 
 ## 全屏支持
 
@@ -41,5 +41,5 @@ npx serve examples
 
 ## 测试说明
 
-- 将示例中的 `E8NHN7OP` 替换为真实分享 ID 进行测试
+- 将示例中的 `33TA3484` 替换为真实分享 ID 进行测试
 - 案例 02、03、04 依赖 `../dist/algeo-sdk.umd.js`，需先执行 `npm run build`

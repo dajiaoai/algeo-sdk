@@ -62,7 +62,7 @@ import { AlgeoSdk } from '@dajiaoai/algeo-sdk';
 const container = document.getElementById('algeo-container');
 const sdk = await AlgeoSdk.create(container, {
   baseUrl: 'https://dajiaoai.com',
-  initialId: 'E8NHN7OP', // 可选，初始加载的分享 ID
+  initialId: '33TA3484', // 可选，初始加载的分享 ID
 });
 
 // 等待就绪（可选）
@@ -73,7 +73,7 @@ window.addEventListener('message', (e) => {
 });
 
 // 调用方法
-sdk.loadShareById('E8NHN7OP').then(() => console.log('加载成功'));
+sdk.loadShareById('33TA3484').then(() => console.log('加载成功'));
 sdk.getSlideCount().then(({ count }) => console.log('画板数量:', count));
 sdk.switchSlide(1).then(() => console.log('切换画板'));
 
@@ -88,7 +88,7 @@ sdk.switchSlide(1).then(() => console.log('切换画板'));
 ```html
 <iframe
   id="algeo-embed"
-  src="https://dajiaoai.com/e/E8NHN7OP"
+  src="https://dajiaoai.com/e/33TA3484"
   allow="fullscreen"
 ></iframe>
 ```
@@ -135,7 +135,7 @@ console.log('Algeo SDK version:', VERSION);
 ```javascript
 const sdk = await AlgeoSdk.create(container, {
   baseUrl: 'https://dajiaoai.com',
-  initialId: 'E8NHN7OP',
+  initialId: '33TA3484',
 });
 ```
 
@@ -158,7 +158,7 @@ const sdk = await AlgeoSdk.create(container, {
 
 | 参数 | 类型     | 说明                   |
 | ---- | -------- | ---------------------- |
-| `id` | `string` | 分享 ID，如 `E8NHN7OP` |
+| `id` | `string` | 分享 ID，如 `33TA3484` |
 
 **返回值：** `{ success: true }`
 

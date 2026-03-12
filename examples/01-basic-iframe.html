@@ -138,7 +138,7 @@
   <p class="desc">iframe src 直接带分享 ID，下方为高频布局测试场景。</p>
   <div class="toolbar">
     <label>分享 ID</label>
-    <input type="text" id="shareId" value="E8NHN7OP" placeholder="输入分享 ID">
+    <input type="text" id="shareId" value="33TA3484" placeholder="输入分享 ID">
     <button id="reload">重新加载</button>
   </div>
 
@@ -182,7 +182,7 @@
     ];
 
     function load() {
-      const id = shareIdEl.value.trim() || 'E8NHN7OP';
+      const id = shareIdEl.value.trim() || '33TA3484';
       const src = EMBED_BASE + '/e/' + encodeURIComponent(id);
       iframes.forEach((el) => { if (el) el.src = src; });
     }

@@ -114,7 +114,7 @@
   <div class="status" id="status"></div>
   <div class="toolbar" id="createToolbar">
     <label>分享 ID</label>
-    <input type="text" id="shareId" value="E8NHN7OP" placeholder="输入分享 ID">
+    <input type="text" id="shareId" value="33TA3484" placeholder="输入分享 ID">
     <button class="primary" id="createBtn">创建</button>
   </div>
   <div class="toolbar" id="sdkToolbar" style="display: none;">
@@ -158,7 +158,7 @@
     let sdk = null;
 
     document.getElementById('createBtn').onclick = async () => {
-      const id = shareIdEl.value.trim() || 'E8NHN7OP';
+      const id = shareIdEl.value.trim() || '33TA3484';
       try {
         sdk = new AlgeoSdk.AlgeoSdk(container, {
           baseUrl: 'https://dajiaoai.com',
