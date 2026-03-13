@@ -1,5 +1,6 @@
 import typescript from '@rollup/plugin-typescript';
 import replace from '@rollup/plugin-replace';
+import nodeResolve from '@rollup/plugin-node-resolve';
 import { readFileSync } from 'fs';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
@@ -12,6 +13,7 @@ export default {
     { file: 'dist/algeo-sdk.umd.js', format: 'umd', name: 'AlgeoSdk' },
   ],
   plugins: [
+    nodeResolve(),
     replace({
       __ALGEO_SDK_VERSION__: pkg.version,
       preventAssignment: true,

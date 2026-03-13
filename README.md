@@ -11,7 +11,7 @@
 npm install @dajiaoai/algeo-sdk
 
 # 安装指定版本（推荐生产环境锁定版本）
-npm install @dajiaoai/algeo-sdk@1.1.0
+npm install @dajiaoai/algeo-sdk@1.2.0
 ```
 
 在 `package.json` 中：
@@ -19,7 +19,7 @@ npm install @dajiaoai/algeo-sdk@1.1.0
 ```json
 {
   "dependencies": {
-    "@dajiaoai/algeo-sdk": "1.1.0" // 精确版本，生产推荐
+    "@dajiaoai/algeo-sdk": "1.2.0" // 精确版本，生产推荐
   }
 }
 ```
@@ -29,7 +29,7 @@ npm install @dajiaoai/algeo-sdk@1.1.0
 ```json
 {
   "dependencies": {
-    "@dajiaoai/algeo-sdk": "^1.1.0" // 兼容 1.x 的更新
+    "@dajiaoai/algeo-sdk": "^1.2.0" // 兼容 1.x 的更新
   }
 }
 ```
@@ -39,14 +39,14 @@ npm install @dajiaoai/algeo-sdk@1.1.0
 **unpkg**：
 
 ```html
-<script src="https://unpkg.com/@dajiaoai/algeo-sdk@1.1.0/dist/algeo-sdk.umd.js"></script>
+<script src="https://unpkg.com/@dajiaoai/algeo-sdk@1.2.0/dist/algeo-sdk.umd.js"></script>
 <script src="https://unpkg.com/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
 ```
 
 **jsDelivr**：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@1.1.0/dist/algeo-sdk.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@1.2.0/dist/algeo-sdk.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
 ```
 
@@ -238,13 +238,13 @@ interface FileContent {
 
 ### 错误处理
 
-所有异步方法在失败时会 reject `AlgeoSdkError`：
+所有异步方法在失败时会 reject `AlgeoError`：
 
 ```javascript
 try {
   await sdk.loadShareById('invalid');
 } catch (e) {
-  if (e.name === 'AlgeoSdkError') {
+  if (e.name === 'AlgeoError') {
     console.error(e.code, e.message, e.details);
   }
 }

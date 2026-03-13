@@ -2,17 +2,12 @@
  * 大角几何内嵌画板 SDK
  * 绑定 DOM 容器，自动创建 iframe 并封装 postMessage 通信
  */
+import { AlgeoError, type AlgeoErrorPayload, type FileContentV10, EMBED_ERROR_CODES } from '@dajiaoai/algeo-protocol';
 /** SDK 版本号，构建时由 rollup 注入 */
 export declare const VERSION = "__ALGEO_SDK_VERSION__";
-/** loadFile 时传入的文件内容，需符合 FileContentV10 格式 */
-export interface FileContent {
-    slides: unknown[];
-    messages: unknown[];
-    metadata: {
-        version: string;
-        shareOptions?: unknown;
-    };
-}
+/** 从协议层 re-export，供外部使用 */
+export type { FileContentV10, AlgeoErrorPayload };
+export { AlgeoError, EMBED_ERROR_CODES };
 export interface AlgeoSdkOptions {
     /** 内嵌页基础 URL，默认 https://dajiaoai.com */
     baseUrl?: string;
@@ -33,16 +28,6 @@ export interface GetSlideCountResult {
 }
 export interface ReplResult {
     output: string;
-}
-export interface AlgeoErrorPayload {
-    code: string;
-    message: string;
-    details?: unknown;
-}
-export declare class AlgeoSdkError extends Error {
-    code: string;
-    details?: unknown | undefined;
-    constructor(message: string, code: string, details?: unknown | undefined);
 }
 /**
  * 大角几何内嵌画板 SDK
@@ -69,7 +54,7 @@ export declare class AlgeoSdk {
     /**
      * 加载完整文件内容（覆盖式）
      */
-    loadFile(content: FileContent): Promise<LoadFileResult>;
+    loadFile(content: FileContentV10): Promise<LoadFileResult>;
     /**
      * 切换到指定索引的画板
      */

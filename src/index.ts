@@ -3,8 +3,21 @@
  * 绑定 DOM 容器，自动创建 iframe 并封装 postMessage 通信
  */
 
+import {
+  AlgeoError,
+  type AlgeoErrorPayload,
+  type EmbedReadyMessage,
+  type EmbedResponseMessage,
+  type FileContentV10,
+  EMBED_ERROR_CODES,
+} from '@dajiaoai/algeo-protocol';
+
 /** SDK 版本号，构建时由 rollup 注入 */
 export const VERSION = '__ALGEO_SDK_VERSION__';
+
+/** 从协议层 re-export，供外部使用 */
+export type { FileContentV10, AlgeoErrorPayload };
+export { AlgeoError, EMBED_ERROR_CODES };
 
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
 
@@ -14,11 +27,23 @@ function generateRequestId(): string {
   return `req-${Date.now()}-${++requestIdCounter}`;
 }
 
-/** loadFile 时传入的文件内容，需符合 FileContentV10 格式 */
-export interface FileContent {
-  slides: unknown[];
-  messages: unknown[];
-  metadata: { version: string; shareOptions?: unknown };
+function isResponseMessage(msg: unknown): msg is EmbedResponseMessage {
+  return (
+    typeof msg === 'object' &&
+    msg !== null &&
+    'type' in msg &&
+    (msg as EmbedResponseMessage).type === 'response' &&
+    'requestId' in msg
+  );
+}
+
+function isReadyMessage(msg: unknown): msg is EmbedReadyMessage {
+  return (
+    typeof msg === 'object' &&
+    msg !== null &&
+    'type' in msg &&
+    (msg as EmbedReadyMessage).type === 'ready'
+  );
 }
 
 export interface AlgeoSdkOptions {
@@ -48,48 +73,6 @@ export interface ReplResult {
   output: string;
 }
 
-export interface AlgeoErrorPayload {
-  code: string;
-  message: string;
-  details?: unknown;
-}
-
-export class AlgeoSdkError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public details?: unknown,
-  ) {
-    super(message);
-    this.name = 'AlgeoSdkError';
-  }
-}
-
-type ResponseMessage =
-  | { type: 'response'; requestId: string; success: true; result?: unknown }
-  | { type: 'response'; requestId: string; success: false; error: AlgeoErrorPayload };
-
-type ReadyMessage = { type: 'ready'; version: string };
-
-function isResponseMessage(msg: unknown): msg is ResponseMessage {
-  return (
-    typeof msg === 'object' &&
-    msg !== null &&
-    'type' in msg &&
-    (msg as ResponseMessage).type === 'response' &&
-    'requestId' in msg
-  );
-}
-
-function isReadyMessage(msg: unknown): msg is ReadyMessage {
-  return (
-    typeof msg === 'object' &&
-    msg !== null &&
-    'type' in msg &&
-    (msg as ReadyMessage).type === 'ready'
-  );
-}
-
 /**
  * 大角几何内嵌画板 SDK
  */
@@ -100,7 +83,7 @@ export class AlgeoSdk {
     string,
     {
       resolve: (value: unknown) => void;
-      reject: (err: AlgeoSdkError) => void;
+      reject: (err: AlgeoError) => void;
     }
   >();
   private messageHandler?: (e: MessageEvent) => void;
@@ -129,7 +112,7 @@ export class AlgeoSdk {
 
   async init(options: AlgeoSdkOptions = {}): Promise<void> {
     if (this.iframe) {
-      throw new AlgeoSdkError('请勿多次调用init方法。', 'BAD_REQUEST');
+      throw new AlgeoError('请勿多次调用init方法。', EMBED_ERROR_CODES.BAD_REQUEST);
     }
     return new Promise((resolve, reject) => {
       const baseUrl = options.baseUrl ?? DEFAULT_EMBED_BASE;
@@ -167,10 +150,10 @@ export class AlgeoSdk {
             } else {
               const err = data.error;
               pending.reject(
-                new AlgeoSdkError(
-                  err.message,
-                  err.code,
-                  err.details,
+                new AlgeoError(
+                  err?.message ?? '未知错误',
+                  err?.code ?? EMBED_ERROR_CODES.UNKNOWN_ERROR,
+                  err?.details,
                 ),
               );
             }
@@ -187,7 +170,7 @@ export class AlgeoSdk {
     const msg = { type, requestId, ...payload };
     return new Promise<T>((resolve, reject) => {
       if (!this._ready) {
-        reject(new AlgeoSdkError('iframe 未加载完成', 'IFRAME_NOT_READY'));
+        reject(new AlgeoError('iframe 未加载完成', EMBED_ERROR_CODES.IFRAME_NOT_READY));
       }
       this.pending.set(requestId, {
         resolve: resolve as (v: unknown) => void,
@@ -196,7 +179,7 @@ export class AlgeoSdk {
       const target = this.iframe?.contentWindow;
       if (!target) {
         this.pending.delete(requestId);
-        reject(new AlgeoSdkError('iframe 未加载完成', 'IFRAME_NOT_READY'));
+        reject(new AlgeoError('iframe 未加载完成', EMBED_ERROR_CODES.IFRAME_NOT_READY));
         return;
       }
       target.postMessage(msg, '*');
@@ -204,7 +187,7 @@ export class AlgeoSdk {
       setTimeout(() => {
         if (this.pending.has(requestId)) {
           this.pending.delete(requestId);
-          reject(new AlgeoSdkError('请求超时', 'TIMEOUT'));
+          reject(new AlgeoError('请求超时', EMBED_ERROR_CODES.TIMEOUT));
         }
       }, 30000);
     });
@@ -220,7 +203,7 @@ export class AlgeoSdk {
   /**
    * 加载完整文件内容（覆盖式）
    */
-  loadFile(content: FileContent): Promise<LoadFileResult> {
+  loadFile(content: FileContentV10): Promise<LoadFileResult> {
     return this.post<LoadFileResult>('loadFile', { content });
   }
 
@@ -255,7 +238,7 @@ export class AlgeoSdk {
       this.messageHandler = undefined;
     }
     this.pending.forEach(({ reject }) =>
-      reject(new AlgeoSdkError('SDK 已销毁', 'DESTROYED')),
+      reject(new AlgeoError('SDK 已销毁', EMBED_ERROR_CODES.DESTROYED)),
     );
     this.pending.clear();
     if (this.iframe?.parentNode) {

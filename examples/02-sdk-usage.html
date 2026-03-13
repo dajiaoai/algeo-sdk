@@ -160,7 +160,7 @@
     document.getElementById('createBtn').onclick = async () => {
       const id = shareIdEl.value.trim() || '33TA3484';
       try {
-        sdk = new AlgeoSdk.AlgeoSdk(container, {
+        sdk = await AlgeoSdk.AlgeoSdk.create(container, {
           baseUrl: 'https://dajiaoai.com',
           initialId: id,
         });
