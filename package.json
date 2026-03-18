@@ -13,7 +13,8 @@
   "scripts": {
     "build": "rollup -c",
     "typecheck": "tsc --noEmit",
-    "examples": "npx serve ."
+    "examples": "npx serve .",
+    "release": "npm run build && npm publish --access public"
   },
   "keywords": [
     "algeo",

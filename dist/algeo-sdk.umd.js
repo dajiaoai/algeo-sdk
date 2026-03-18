@@ -3904,7 +3904,7 @@
    * 绑定 DOM 容器，自动创建 iframe 并封装 postMessage 通信
    */
   /** SDK 版本号，构建时由 rollup 注入 */
-  const VERSION = '1.2.0';
+  const VERSION = '1.2.1';
   const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
   let requestIdCounter = 0;
   function generateRequestId() {
