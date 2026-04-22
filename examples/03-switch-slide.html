@@ -186,9 +186,8 @@
 
       try {
         if (!sdk) {
-          sdk = await AlgeoSdk.AlgeoSdk.create(container, {
-            baseUrl: 'https://dajiaoai.com',
-            initialId: id,
+          sdk = await AlgeoSdk.createPresentation(container, {
+            shareId: id,
           });
         } else {
           await sdk.loadShareById(id)

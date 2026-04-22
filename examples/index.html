@@ -36,6 +36,28 @@
       margin: 0 0 24px;
     }
 
+    .groups {
+      display: grid;
+      gap: 24px;
+    }
+
+    .group {
+      display: grid;
+      gap: 12px;
+    }
+
+    .group h2 {
+      margin: 0;
+      font-size: 1.125rem;
+      color: #222;
+    }
+
+    .group p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: #888;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -72,27 +94,43 @@
 <body>
   <h1>Algeo SDK 示例</h1>
   <p>选择以下案例查看内嵌画板的不同用法。</p>
-  <div class="grid">
-    <a href="01-basic-iframe.html">
-      <h3>01 基础嵌入</h3>
-      <span>100% 宽度、居中 max-width、vh、双列等高频布局</span>
-    </a>
-    <a href="02-sdk-usage.html">
-      <h3>02 SDK 方式</h3>
-      <span>使用 AlgeoSdk 封装 iframe 与 postMessage</span>
-    </a>
-    <a href="03-switch-slide.html">
-      <h3>03 切换画板</h3>
-      <span>多画板内容，通过 switchSlide 切换</span>
-    </a>
-    <a href="04-load-file.html">
-      <h3>04 loadFile</h3>
-      <span>输入 JSON 文本或导入 .json 文件加载内容</span>
-    </a>
-    <a href="05-repl.html">
-      <h3>05 REPL</h3>
-      <span>执行 REPL 指令，获取面向 AI 的文档/文本内容</span>
-    </a>
+  <div class="groups">
+    <section class="group">
+      <h2>演示模式</h2>
+      <div class="grid">
+        <a href="01-basic-iframe.html">
+          <h3>01 基础嵌入</h3>
+          <span>100% 宽度、居中 max-width、vh、双列等高频布局</span>
+        </a>
+        <a href="02-sdk-usage.html">
+          <h3>02 SDK 方式</h3>
+          <span>使用 AlgeoSdk 封装 iframe 与 postMessage</span>
+        </a>
+        <a href="03-switch-slide.html">
+          <h3>03 切换画板</h3>
+          <span>多画板内容，通过 switchSlide 切换</span>
+        </a>
+        <a href="04-load-file.html">
+          <h3>04 loadFile</h3>
+          <span>输入 JSON 文本或导入 .json 文件加载内容</span>
+        </a>
+        <a href="05-repl.html">
+          <h3>05 REPL</h3>
+          <span>执行 REPL 指令，获取面向 AI 的文档/文本内容</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="group">
+      <h2>编辑模式</h2>
+      <div class="grid">
+        <a href="06-editor-mode.html">
+          <h3>06 内嵌编辑模式</h3>
+          <span>预接入 editor mode，验证新 URL 构造与初始化参数</span>
+        </a>
+      </div>
+    </section>
+
   </div>
 </body>
 

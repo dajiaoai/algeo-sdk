@@ -109,8 +109,8 @@
 
 <body>
   <a href="index.html">← 返回示例列表</a>
-  <h1>02 SDK 方式</h1>
-  <p class="desc">使用 AlgeoSdk 封装 iframe 与 postMessage，通过 Promise 调用 loadShareById。</p>
+  <h1>02 演示模式</h1>
+  <p class="desc">使用 createPresentation 封装 iframe 与 postMessage，以演示模式加载分享内容。</p>
   <div class="status" id="status"></div>
   <div class="toolbar" id="createToolbar">
     <label>分享 ID</label>
@@ -160,12 +160,11 @@
     document.getElementById('createBtn').onclick = async () => {
       const id = shareIdEl.value.trim() || '33TA3484';
       try {
-        sdk = await AlgeoSdk.AlgeoSdk.create(container, {
-          baseUrl: 'https://dajiaoai.com',
-          initialId: id,
+        sdk = await AlgeoSdk.createPresentation(container, {
+          shareId: id,
         });
         statusEl.textContent = 'SDK 已初始化，ready: ' + sdk.ready + ', version: ' + (sdk.version || '-');
-        log('SDK 初始化完成，initialId: ' + id);
+        log('演示模式初始化完成，shareId: ' + id);
         showSdk();
       } catch (e) {
         statusEl.textContent = '创建失败: ' + e.message;

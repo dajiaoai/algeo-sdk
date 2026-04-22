@@ -12,6 +12,7 @@ var EMBED_ERROR_CODES = {
   REPL_EXECUTE_FAILED: "EMBED_REPL_EXECUTE_FAILED",
   UNKNOWN_METHOD: "EMBED_UNKNOWN_METHOD",
   UNKNOWN_ERROR: "EMBED_UNKNOWN_ERROR",
+  MISSING_APP_ID: "EMBED_MISSING_APP_ID",
   BAD_REQUEST: "EMBED_BAD_REQUEST",
   IFRAME_NOT_READY: "EMBED_IFRAME_NOT_READY",
   TIMEOUT: "EMBED_TIMEOUT",
@@ -3895,13 +3896,11 @@ objectType({
   metadata: fileContentV10MetadataSchema
 });
 
-/**
- * 大角几何内嵌画板 SDK
- * 绑定 DOM 容器，自动创建 iframe 并封装 postMessage 通信
- */
 /** SDK 版本号，构建时由 rollup 注入 */
-const VERSION = '1.2.1';
+const VERSION = '2.0.0';
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
+const DEFAULT_PRESENTATION_PATH = '/e';
+const DEFAULT_EDITOR_PATH = '/embed/edit';
 let requestIdCounter = 0;
 function generateRequestId() {
     return `req-${Date.now()}-${++requestIdCounter}`;
@@ -3919,40 +3918,76 @@ function isReadyMessage(msg) {
         'type' in msg &&
         msg.type === 'ready');
 }
-/**
- * 大角几何内嵌画板 SDK
- */
-class AlgeoSdk {
-    /** 是否已就绪（收到 iframe ready 通知） */
+function normalizeBaseUrl(baseUrl) {
+    return baseUrl.replace(/\/+$/, '');
+}
+function normalizeMode(mode) {
+    return mode === 'editor' ? 'editor' : 'presentation';
+}
+function getEmbedPath(mode) {
+    return mode === 'editor' ? DEFAULT_EDITOR_PATH : DEFAULT_PRESENTATION_PATH;
+}
+function buildEmbedSrc(options) {
+    const baseUrl = normalizeBaseUrl(options.baseUrl ?? DEFAULT_EMBED_BASE);
+    const mode = normalizeMode(options.mode);
+    const path = getEmbedPath(mode);
+    const authAppId = options.auth.appId?.trim();
+    const initialId = options.initialId?.trim();
+    if (mode === 'editor') {
+        if (!initialId) {
+            return `${baseUrl}${path}/${encodeURIComponent(authAppId)}`;
+        }
+        return `${baseUrl}${path}/${encodeURIComponent(authAppId)}/${encodeURIComponent(initialId)}`;
+    }
+    if (!initialId) {
+        return `${baseUrl}${path}`;
+    }
+    return `${baseUrl}${path}/${encodeURIComponent(initialId)}`;
+}
+
+class EmbeddedTarget {
+    constructor(container, embedMode) {
+        this.container = container;
+        this.embedMode = embedMode;
+        this.pending = new Map();
+        this.listenerBuckets = new Map();
+        this.destroyed = false;
+        this._ready = false;
+        this._version = null;
+    }
     get ready() {
         return this._ready;
     }
-    /** 内嵌页协议版本 */
     get version() {
         return this._version;
     }
-    constructor(container) {
-        this.pending = new Map();
-        this._ready = false;
-        this._version = null;
-        this.container = container;
+    on(event, listener) {
+        let bucket = this.listenerBuckets.get(event);
+        if (!bucket) {
+            bucket = new Set();
+            this.listenerBuckets.set(event, bucket);
+        }
+        bucket.add(listener);
+        return () => this.off(event, listener);
     }
-    static async create(container, options) {
-        const ret = new AlgeoSdk(container);
-        await ret.init(options);
-        return ret;
+    off(event, listener) {
+        const bucket = this.listenerBuckets.get(event);
+        bucket?.delete(listener);
     }
-    async init(options = {}) {
+    emit(event, payload) {
+        const bucket = this.listenerBuckets.get(event);
+        bucket?.forEach((listener) => listener(payload));
+    }
+    async init(options) {
         if (this.iframe) {
             throw new AlgeoError('请勿多次调用init方法。', EMBED_ERROR_CODES.BAD_REQUEST);
         }
         return new Promise((resolve, reject) => {
-            const baseUrl = options.baseUrl ?? DEFAULT_EMBED_BASE;
-            const initialId = options.initialId ?? '';
-            const src = initialId
-                ? `${baseUrl}/e/${encodeURIComponent(initialId)}`
-                : `${baseUrl}/e`;
-            const iframe = this.iframe = document.createElement('iframe');
+            const src = buildEmbedSrc({
+                ...options,
+                mode: this.embedMode,
+            });
+            const iframe = (this.iframe = document.createElement('iframe'));
             iframe.id = 'algeo-embed';
             iframe.src = src;
             iframe.allow = 'fullscreen';
@@ -3962,28 +3997,33 @@ class AlgeoSdk {
             iframe.addEventListener('error', reject);
             this.container.appendChild(iframe);
             this.messageHandler = (e) => {
-                if (e.source !== iframe.contentWindow)
+                if (e.source !== iframe.contentWindow) {
                     return;
+                }
                 const { data } = e;
                 if (isReadyMessage(data)) {
                     this._ready = true;
                     this._version = data.version;
+                    this.emit('ready', {
+                        type: 'ready',
+                        mode: this.embedMode,
+                        version: this._version,
+                    });
                     resolve();
                     return;
                 }
                 if (isResponseMessage(data)) {
-                    const { requestId, success } = data;
-                    const pending = this.pending.get(requestId);
-                    if (pending) {
-                        this.pending.delete(requestId);
-                        if (success) {
-                            pending.resolve(data.result);
-                        }
-                        else {
-                            const err = data.error;
-                            pending.reject(new AlgeoError(err?.message ?? '未知错误', err?.code ?? EMBED_ERROR_CODES.UNKNOWN_ERROR, err?.details));
-                        }
+                    const pending = this.pending.get(data.requestId);
+                    if (!pending) {
+                        return;
                     }
+                    this.pending.delete(data.requestId);
+                    if (data.success) {
+                        pending.resolve(data.result);
+                        return;
+                    }
+                    const err = data.error;
+                    pending.reject(new AlgeoError(err?.message ?? '未知错误', err?.code ?? EMBED_ERROR_CODES.UNKNOWN_ERROR, err?.details));
                 }
             };
             window.addEventListener('message', this.messageHandler);
@@ -3993,21 +4033,24 @@ class AlgeoSdk {
         const requestId = generateRequestId();
         const msg = { type, requestId, ...payload };
         return new Promise((resolve, reject) => {
+            if (this.destroyed) {
+                reject(new AlgeoError('SDK 已销毁', EMBED_ERROR_CODES.DESTROYED));
+                return;
+            }
             if (!this._ready) {
                 reject(new AlgeoError('iframe 未加载完成', EMBED_ERROR_CODES.IFRAME_NOT_READY));
+                return;
+            }
+            const target = this.iframe?.contentWindow;
+            if (!target) {
+                reject(new AlgeoError('iframe 未加载完成', EMBED_ERROR_CODES.IFRAME_NOT_READY));
+                return;
             }
             this.pending.set(requestId, {
                 resolve: resolve,
                 reject,
             });
-            const target = this.iframe?.contentWindow;
-            if (!target) {
-                this.pending.delete(requestId);
-                reject(new AlgeoError('iframe 未加载完成', EMBED_ERROR_CODES.IFRAME_NOT_READY));
-                return;
-            }
             target.postMessage(msg, '*');
-            // 超时兜底
             setTimeout(() => {
                 if (this.pending.has(requestId)) {
                     this.pending.delete(requestId);
@@ -4016,54 +4059,238 @@ class AlgeoSdk {
             }, 30000);
         });
     }
-    /**
-     * 按分享 ID 加载内容
-     */
-    loadShareById(id) {
-        return this.post('loadShareById', { id });
-    }
-    /**
-     * 加载完整文件内容（覆盖式）
-     */
-    loadFile(content) {
-        return this.post('loadFile', { content });
-    }
-    /**
-     * 切换到指定索引的画板
-     */
-    switchSlide(index) {
-        return this.post('switchSlide', { index });
-    }
-    /**
-     * 查询画板数量
-     */
-    getSlideCount() {
-        return this.post('getSlideCount', {});
-    }
-    /**
-     * 执行 REPL 指令，返回面向 AI 的文档/文本内容
-     * @param command REPL 可用的单个 command 指令，如 help、list、list_slides、eval 等
-     */
-    repl(command) {
-        return this.post('repl', { command });
-    }
-    /**
-     * 销毁实例，移除 iframe 与事件监听
-     */
-    destroy() {
+    async destroy() {
+        if (this.destroyed) {
+            return;
+        }
+        this.destroyed = true;
         if (this.messageHandler) {
             window.removeEventListener('message', this.messageHandler);
             this.messageHandler = undefined;
         }
-        this.pending.forEach(({ reject }) => reject(new AlgeoError('SDK 已销毁', EMBED_ERROR_CODES.DESTROYED)));
+        this.pending.forEach(({ reject }) => {
+            reject(new AlgeoError('SDK 已销毁', EMBED_ERROR_CODES.DESTROYED));
+        });
         this.pending.clear();
         if (this.iframe?.parentNode) {
             this.iframe.parentNode.removeChild(this.iframe);
         }
+        this.emit('destroy', {
+            type: 'destroy',
+        });
     }
+}
+
+class EmbeddedPresentation extends EmbeddedTarget {
+    constructor(container) {
+        super(container, 'presentation');
+        this.currentSlideIndex = 0;
+        this.slideCount = 0;
+    }
+    async initialize(options = {}, baseUrl) {
+        await this.init({
+            baseUrl,
+            initialId: options.shareId,
+        });
+    }
+    async loadShareById(id) {
+        const result = await this.post('loadShareById', {
+            id,
+        });
+        this.currentContent = undefined;
+        this.currentSlideIndex = 0;
+        this.slideCount = 0;
+        return result;
+    }
+    async loadFile(content) {
+        const result = await this.post('loadFile', { content });
+        this.currentContent = content;
+        this.currentSlideIndex = 0;
+        this.slideCount = content.slides.length;
+        return result;
+    }
+    async switchSlide(index) {
+        const result = await this.post('switchSlide', { index });
+        this.currentSlideIndex = index;
+        return result;
+    }
+    async getSlideCount() {
+        const result = await this.post('getSlideCount', {});
+        this.slideCount = result.count;
+        return result;
+    }
+    async repl(command) {
+        return this.post('repl', { command });
+    }
+}
+
+class EmbeddedEditor extends EmbeddedTarget {
+    constructor(container) {
+        super(container, 'editor');
+        this.currentSlideIndex = 0;
+        this.slideCount = 0;
+        this.historyCount = 0;
+        this.historyCurrentIndex = -1;
+        this.uiConfig = {};
+        this.document = {
+            loadContent: async (content) => {
+                await this.loadContent(content, 'loadContent');
+            },
+            getContent: () => {
+                if (!this.currentContent) {
+                    throw new AlgeoError('当前无可用画板文件内容', EMBED_ERROR_CODES.BAD_REQUEST);
+                }
+                return this.currentContent;
+            },
+            save: async () => {
+                if (!this.saveHandler) {
+                    throw new AlgeoError('未配置 onSave，无法执行保存。', EMBED_ERROR_CODES.BAD_REQUEST);
+                }
+                return this.saveHandler({
+                    content: this.document.getContent(),
+                });
+            },
+        };
+        this.slides = {
+            getCount: () => this.slideCount,
+            getCurrentIndex: () => this.currentSlideIndex,
+            switchTo: async (index) => {
+                await this.switchTo(index);
+            },
+            add: async () => this.addSlide('addSlide', {}),
+            addAt: async (index) => this.addSlide('addSlideAt', { index }),
+            remove: async (index) => {
+                await this.post('removeSlide', { index });
+                this.slideCount = Math.max(0, this.slideCount - 1);
+                this.currentSlideIndex = Math.min(this.currentSlideIndex, Math.max(this.slideCount - 1, 0));
+                this.recordHistoryMutation();
+            },
+            duplicate: async (index, targetIndex) => this.addSlide('duplicateSlide', { index, targetIndex }),
+            reorder: async (fromIndex, toIndex) => {
+                await this.post('reorderSlide', { fromIndex, toIndex });
+                if (this.currentSlideIndex === fromIndex) {
+                    this.currentSlideIndex = toIndex;
+                }
+                this.recordHistoryMutation();
+            },
+        };
+        this.history = {
+            getCount: () => this.historyCount,
+            getCurrentIndex: () => this.historyCurrentIndex,
+            undo: async () => {
+                await this.post('undo', {});
+                if (this.historyCurrentIndex > 0) {
+                    this.historyCurrentIndex -= 1;
+                }
+            },
+            redo: async () => {
+                await this.post('redo', {});
+                if (this.historyCurrentIndex < this.historyCount - 1) {
+                    this.historyCurrentIndex += 1;
+                }
+            },
+            jumpTo: async (index) => {
+                await this.post('jumpHistory', { index });
+                this.historyCurrentIndex = index;
+            },
+            canUndo: () => this.historyCurrentIndex > 0,
+            canRedo: () => this.historyCurrentIndex >= 0 &&
+                this.historyCurrentIndex < this.historyCount - 1,
+            clear: async () => {
+                await this.post('clearHistory', {});
+                this.historyCount = 0;
+                this.historyCurrentIndex = -1;
+            },
+        };
+        this.mode = {
+            getUiConfig: () => ({ ...this.uiConfig }),
+            setUiConfig: async (config) => {
+                await this.post('setUiConfig', { config });
+                this.uiConfig = {
+                    ...this.uiConfig,
+                    ...config,
+                };
+            },
+        };
+    }
+    async initialize(options = {}, baseUrl) {
+        if (!options.auth?.appId?.trim()) {
+            throw new AlgeoError('编辑模式需要提供 auth.appId。', EMBED_ERROR_CODES.MISSING_APP_ID);
+        }
+        this.uiConfig = options.ui || {};
+        this.saveHandler = options.onSave;
+        await this.init({
+            baseUrl,
+            auth: options.auth,
+            initialId: options.shareId,
+        });
+        if (options.initialContent) {
+            await this.loadContent(options.initialContent, 'initialContent');
+        }
+    }
+    async loadContent(content, source) {
+        await this.post('loadFile', { content });
+        this.currentContent = content;
+        this.currentSlideIndex = 0;
+        this.slideCount = content.slides.length;
+        this.historyCount = Math.max(this.historyCount, 1);
+        this.historyCurrentIndex = this.historyCount - 1;
+    }
+    async switchTo(index) {
+        await this.post('switchSlide', { index });
+        this.currentSlideIndex = index;
+    }
+    async addSlide(command, payload) {
+        const result = await this.post(command, payload);
+        this.slideCount = Math.max(this.slideCount + 1, result.index + 1);
+        this.currentSlideIndex = result.index;
+        this.recordHistoryMutation();
+        return result;
+    }
+    recordHistoryMutation() {
+        this.historyCount += 1;
+        this.historyCurrentIndex = this.historyCount - 1;
+    }
+}
+
+class AlgeoSdk {
+    constructor() { }
+    static async create(container, options) {
+        if (options.mode === 'editor') {
+            return createEditor(container, options.editor, options.baseUrl);
+        }
+        return createPresentation(container, options.presentation, options.baseUrl);
+    }
+    static async createEditor(container, options = {}) {
+        return createEditor(container, options);
+    }
+    static async createPresentation(container, options = {}) {
+        return createPresentation(container, options);
+    }
+}
+async function create(container, options) {
+    if (options.mode === 'editor') {
+        return createEditor(container, options.editor, options.baseUrl);
+    }
+    return createPresentation(container, options.presentation, options.baseUrl);
+}
+async function createEditor(container, options = {}, baseUrl) {
+    const editor = new EmbeddedEditor(container);
+    await editor.initialize(options, baseUrl);
+    return editor;
+}
+async function createPresentation(container, options = {}, baseUrl) {
+    const presentation = new EmbeddedPresentation(container);
+    await presentation.initialize(options, baseUrl);
+    return presentation;
 }
 
 exports.AlgeoError = AlgeoError;
 exports.AlgeoSdk = AlgeoSdk;
 exports.EMBED_ERROR_CODES = EMBED_ERROR_CODES;
+exports.EmbeddedEditor = EmbeddedEditor;
+exports.EmbeddedPresentation = EmbeddedPresentation;
 exports.VERSION = VERSION;
+exports.create = create;
+exports.createEditor = createEditor;
+exports.createPresentation = createPresentation;

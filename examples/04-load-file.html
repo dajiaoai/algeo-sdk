@@ -178,9 +178,7 @@
         };
       }
 
-      let sdk = await AlgeoSdk.AlgeoSdk.create(container, {
-        baseUrl: 'https://dajiaoai.com',
-      });
+      let sdk = await AlgeoSdk.createPresentation(container, {});
 
       function doLoad(content) {
         sdk.loadFile(content)

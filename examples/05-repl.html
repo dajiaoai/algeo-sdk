@@ -179,9 +179,7 @@
         logEl.scrollTop = logEl.scrollHeight;
       }
 
-      const sdk = await AlgeoSdk.AlgeoSdk.create(container, {
-        baseUrl: 'https://dajiaoai.com',
-      });
+      const sdk = await AlgeoSdk.createPresentation(container, {});
 
       function runRepl(command) {
         const cmd = (command || commandInput.value || '').trim();
