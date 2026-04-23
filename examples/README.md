@@ -28,14 +28,15 @@ npx serve examples
 
 ## 示例列表
 
-| 文件                 | 说明                                                    |
-| -------------------- | ------------------------------------------------------- |
-| 01-basic-iframe.html | 基础嵌入：100% 宽度、居中 max-width、vh、双列等高频布局 |
-| 02-sdk-usage.html    | 演示模式：使用 createPresentation 封装                  |
-| 03-switch-slide.html | 切换画板：switchSlide 多画板切换                        |
-| 04-load-file.html    | loadFile：输入 JSON 文本或导入 .json 文件               |
-| 05-repl.html         | REPL：执行 REPL 指令，获取面向 AI 的文档/文本内容       |
-| 06-editor-mode.html  | editor mode：使用 createEditor 构造未来内嵌编辑页 URL   |
+| 文件                 | 模式     | 能力说明                                                      |
+| -------------------- | -------- | ------------------------------------------------------------- |
+| 01-basic-iframe.html | 演示模式 | 展示基础 iframe 嵌入方式，以及常见页面布局下的展示效果        |
+| 02-sdk-usage.html    | 演示模式 | 展示如何用 `createPresentation` 快速创建可嵌入的演示实例      |
+| 03-switch-slide.html | 演示模式 | 展示多画板演示内容的切换能力，适合课件式或分页式内容播放      |
+| 04-load-file.html    | 演示模式 | 展示宿主加载 JSON 文件内容后，在 iframe 中直接进行演示        |
+| 05-repl.html         | 演示模式 | 展示如何读取画板中的文本/结构信息，供 AI 理解、问答和内容解读 |
+| 06-editor-mode.html  | 编辑模式 | 展示编辑器模式的基础接入方式，以及 UI 配置和嵌入参数控制能力  |
+| 07-document-api.html | 编辑模式 | 展示宿主取回当前画板内容，读取最新的结构化数据                |
 
 ## 全屏支持
 

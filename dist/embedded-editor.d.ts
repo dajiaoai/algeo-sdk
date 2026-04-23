@@ -11,7 +11,6 @@ export declare class EmbeddedEditor extends EmbeddedTarget<EmbeddedEditorEventMa
     private historyCount;
     private historyCurrentIndex;
     private uiConfig;
-    private saveHandler?;
     constructor(container: HTMLElement);
     initialize(options?: AlgeoEditorCreateOptions, baseUrl?: string): Promise<void>;
     private loadContent;

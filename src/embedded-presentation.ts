@@ -46,7 +46,7 @@ export class EmbeddedPresentation extends EmbeddedTarget<
   }
 
   async loadFile(content: FileContentV10): Promise<LoadFileResult> {
-    const result = await this.post<LoadFileResult>('loadFile', { content });
+    const result = await this.post<LoadFileResult>('loadContent', { content });
     this.currentContent = content;
     this.currentSlideIndex = 0;
     this.slideCount = content.slides.length;

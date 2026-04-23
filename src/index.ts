@@ -20,6 +20,7 @@ export type {
   EmbeddedPresentationEventListenerMap,
   EmbeddedPresentationEventMap,
   EmbeddedPresentationEventName,
+  GetContentResult,
   GetSlideCountResult,
   HistoryApi,
   LoadFileResult,

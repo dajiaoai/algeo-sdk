@@ -107,10 +107,12 @@ export interface ReplResult {
 export interface SlideIndexResult {
     index: number;
 }
+export interface GetContentResult {
+    content: FileContentV10;
+}
 export interface DocumentApi {
     loadContent(content: FileContentV10): Promise<void>;
-    getContent(): FileContentV10;
-    save(): Promise<AlgeoEditorSaveResult>;
+    getContent(): Promise<FileContentV10>;
 }
 export interface SlidesApi {
     getCount(): number;
@@ -143,7 +145,7 @@ export declare function normalizeBaseUrl(baseUrl: string): string;
 export declare function normalizeMode(mode?: AlgeoEmbedMode): AlgeoEmbedMode;
 export declare function getEmbedPath(mode: AlgeoEmbedMode): string;
 export interface EmbedInitOptions extends AlgeoSdkOptions {
-    auth: AlgeoEditorAuthOptions;
+    auth?: AlgeoEditorAuthOptions;
 }
 export declare function buildEmbedSrc(options: EmbedInitOptions): string;
 export type KnownEventName = 'ready' | 'destroy' | 'contentChange' | 'slideChange';

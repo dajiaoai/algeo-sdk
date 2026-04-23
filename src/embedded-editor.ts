@@ -10,6 +10,7 @@ import {
   type EmbeddedEditorEventMap,
   type EmbeddedEditorEventName,
   type FileContentV10,
+  type GetContentResult,
   type HistoryApi,
   type LoadFileResult,
   type ModeApi,
@@ -34,7 +35,6 @@ export class EmbeddedEditor extends EmbeddedTarget<
   private historyCount = 0;
   private historyCurrentIndex = -1;
   private uiConfig: AlgeoEditorUiConfig = {};
-  private saveHandler?: AlgeoEditorCreateOptions['onSave'];
 
   constructor(container: HTMLElement) {
     super(container, 'editor');
@@ -43,25 +43,15 @@ export class EmbeddedEditor extends EmbeddedTarget<
       loadContent: async (content: FileContentV10) => {
         await this.loadContent(content, 'loadContent');
       },
-      getContent: () => {
-        if (!this.currentContent) {
-          throw new AlgeoError(
-            '当前无可用画板文件内容',
-            EMBED_ERROR_CODES.BAD_REQUEST,
-          );
-        }
-        return this.currentContent;
-      },
-      save: async () => {
-        if (!this.saveHandler) {
-          throw new AlgeoError(
-            '未配置 onSave，无法执行保存。',
-            EMBED_ERROR_CODES.BAD_REQUEST,
-          );
-        }
-        return this.saveHandler({
-          content: this.document.getContent(),
-        });
+      getContent: async () => {
+        const result = await this.post<GetContentResult>('getContent', {});
+        this.currentContent = result.content;
+        this.currentSlideIndex = Math.min(
+          this.currentSlideIndex,
+          Math.max(result.content.slides.length - 1, 0),
+        );
+        this.slideCount = result.content.slides.length;
+        return result.content;
       },
     };
 
@@ -147,7 +137,6 @@ export class EmbeddedEditor extends EmbeddedTarget<
     }
 
     this.uiConfig = options.ui || {};
-    this.saveHandler = options.onSave;
 
     await this.init({
       baseUrl,
@@ -164,7 +153,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
     content: FileContentV10,
     source: ContentChangeEvent['source'],
   ): Promise<void> {
-    await this.post<LoadFileResult>('loadFile', { content });
+    await this.post<LoadFileResult>('loadContent', { content });
     this.currentContent = content;
     this.currentSlideIndex = 0;
     this.slideCount = content.slides.length;

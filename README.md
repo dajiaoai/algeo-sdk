@@ -383,8 +383,7 @@ interface FileContent {
 | 方法                   | 说明                             |
 | ---------------------- | -------------------------------- |
 | `loadContent(content)` | 加载完整画板文件内容             |
-| `getContent()`         | 获取当前内存中的画板文件内容     |
-| `save()`               | 调用宿主提供的 `onSave` 保存钩子 |
+| `getContent()`         | 异步获取 iframe 当前实时画板内容 |
 
 #### `editor.slides`
 

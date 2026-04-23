@@ -3897,7 +3897,7 @@ objectType({
 });
 
 /** SDK 版本号，构建时由 rollup 注入 */
-const VERSION = '2.0.0';
+const VERSION = '2.1.0';
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
 const DEFAULT_PRESENTATION_PATH = '/e';
 const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -3931,7 +3931,7 @@ function buildEmbedSrc(options) {
     const baseUrl = normalizeBaseUrl(options.baseUrl ?? DEFAULT_EMBED_BASE);
     const mode = normalizeMode(options.mode);
     const path = getEmbedPath(mode);
-    const authAppId = options.auth.appId?.trim();
+    const authAppId = options.auth?.appId?.trim() ?? '';
     const initialId = options.initialId?.trim();
     if (mode === 'editor') {
         if (!initialId) {
@@ -4103,11 +4103,18 @@ class EmbeddedPresentation extends EmbeddedTarget {
         return result;
     }
     async loadFile(content) {
-        const result = await this.post('loadFile', { content });
+        const result = await this.post('loadContent', { content });
         this.currentContent = content;
         this.currentSlideIndex = 0;
         this.slideCount = content.slides.length;
         return result;
+    }
+    async getContent() {
+        const result = await this.post('getContent', {});
+        this.currentContent = result.content;
+        this.currentSlideIndex = Math.min(this.currentSlideIndex, Math.max(result.content.slides.length - 1, 0));
+        this.slideCount = result.content.slides.length;
+        return result.content;
     }
     async switchSlide(index) {
         const result = await this.post('switchSlide', { index });
@@ -4136,19 +4143,12 @@ class EmbeddedEditor extends EmbeddedTarget {
             loadContent: async (content) => {
                 await this.loadContent(content, 'loadContent');
             },
-            getContent: () => {
-                if (!this.currentContent) {
-                    throw new AlgeoError('当前无可用画板文件内容', EMBED_ERROR_CODES.BAD_REQUEST);
-                }
-                return this.currentContent;
-            },
-            save: async () => {
-                if (!this.saveHandler) {
-                    throw new AlgeoError('未配置 onSave，无法执行保存。', EMBED_ERROR_CODES.BAD_REQUEST);
-                }
-                return this.saveHandler({
-                    content: this.document.getContent(),
-                });
+            getContent: async () => {
+                const result = await this.post('getContent', {});
+                this.currentContent = result.content;
+                this.currentSlideIndex = Math.min(this.currentSlideIndex, Math.max(result.content.slides.length - 1, 0));
+                this.slideCount = result.content.slides.length;
+                return result.content;
             },
         };
         this.slides = {
@@ -4218,7 +4218,6 @@ class EmbeddedEditor extends EmbeddedTarget {
             throw new AlgeoError('编辑模式需要提供 auth.appId。', EMBED_ERROR_CODES.MISSING_APP_ID);
         }
         this.uiConfig = options.ui || {};
-        this.saveHandler = options.onSave;
         await this.init({
             baseUrl,
             auth: options.auth,
@@ -4229,7 +4228,7 @@ class EmbeddedEditor extends EmbeddedTarget {
         }
     }
     async loadContent(content, source) {
-        await this.post('loadFile', { content });
+        await this.post('loadContent', { content });
         this.currentContent = content;
         this.currentSlideIndex = 0;
         this.slideCount = content.slides.length;

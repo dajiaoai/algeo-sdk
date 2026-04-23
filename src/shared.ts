@@ -153,10 +153,13 @@ export interface SlideIndexResult {
   index: number;
 }
 
+export interface GetContentResult {
+  content: FileContentV10;
+}
+
 export interface DocumentApi {
   loadContent(content: FileContentV10): Promise<void>;
-  getContent(): FileContentV10;
-  save(): Promise<AlgeoEditorSaveResult>;
+  getContent(): Promise<FileContentV10>;
 }
 
 export interface SlidesApi {
@@ -224,14 +227,14 @@ export function getEmbedPath(mode: AlgeoEmbedMode): string {
 }
 
 export interface EmbedInitOptions extends AlgeoSdkOptions {
-  auth: AlgeoEditorAuthOptions;
+  auth?: AlgeoEditorAuthOptions;
 }
 
 export function buildEmbedSrc(options: EmbedInitOptions): string {
   const baseUrl = normalizeBaseUrl(options.baseUrl ?? DEFAULT_EMBED_BASE);
   const mode = normalizeMode(options.mode);
   const path = getEmbedPath(mode);
-  const authAppId = options.auth.appId?.trim();
+  const authAppId = options.auth?.appId?.trim() ?? '';
   const initialId = options.initialId?.trim();
 
   if (mode === 'editor') {
