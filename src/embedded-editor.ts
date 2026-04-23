@@ -144,6 +144,11 @@ export class EmbeddedEditor extends EmbeddedTarget<
       initialId: options.shareId,
     });
 
+    const content = await this.document.getContent();
+    this.currentContent = content;
+    this.slideCount = content.slides.length;
+    this.currentSlideIndex = 0;
+
     if (options.initialContent) {
       await this.loadContent(options.initialContent, 'initialContent');
     }

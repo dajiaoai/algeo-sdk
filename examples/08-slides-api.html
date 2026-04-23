@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>08 SlidesApi - Algeo SDK</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      color-scheme: light;
+      --bg: #f2eee6;
+      --panel: rgba(255, 252, 247, 0.92);
+      --panel-strong: #fffaf0;
+      --line: #d8cebb;
+      --text: #2b2418;
+      --muted: #6e6659;
+      --accent: #0f766e;
+      --accent-strong: #115e59;
+      --accent-soft: rgba(15, 118, 110, 0.1);
+      --danger: #b91c1c;
+      --console: #172033;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 20px;
+      font-family: "Segoe UI", "PingFang SC", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255, 247, 205, 0.9), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(153, 246, 228, 0.5), transparent 24%),
+        linear-gradient(180deg, #f8f4eb 0%, var(--bg) 100%);
+    }
+
+    a {
+      color: var(--accent-strong);
+    }
+
+    .page {
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 8px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      line-height: 1.1;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 920px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(340px, 0.95fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(70, 53, 28, 0.08);
+    }
+
+    .embed {
+      overflow: hidden;
+    }
+
+    .embed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, rgba(15, 118, 110, 0.12), rgba(255, 255, 255, 0.5));
+    }
+
+    .embed-header strong {
+      display: block;
+      font-size: 0.96rem;
+    }
+
+    .embed-header span {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    #algeo-container {
+      height: 680px;
+      background: #f8f5ef;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 16px;
+    }
+
+    .section {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .section p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .stat {
+      padding: 12px;
+      border-radius: 14px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(15, 118, 110, 0.18);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.15rem;
+      margin-bottom: 4px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .operation-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .operation {
+      padding: 12px;
+      border-radius: 14px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      display: grid;
+      gap: 8px;
+    }
+
+    .operation h3 {
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font: inherit;
+      color: var(--text);
+      background: #fffdfa;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), #14b8a6);
+      color: white;
+      box-shadow: 0 10px 18px rgba(15, 118, 110, 0.2);
+    }
+
+    .secondary {
+      background: var(--panel-strong);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .danger {
+      background: rgba(185, 28, 28, 0.12);
+      color: var(--danger);
+      border: 1px solid rgba(185, 28, 28, 0.2);
+    }
+
+    .status {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(15, 118, 110, 0.08);
+      border: 1px solid rgba(15, 118, 110, 0.16);
+      color: var(--accent-strong);
+      font-size: 0.875rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    textarea,
+    .console {
+      width: 100%;
+      min-height: 180px;
+      padding: 14px;
+      border-radius: 14px;
+      font: 12px/1.6 Consolas, Monaco, monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    textarea {
+      resize: vertical;
+      color: #1f2937;
+      border: 1px solid var(--line);
+      background: rgba(255, 252, 246, 0.98);
+    }
+
+    .console {
+      min-height: 220px;
+      max-height: 300px;
+      overflow: auto;
+      background: var(--console);
+      color: #e5e7eb;
+    }
+
+    .hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      #algeo-container {
+        height: 400px;
+      }
+
+      .field-row,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="hero">
+      <a href="index.html">← 返回示例列表</a>
+      <h1>08 SlidesApi</h1>
+      <p>这个示例专门演示编辑模式下的 <code>SlidesApi</code>。宿主侧通过 SDK 直接切换、新增、插入、复制、删除和重排画板，并实时读取当前文档，方便联调桥接协议与画板状态同步。</p>
+    </div>
+
+    <div class="layout">
+      <section class="card embed">
+        <div class="embed-header">
+          <div>
+            <strong>Embedded Editor</strong>
+            <span>baseUrl = http://localhost:8080 · appId = 123456</span>
+          </div>
+          <button class="secondary" id="recreateBtn">重建编辑器</button>
+        </div>
+        <div id="algeo-container"></div>
+      </section>
+
+      <div class="sidebar">
+        <section class="card section">
+          <h2>运行状态</h2>
+          <p>这里展示 SDK 记录的当前画板状态。每次执行 SlidesApi 调用后都会自动刷新，便于快速确认 count 与 currentIndex 是否符合预期。</p>
+          <div class="stats">
+            <div class="stat">
+              <strong id="countValue">-</strong>
+              <span>getCount()</span>
+            </div>
+            <div class="stat">
+              <strong id="currentValue">-</strong>
+              <span>getCurrentIndex()</span>
+            </div>
+          </div>
+          <div class="status" id="status">等待初始化...</div>
+        </section>
+
+        <section class="card section">
+          <h2>快捷操作</h2>
+          <p>这些按钮基于当前画板索引进行操作，适合快速走通主流程。</p>
+          <div class="button-row">
+            <button class="secondary" id="prevBtn">切到上一页</button>
+            <button class="secondary" id="nextBtn">切到下一页</button>
+            <button class="primary" id="addBtn">尾部新增</button>
+            <button class="primary" id="addAtCurrentBtn">当前位置插入</button>
+            <button class="secondary" id="duplicateCurrentBtn">复制当前页</button>
+            <button class="danger" id="removeCurrentBtn">删除当前页</button>
+          </div>
+        </section>
+
+        <section class="card section">
+          <h2>任意索引操作</h2>
+          <p>用于测试
+            <code>switchTo</code>、<code>addAt</code>、<code>duplicate</code>、<code>remove</code>、<code>reorder</code>
+            的自定义索引输入。
+          </p>
+          <div class="operation-grid">
+            <div class="operation">
+              <h3>switchTo(index)</h3>
+              <div class="field-row">
+                <label>目标索引
+                  <input id="switchIndexInput" type="number" min="0" step="1" value="0">
+                </label>
+              </div>
+              <button class="secondary" id="switchBtn">执行切换</button>
+            </div>
+
+            <div class="operation">
+              <h3>addAt(index)</h3>
+              <div class="field-row">
+                <label>插入位置
+                  <input id="addAtIndexInput" type="number" min="0" step="1" value="0">
+                </label>
+              </div>
+              <button class="primary" id="addAtBtn">在指定位置新增</button>
+            </div>
+
+            <div class="operation">
+              <h3>duplicate(index, targetIndex?)</h3>
+              <div class="field-row">
+                <label>源索引
+                  <input id="duplicateSourceInput" type="number" min="0" step="1" value="0">
+                </label>
+                <label>目标索引（可留空）
+                  <input id="duplicateTargetInput" type="number" min="0" step="1" placeholder="默认源页后面">
+                </label>
+              </div>
+              <button class="secondary" id="duplicateBtn">执行复制</button>
+            </div>
+
+            <div class="operation">
+              <h3>remove(index)</h3>
+              <div class="field-row">
+                <label>删除索引
+                  <input id="removeIndexInput" type="number" min="0" step="1" value="0">
+                </label>
+              </div>
+              <button class="danger" id="removeBtn">执行删除</button>
+            </div>
+
+            <div class="operation">
+              <h3>reorder(fromIndex, toIndex)</h3>
+              <div class="field-row">
+                <label>源索引
+                  <input id="reorderFromInput" type="number" min="0" step="1" value="0">
+                </label>
+                <label>目标索引
+                  <input id="reorderToInput" type="number" min="0" step="1" value="0">
+                </label>
+              </div>
+              <button class="secondary" id="reorderBtn">执行重排</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card section">
+          <h2>文档快照</h2>
+          <p>每次操作后都会重新读取一次 <code>editor.document.getContent()</code>，这里展示当前画板结构，便于确认多页顺序与数据内容。</p>
+          <textarea id="snapshot" spellcheck="false"></textarea>
+          <div class="hint">提示：如果要验证切页效果，可以在 iframe 内手动给某一页增加元素，再用宿主侧切换不同页观察内容变化。</div>
+        </section>
+
+        <section class="card section">
+          <h2>调用日志</h2>
+          <div class="console" id="logs">等待操作...</div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="../dist/algeo-sdk.umd.js"></script>
+  <script>
+    const baseUrl = 'http://localhost:8080';
+    const appId = '123456';
+
+    const container = document.getElementById('algeo-container');
+    const recreateBtn = document.getElementById('recreateBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const addBtn = document.getElementById('addBtn');
+    const addAtCurrentBtn = document.getElementById('addAtCurrentBtn');
+    const duplicateCurrentBtn = document.getElementById('duplicateCurrentBtn');
+    const removeCurrentBtn = document.getElementById('removeCurrentBtn');
+    const switchBtn = document.getElementById('switchBtn');
+    const addAtBtn = document.getElementById('addAtBtn');
+    const duplicateBtn = document.getElementById('duplicateBtn');
+    const removeBtn = document.getElementById('removeBtn');
+    const reorderBtn = document.getElementById('reorderBtn');
+
+    const switchIndexInput = document.getElementById('switchIndexInput');
+    const addAtIndexInput = document.getElementById('addAtIndexInput');
+    const duplicateSourceInput = document.getElementById('duplicateSourceInput');
+    const duplicateTargetInput = document.getElementById('duplicateTargetInput');
+    const removeIndexInput = document.getElementById('removeIndexInput');
+    const reorderFromInput = document.getElementById('reorderFromInput');
+    const reorderToInput = document.getElementById('reorderToInput');
+
+    const countValue = document.getElementById('countValue');
+    const currentValue = document.getElementById('currentValue');
+    const status = document.getElementById('status');
+    const snapshot = document.getElementById('snapshot');
+    const logs = document.getElementById('logs');
+
+    let editor = null;
+    let lastContent = null;
+
+    function log(message, payload) {
+      const lines = [new Date().toLocaleTimeString() + ' ' + message];
+      if (payload !== undefined) {
+        lines.push(JSON.stringify(payload, null, 2));
+      }
+      logs.textContent = lines.join('\n') + '\n\n' + logs.textContent;
+    }
+
+    function getEditor() {
+      if (!editor) {
+        throw new Error('编辑器尚未初始化');
+      }
+      return editor;
+    }
+
+    function parseRequiredIndex(input, name) {
+      const value = Number(input.value);
+      if (!Number.isInteger(value) || value < 0) {
+        throw new Error(name + ' 必须是大于等于 0 的整数');
+      }
+      return value;
+    }
+
+    function parseOptionalIndex(input) {
+      if (input.value.trim() === '') {
+        return undefined;
+      }
+      return parseRequiredIndex(input, '目标索引');
+    }
+
+    function buildSlideSummary(content) {
+      return content.slides.map((slide, index) => ({
+        index,
+        slideId: slide.slideId || null,
+        definitions: Array.isArray(slide.definitions) ? slide.definitions.length : 0,
+      }));
+    }
+
+    async function refreshState(reason) {
+      const currentEditor = getEditor();
+      const content = await currentEditor.document.getContent();
+      const count = currentEditor.slides.getCount();
+      const currentIndex = currentEditor.slides.getCurrentIndex();
+      lastContent = content;
+
+      countValue.textContent = String(count);
+      currentValue.textContent = String(currentIndex);
+      status.textContent = [
+        'ready: ' + currentEditor.ready,
+        'version: ' + (currentEditor.version || '-'),
+        'count: ' + count,
+        'currentIndex: ' + currentIndex,
+        reason ? 'lastAction: ' + reason : null,
+      ].filter(Boolean).join('\n');
+
+      snapshot.value = JSON.stringify({
+        currentIndex,
+        count,
+        slideSummary: buildSlideSummary(content),
+        content,
+      }, null, 2);
+
+      return { count, currentIndex, content };
+    }
+
+    async function runAction(label, action) {
+      try {
+        const result = await action();
+        log(label, result);
+        await refreshState(label);
+        return result;
+      } catch (error) {
+        const payload = {
+          code: error && error.code ? error.code : 'UNKNOWN_ERROR',
+          message: error instanceof Error ? error.message : String(error),
+        };
+        log(label + ' 失败', payload);
+        status.textContent = '操作失败\n' + payload.message;
+        throw error;
+      }
+    }
+
+    async function createEditorInstance() {
+      if (editor) {
+        await editor.destroy();
+        editor = null;
+      }
+
+      container.innerHTML = '';
+      status.textContent = '正在创建编辑器...';
+
+      editor = await AlgeoSdk.create(container, {
+        mode: 'editor',
+        baseUrl,
+        editor: {
+          auth: { appId },
+          ui: {
+            navbar: true,
+            slidePanel: true,
+            toolboxPanel: true,
+            algebraPanel: false,
+            docPanel: false,
+          },
+        },
+      });
+
+      editor.on('ready', (event) => {
+        log('editor.ready', event);
+      });
+
+      const content = await editor.document.getContent();
+      log('capture initialContent', {
+        slides: content.slides.length,
+      });
+      await refreshState('初始化完成');
+    }
+
+    recreateBtn.addEventListener('click', () => {
+      createEditorInstance().catch(() => { });
+    });
+
+    prevBtn.addEventListener('click', () => {
+      runAction('slides.switchTo(current - 1)', async () => {
+        const currentEditor = getEditor();
+        const target = currentEditor.slides.getCurrentIndex() - 1;
+        if (target < 0) {
+          throw new Error('已经是第一页');
+        }
+        await currentEditor.slides.switchTo(target);
+      }).catch(() => { });
+    });
+
+    nextBtn.addEventListener('click', () => {
+      runAction('slides.switchTo(current + 1)', async () => {
+        const currentEditor = getEditor();
+        const target = currentEditor.slides.getCurrentIndex() + 1;
+        if (target >= currentEditor.slides.getCount()) {
+          throw new Error('已经是最后一页');
+        }
+        await currentEditor.slides.switchTo(target);
+      }).catch(() => { });
+    });
+
+    addBtn.addEventListener('click', () => {
+      runAction('slides.add()', () => getEditor().slides.add()).catch(() => { });
+    });
+
+    addAtCurrentBtn.addEventListener('click', () => {
+      runAction('slides.addAt(currentIndex)', async () => {
+        const currentEditor = getEditor();
+        return currentEditor.slides.addAt(currentEditor.slides.getCurrentIndex());
+      }).catch(() => { });
+    });
+
+    duplicateCurrentBtn.addEventListener('click', () => {
+      runAction('slides.duplicate(currentIndex)', async () => {
+        const currentEditor = getEditor();
+        return currentEditor.slides.duplicate(currentEditor.slides.getCurrentIndex());
+      }).catch(() => { });
+    });
+
+    removeCurrentBtn.addEventListener('click', () => {
+      runAction('slides.remove(currentIndex)', async () => {
+        const currentEditor = getEditor();
+        await currentEditor.slides.remove(currentEditor.slides.getCurrentIndex());
+      }).catch(() => { });
+    });
+
+    switchBtn.addEventListener('click', () => {
+      runAction('slides.switchTo(index)', async () => {
+        await getEditor().slides.switchTo(parseRequiredIndex(switchIndexInput, '目标索引'));
+      }).catch(() => { });
+    });
+
+    addAtBtn.addEventListener('click', () => {
+      runAction('slides.addAt(index)', () => getEditor().slides.addAt(parseRequiredIndex(addAtIndexInput, '插入位置'))).catch(() => { });
+    });
+
+    duplicateBtn.addEventListener('click', () => {
+      runAction('slides.duplicate(index, targetIndex)', () => getEditor().slides.duplicate(
+        parseRequiredIndex(duplicateSourceInput, '源索引'),
+        parseOptionalIndex(duplicateTargetInput),
+      )).catch(() => { });
+    });
+
+    removeBtn.addEventListener('click', () => {
+      runAction('slides.remove(index)', async () => {
+        await getEditor().slides.remove(parseRequiredIndex(removeIndexInput, '删除索引'));
+      }).catch(() => { });
+    });
+
+    reorderBtn.addEventListener('click', () => {
+      runAction('slides.reorder(fromIndex, toIndex)', async () => {
+        await getEditor().slides.reorder(
+          parseRequiredIndex(reorderFromInput, '源索引'),
+          parseRequiredIndex(reorderToInput, '目标索引'),
+        );
+      }).catch(() => { });
+    });
+
+    createEditorInstance().catch((error) => {
+      const payload = error instanceof Error ? error.message : String(error);
+      status.textContent = '初始化失败\n' + payload;
+      log('createEditor failed', payload);
+    });
+  </script>
+</body>
+
+</html>

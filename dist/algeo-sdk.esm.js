@@ -3895,7 +3895,7 @@ objectType({
 });
 
 /** SDK 版本号，构建时由 rollup 注入 */
-const VERSION = '2.1.0';
+const VERSION = '2.2.0';
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
 const DEFAULT_PRESENTATION_PATH = '/e';
 const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4107,13 +4107,6 @@ class EmbeddedPresentation extends EmbeddedTarget {
         this.slideCount = content.slides.length;
         return result;
     }
-    async getContent() {
-        const result = await this.post('getContent', {});
-        this.currentContent = result.content;
-        this.currentSlideIndex = Math.min(this.currentSlideIndex, Math.max(result.content.slides.length - 1, 0));
-        this.slideCount = result.content.slides.length;
-        return result.content;
-    }
     async switchSlide(index) {
         const result = await this.post('switchSlide', { index });
         this.currentSlideIndex = index;
@@ -4221,6 +4214,10 @@ class EmbeddedEditor extends EmbeddedTarget {
             auth: options.auth,
             initialId: options.shareId,
         });
+        const content = await this.document.getContent();
+        this.currentContent = content;
+        this.slideCount = content.slides.length;
+        this.currentSlideIndex = 0;
         if (options.initialContent) {
             await this.loadContent(options.initialContent, 'initialContent');
         }
