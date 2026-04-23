@@ -16,5 +16,5 @@ export declare class EmbeddedEditor extends EmbeddedTarget<EmbeddedEditorEventMa
     private loadContent;
     private switchTo;
     private addSlide;
-    private recordHistoryMutation;
+    private refreshHistoryState;
 }

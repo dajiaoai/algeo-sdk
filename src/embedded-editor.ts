@@ -11,6 +11,7 @@ import {
   type EmbeddedEditorEventName,
   type FileContentV10,
   type GetContentResult,
+  type GetHistoryStateResult,
   type HistoryApi,
   type LoadFileResult,
   type ModeApi,
@@ -51,6 +52,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
           Math.max(result.content.slides.length - 1, 0),
         );
         this.slideCount = result.content.slides.length;
+        await this.refreshHistoryState();
         return result.content;
       },
     };
@@ -70,7 +72,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
           this.currentSlideIndex,
           Math.max(this.slideCount - 1, 0),
         );
-        this.recordHistoryMutation();
+        await this.refreshHistoryState();
       },
       duplicate: async (index: number, targetIndex?: number) =>
         this.addSlide('duplicateSlide', { index, targetIndex }),
@@ -79,7 +81,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
         if (this.currentSlideIndex === fromIndex) {
           this.currentSlideIndex = toIndex;
         }
-        this.recordHistoryMutation();
+        await this.refreshHistoryState();
       },
     };
 
@@ -88,28 +90,21 @@ export class EmbeddedEditor extends EmbeddedTarget<
       getCurrentIndex: () => this.historyCurrentIndex,
       undo: async () => {
         await this.post('undo', {});
-        if (this.historyCurrentIndex > 0) {
-          this.historyCurrentIndex -= 1;
-        }
+        await this.refreshHistoryState();
       },
       redo: async () => {
         await this.post('redo', {});
-        if (this.historyCurrentIndex < this.historyCount - 1) {
-          this.historyCurrentIndex += 1;
-        }
+        await this.refreshHistoryState();
       },
       jumpTo: async (index: number) => {
         await this.post('jumpHistory', { index });
-        this.historyCurrentIndex = index;
+        await this.refreshHistoryState();
       },
-      canUndo: () => this.historyCurrentIndex > 0,
-      canRedo: () =>
-        this.historyCurrentIndex >= 0 &&
-        this.historyCurrentIndex < this.historyCount - 1,
+      canUndo: () => this.historyCurrentIndex >= 0,
+      canRedo: () => this.historyCurrentIndex < this.historyCount - 1,
       clear: async () => {
         await this.post('clearHistory', {});
-        this.historyCount = 0;
-        this.historyCurrentIndex = -1;
+        await this.refreshHistoryState();
       },
     };
 
@@ -148,6 +143,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
     this.currentContent = content;
     this.slideCount = content.slides.length;
     this.currentSlideIndex = 0;
+    await this.refreshHistoryState();
 
     if (options.initialContent) {
       await this.loadContent(options.initialContent, 'initialContent');
@@ -162,8 +158,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
     this.currentContent = content;
     this.currentSlideIndex = 0;
     this.slideCount = content.slides.length;
-    this.historyCount = Math.max(this.historyCount, 1);
-    this.historyCurrentIndex = this.historyCount - 1;
+    await this.refreshHistoryState();
   }
 
   private async switchTo(index: number): Promise<void> {
@@ -178,12 +173,14 @@ export class EmbeddedEditor extends EmbeddedTarget<
     const result = await this.post<SlideIndexResult>(command, payload);
     this.slideCount = Math.max(this.slideCount + 1, result.index + 1);
     this.currentSlideIndex = result.index;
-    this.recordHistoryMutation();
+    await this.refreshHistoryState();
     return result;
   }
 
-  private recordHistoryMutation(): void {
-    this.historyCount += 1;
-    this.historyCurrentIndex = this.historyCount - 1;
+  private async refreshHistoryState(): Promise<GetHistoryStateResult> {
+    const state = await this.post<GetHistoryStateResult>('getHistoryState', {});
+    this.historyCount = state.count;
+    this.historyCurrentIndex = state.currentIndex;
+    return state;
   }
 }

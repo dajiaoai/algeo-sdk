@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>09 HistoryApi - Algeo SDK</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      color-scheme: light;
+      --bg: #eef3eb;
+      --panel: rgba(251, 255, 249, 0.92);
+      --panel-strong: #f9fff6;
+      --line: #cad8c4;
+      --text: #1e2a1d;
+      --muted: #5f705d;
+      --accent: #2f6f4f;
+      --accent-strong: #25573e;
+      --accent-soft: rgba(47, 111, 79, 0.1);
+      --danger: #9f2d2d;
+      --console: #172033;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 20px;
+      font-family: "Segoe UI", "PingFang SC", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(187, 247, 208, 0.6), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(190, 242, 100, 0.26), transparent 22%),
+        linear-gradient(180deg, #f5fbf1 0%, var(--bg) 100%);
+    }
+
+    a {
+      color: var(--accent-strong);
+    }
+
+    .page {
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 8px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      line-height: 1.1;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 920px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.95fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(31, 49, 25, 0.08);
+    }
+
+    .embed {
+      overflow: hidden;
+    }
+
+    .embed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, rgba(47, 111, 79, 0.14), rgba(255, 255, 255, 0.5));
+    }
+
+    .embed-header strong {
+      display: block;
+      font-size: 0.96rem;
+    }
+
+    .embed-header span {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    #algeo-container {
+      height: 680px;
+      background: #f8fcf5;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 16px;
+    }
+
+    .section {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .section p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .stat {
+      padding: 12px;
+      border-radius: 14px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(47, 111, 79, 0.16);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.15rem;
+      margin-bottom: 4px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .operation-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .operation {
+      padding: 12px;
+      border-radius: 14px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      display: grid;
+      gap: 8px;
+    }
+
+    .operation h3 {
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font: inherit;
+      color: var(--text);
+      background: #fffdfa;
+    }
+
+    textarea,
+    .console {
+      min-height: 180px;
+      padding: 14px;
+      border-radius: 14px;
+      font: 12px/1.6 Consolas, Monaco, monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    textarea {
+      resize: vertical;
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    .console {
+      overflow: auto;
+      background: var(--console);
+      color: #e5e7eb;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), #4d8d67);
+      color: white;
+      box-shadow: 0 10px 18px rgba(47, 111, 79, 0.2);
+    }
+
+    .secondary {
+      background: var(--panel-strong);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .danger {
+      background: rgba(159, 45, 45, 0.12);
+      color: var(--danger);
+      border: 1px solid rgba(159, 45, 45, 0.2);
+    }
+
+    .status {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(47, 111, 79, 0.08);
+      border: 1px solid rgba(47, 111, 79, 0.16);
+      color: var(--accent-strong);
+      font-size: 0.875rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      #algeo-container {
+        height: 400px;
+      }
+
+      .stats,
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="hero">
+      <a href="index.html">← 返回示例列表</a>
+      <h1>09 HistoryApi</h1>
+      <p>这个示例专门用于联调编辑模式下的历史协议。你可以先加载一份演示内容，然后在 iframe 内手动创建、拖动或删除对象，再回到宿主侧读取历史状态，继续测试
+        <code>undo</code>、<code>redo</code>、<code>jumpTo</code> 和 <code>clear</code>。</p>
+    </div>
+
+    <div class="layout">
+      <section class="card embed">
+        <div class="embed-header">
+          <div>
+            <strong>Embedded Editor</strong>
+            <span>baseUrl = http://localhost:8080 · appId = 123456</span>
+          </div>
+          <button class="secondary" id="recreateBtn">重建编辑器</button>
+        </div>
+        <div id="algeo-container"></div>
+      </section>
+
+      <div class="sidebar">
+        <section class="card section">
+          <h2>历史状态</h2>
+          <p>这里展示 SDK 当前缓存的历史信息。点击“读取文档并同步历史状态”会顺带调用一次 <code>document.getContent()</code>，以便把 iframe 内最新的历史索引和数量同步回来。
+          </p>
+          <div class="stats">
+            <div class="stat">
+              <strong id="countValue">-</strong>
+              <span>getCount()</span>
+            </div>
+            <div class="stat">
+              <strong id="currentValue">-</strong>
+              <span>getCurrentIndex()</span>
+            </div>
+            <div class="stat">
+              <strong id="canUndoValue">-</strong>
+              <span>canUndo()</span>
+            </div>
+            <div class="stat">
+              <strong id="canRedoValue">-</strong>
+              <span>canRedo()</span>
+            </div>
+          </div>
+          <div class="status" id="status">等待初始化...</div>
+        </section>
+
+        <section class="card section">
+          <h2>快捷操作</h2>
+          <p>先在 iframe 内做几次编辑，再用这些按钮验证历史协议是否正常生效。</p>
+          <div class="button-row">
+            <button class="primary" id="loadDemoBtn">加载演示内容</button>
+            <button class="secondary" id="syncBtn">读取文档并同步历史状态</button>
+            <button class="secondary" id="undoBtn">undo()</button>
+            <button class="secondary" id="redoBtn">redo()</button>
+            <button class="danger" id="clearBtn">clear()</button>
+          </div>
+        </section>
+
+        <section class="card section">
+          <h2>任意索引跳转</h2>
+          <p>用于验证 <code>jumpTo(index)</code> 的边界与跳转结果。桥接层已经拦截越界索引，防止 iframe 内部出现死循环。</p>
+          <div class="operation-grid">
+            <div class="operation">
+              <h3>jumpTo(index)</h3>
+              <div class="field-row">
+                <label>目标索引
+                  <input id="jumpIndexInput" type="number" min="0" step="1" value="0">
+                </label>
+                <label>快捷目标
+                  <input id="relativeOffsetInput" type="number" step="1" value="-1">
+                </label>
+              </div>
+              <div class="button-row">
+                <button class="secondary" id="jumpBtn">跳到指定索引</button>
+                <button class="secondary" id="jumpRelativeBtn">按相对偏移跳转</button>
+              </div>
+            </div>
+          </div>
+          <div class="hint">建议流程：加载演示内容后，在 iframe 内继续编辑 2 到 3 次，再回来读取状态并测试撤销、重做和跳转。</div>
+        </section>
+
+        <section class="card section">
+          <h2>文档快照</h2>
+          <p>用于辅助观察历史操作前后的内容变化。每次同步状态时都会重新读取一次当前文档。</p>
+          <textarea id="snapshot" spellcheck="false"></textarea>
+        </section>
+
+        <section class="card section">
+          <h2>调用日志</h2>
+          <div class="console" id="logs">等待操作...</div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="../dist/algeo-sdk.umd.js"></script>
+  <script>
+    const baseUrl = 'http://localhost:8080';
+    const appId = '123456';
+
+    const demoContent = {
+      messages: [],
+      slides: [
+        {
+          definitions: [
+            { kind: 'primitive', id: 'A', source: 'Point(?, ?)', label: '{{id}}' },
+            { kind: 'primitive', id: 'B', source: 'Point(?, ?)', label: '{{id}}' },
+            { kind: 'primitive', id: 'C', source: 'Point(?, ?)', label: '{{id}}' },
+            { kind: 'primitive', id: 'tri', source: 'Polygon(A, B, C)' },
+            { kind: 'primitive', id: 'ab', source: 'tri.edge(1)', parent: 'tri', inheritStyle: true },
+            { kind: 'primitive', id: 'bc', source: 'tri.edge(2)', parent: 'tri', inheritStyle: true },
+            { kind: 'primitive', id: 'ca', source: 'tri.edge(3)', parent: 'tri', inheritStyle: true }
+          ],
+          uvarMap: [
+            ['A.0', -4], ['A.1', -1],
+            ['B.0', -2], ['B.1', 2],
+            ['C.0', 1], ['C.1', -1]
+          ],
+          styleSheet: {
+            background: {},
+            xaxis: {},
+            yaxis: {},
+            grid: {},
+            types: [],
+            typeLabels: [],
+            primitives: [],
+            primitiveLabels: [],
+            textType: {},
+            texts: [],
+            sliderType: {},
+            sliders: [],
+            buttonType: {},
+            buttons: []
+          },
+          doc: []
+        }
+      ],
+      metadata: {
+        version: '10'
+      }
+    };
+
+    const container = document.getElementById('algeo-container');
+    const recreateBtn = document.getElementById('recreateBtn');
+    const loadDemoBtn = document.getElementById('loadDemoBtn');
+    const syncBtn = document.getElementById('syncBtn');
+    const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const jumpBtn = document.getElementById('jumpBtn');
+    const jumpRelativeBtn = document.getElementById('jumpRelativeBtn');
+    const jumpIndexInput = document.getElementById('jumpIndexInput');
+    const relativeOffsetInput = document.getElementById('relativeOffsetInput');
+    const countValue = document.getElementById('countValue');
+    const currentValue = document.getElementById('currentValue');
+    const canUndoValue = document.getElementById('canUndoValue');
+    const canRedoValue = document.getElementById('canRedoValue');
+    const status = document.getElementById('status');
+    const snapshot = document.getElementById('snapshot');
+    const logs = document.getElementById('logs');
+
+    let editor = null;
+
+    function log(message, payload) {
+      const lines = [new Date().toLocaleTimeString() + ' ' + message];
+      if (payload !== undefined) {
+        lines.push(JSON.stringify(payload, null, 2));
+      }
+      logs.textContent = lines.join('\n') + '\n\n' + logs.textContent;
+    }
+
+    function getEditor() {
+      if (!editor) {
+        throw new Error('编辑器尚未初始化');
+      }
+      return editor;
+    }
+
+    function parseRequiredIndex(input, name) {
+      const value = Number(input.value);
+      if (!Number.isInteger(value) || value < 0) {
+        throw new Error(name + ' 必须是大于等于 0 的整数');
+      }
+      return value;
+    }
+
+    function parseRelativeOffset() {
+      const value = Number(relativeOffsetInput.value);
+      if (!Number.isInteger(value)) {
+        throw new Error('相对偏移必须是整数');
+      }
+      return value;
+    }
+
+    function buildSlideSummary(content) {
+      return content.slides.map((slide, index) => ({
+        index,
+        slideId: slide.slideId || null,
+        definitions: Array.isArray(slide.definitions) ? slide.definitions.length : 0,
+      }));
+    }
+
+    async function syncHistoryState(reason) {
+      const instance = getEditor();
+      const content = await instance.document.getContent();
+      const historyState = {
+        count: instance.history.getCount(),
+        currentIndex: instance.history.getCurrentIndex(),
+        canUndo: instance.history.canUndo(),
+        canRedo: instance.history.canRedo(),
+      };
+
+      countValue.textContent = String(historyState.count);
+      currentValue.textContent = String(historyState.currentIndex);
+      canUndoValue.textContent = String(historyState.canUndo);
+      canRedoValue.textContent = String(historyState.canRedo);
+
+      status.textContent = [
+        'ready: ' + instance.ready,
+        'version: ' + (instance.version || '-'),
+        'historyCount: ' + historyState.count,
+        'currentIndex: ' + historyState.currentIndex,
+        'canUndo: ' + historyState.canUndo,
+        'canRedo: ' + historyState.canRedo,
+        reason ? 'lastAction: ' + reason : null,
+      ].filter(Boolean).join('\n');
+
+      snapshot.value = JSON.stringify({
+        history: historyState,
+        slideSummary: buildSlideSummary(content),
+        content,
+      }, null, 2);
+
+      return {
+        ...historyState,
+        slides: content.slides.length,
+      };
+    }
+
+    async function runAction(label, action) {
+      try {
+        const result = await action();
+        log(label, result);
+        await syncHistoryState(label);
+        return result;
+      } catch (error) {
+        const payload = {
+          code: error && error.code ? error.code : 'UNKNOWN_ERROR',
+          message: error instanceof Error ? error.message : String(error),
+        };
+        log(label + ' 失败', payload);
+        status.textContent = '操作失败\n' + payload.message;
+        throw error;
+      }
+    }
+
+    async function createEditorInstance() {
+      if (editor) {
+        await editor.destroy();
+        editor = null;
+      }
+
+      container.innerHTML = '';
+      status.textContent = '正在创建编辑器...';
+
+      editor = await AlgeoSdk.create(container, {
+        mode: 'editor',
+        baseUrl,
+        editor: {
+          auth: { appId },
+          ui: {
+            navbar: true,
+            slidePanel: true,
+            toolboxPanel: true,
+            algebraPanel: false,
+            docPanel: false,
+          },
+        },
+      });
+
+      editor.on('ready', function (event) {
+        log('editor.ready', event);
+      });
+
+      await syncHistoryState('初始化完成');
+    }
+
+    recreateBtn.addEventListener('click', function () {
+      createEditorInstance().catch(function () { });
+    });
+
+    loadDemoBtn.addEventListener('click', function () {
+      runAction('document.loadContent(demoContent)', async function () {
+        await getEditor().document.loadContent(demoContent);
+        return {
+          slides: demoContent.slides.length,
+          definitions: demoContent.slides[0].definitions.length,
+        };
+      }).catch(function () { });
+    });
+
+    syncBtn.addEventListener('click', function () {
+      runAction('document.getContent()', function () {
+        return syncHistoryState('主动同步');
+      }).catch(function () { });
+    });
+
+    undoBtn.addEventListener('click', function () {
+      runAction('history.undo()', async function () {
+        await getEditor().history.undo();
+      }).catch(function () { });
+    });
+
+    redoBtn.addEventListener('click', function () {
+      runAction('history.redo()', async function () {
+        await getEditor().history.redo();
+      }).catch(function () { });
+    });
+
+    clearBtn.addEventListener('click', function () {
+      runAction('history.clear()', async function () {
+        await getEditor().history.clear();
+      }).catch(function () { });
+    });
+
+    jumpBtn.addEventListener('click', function () {
+      runAction('history.jumpTo(index)', async function () {
+        const targetIndex = parseRequiredIndex(jumpIndexInput, '目标索引');
+        await getEditor().history.jumpTo(targetIndex);
+        return { targetIndex };
+      }).catch(function () { });
+    });
+
+    jumpRelativeBtn.addEventListener('click', function () {
+      runAction('history.jumpTo(currentIndex + offset)', async function () {
+        const instance = getEditor();
+        const offset = parseRelativeOffset();
+        const targetIndex = instance.history.getCurrentIndex() + offset;
+        if (targetIndex < 0) {
+          throw new Error('目标索引不能小于 0');
+        }
+        await instance.history.jumpTo(targetIndex);
+        return { offset, targetIndex };
+      }).catch(function () { });
+    });
+
+    createEditorInstance().catch(function (error) {
+      const payload = error instanceof Error ? error.message : String(error);
+      status.textContent = '初始化失败\n' + payload;
+      log('createEditor failed', payload);
+    });
+  </script>
+</body>
+
+</html>

@@ -110,6 +110,12 @@ export interface SlideIndexResult {
 export interface GetContentResult {
     content: FileContentV10;
 }
+export interface GetHistoryStateResult {
+    count: number;
+    currentIndex: number;
+    canUndo: boolean;
+    canRedo: boolean;
+}
 export interface DocumentApi {
     loadContent(content: FileContentV10): Promise<void>;
     getContent(): Promise<FileContentV10>;

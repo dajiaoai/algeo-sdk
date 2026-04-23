@@ -38,6 +38,7 @@ npx serve examples
 | 06-editor-mode.html  | 编辑模式 | 展示编辑器模式的基础接入方式，以及 UI 配置和嵌入参数控制能力    |
 | 07-document-api.html | 编辑模式 | 展示宿主通过 DocumentApi 取回当前画板内容，读取最新的结构化数据 |
 | 08-slides-api.html   | 编辑模式 | 展示宿主通过 SlidesApi 切换、新增、复制、删除与重排画板         |
+| 09-history-api.html  | 编辑模式 | 展示宿主通过 HistoryApi 读取、撤销、重做、跳转与清空历史记录    |
 
 ## 全屏支持
 

@@ -1,6 +1,6 @@
 {
   "name": "@dajiaoai/algeo-sdk",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "大角几何内嵌画板 SDK，支持 iframe 挂载与 postMessage 通信",
   "main": "dist/algeo-sdk.cjs.js",
   "module": "dist/algeo-sdk.esm.js",

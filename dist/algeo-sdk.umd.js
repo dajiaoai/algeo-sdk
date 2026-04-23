@@ -3901,7 +3901,7 @@
   });
 
   /** SDK 版本号，构建时由 rollup 注入 */
-  const VERSION = '2.2.0';
+  const VERSION = '2.3.0';
   const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
   const DEFAULT_PRESENTATION_PATH = '/e';
   const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4145,6 +4145,7 @@
                   this.currentContent = result.content;
                   this.currentSlideIndex = Math.min(this.currentSlideIndex, Math.max(result.content.slides.length - 1, 0));
                   this.slideCount = result.content.slides.length;
+                  await this.refreshHistoryState();
                   return result.content;
               },
           };
@@ -4160,7 +4161,7 @@
                   await this.post('removeSlide', { index });
                   this.slideCount = Math.max(0, this.slideCount - 1);
                   this.currentSlideIndex = Math.min(this.currentSlideIndex, Math.max(this.slideCount - 1, 0));
-                  this.recordHistoryMutation();
+                  await this.refreshHistoryState();
               },
               duplicate: async (index, targetIndex) => this.addSlide('duplicateSlide', { index, targetIndex }),
               reorder: async (fromIndex, toIndex) => {
@@ -4168,7 +4169,7 @@
                   if (this.currentSlideIndex === fromIndex) {
                       this.currentSlideIndex = toIndex;
                   }
-                  this.recordHistoryMutation();
+                  await this.refreshHistoryState();
               },
           };
           this.history = {
@@ -4176,27 +4177,21 @@
               getCurrentIndex: () => this.historyCurrentIndex,
               undo: async () => {
                   await this.post('undo', {});
-                  if (this.historyCurrentIndex > 0) {
-                      this.historyCurrentIndex -= 1;
-                  }
+                  await this.refreshHistoryState();
               },
               redo: async () => {
                   await this.post('redo', {});
-                  if (this.historyCurrentIndex < this.historyCount - 1) {
-                      this.historyCurrentIndex += 1;
-                  }
+                  await this.refreshHistoryState();
               },
               jumpTo: async (index) => {
                   await this.post('jumpHistory', { index });
-                  this.historyCurrentIndex = index;
+                  await this.refreshHistoryState();
               },
-              canUndo: () => this.historyCurrentIndex > 0,
-              canRedo: () => this.historyCurrentIndex >= 0 &&
-                  this.historyCurrentIndex < this.historyCount - 1,
+              canUndo: () => this.historyCurrentIndex >= 0,
+              canRedo: () => this.historyCurrentIndex < this.historyCount - 1,
               clear: async () => {
                   await this.post('clearHistory', {});
-                  this.historyCount = 0;
-                  this.historyCurrentIndex = -1;
+                  await this.refreshHistoryState();
               },
           };
           this.mode = {
@@ -4224,6 +4219,7 @@
           this.currentContent = content;
           this.slideCount = content.slides.length;
           this.currentSlideIndex = 0;
+          await this.refreshHistoryState();
           if (options.initialContent) {
               await this.loadContent(options.initialContent, 'initialContent');
           }
@@ -4233,8 +4229,7 @@
           this.currentContent = content;
           this.currentSlideIndex = 0;
           this.slideCount = content.slides.length;
-          this.historyCount = Math.max(this.historyCount, 1);
-          this.historyCurrentIndex = this.historyCount - 1;
+          await this.refreshHistoryState();
       }
       async switchTo(index) {
           await this.post('switchSlide', { index });
@@ -4244,12 +4239,14 @@
           const result = await this.post(command, payload);
           this.slideCount = Math.max(this.slideCount + 1, result.index + 1);
           this.currentSlideIndex = result.index;
-          this.recordHistoryMutation();
+          await this.refreshHistoryState();
           return result;
       }
-      recordHistoryMutation() {
-          this.historyCount += 1;
-          this.historyCurrentIndex = this.historyCount - 1;
+      async refreshHistoryState() {
+          const state = await this.post('getHistoryState', {});
+          this.historyCount = state.count;
+          this.historyCurrentIndex = state.currentIndex;
+          return state;
       }
   }
 
