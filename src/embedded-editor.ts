@@ -2,6 +2,7 @@ import { EmbeddedTarget } from './embedded-target';
 import {
   AlgeoError,
   type AlgeoEditorCreateOptions,
+  type AlgeoEditorSaveResult,
   type AlgeoEditorUiConfig,
   type ContentChangeEvent,
   type DocumentApi,
@@ -15,6 +16,9 @@ import {
   type HistoryApi,
   type LoadFileResult,
   type ModeApi,
+  type SaveRequestEvent,
+  type SaveEvent,
+  type SaveRequestMessage,
   type SlideIndexResult,
   type SlidesApi,
   type SwitchSlideResult,
@@ -150,6 +154,49 @@ export class EmbeddedEditor extends EmbeddedTarget<
     }
   }
 
+  protected override handleEventMessage(
+    event:
+      | ContentChangeEvent
+      | SaveEvent
+      | { type: 'slideChange'; index: number },
+  ): void {
+    if (event.type === 'contentChange') {
+      if (event.content) {
+        this.currentContent = event.content;
+        this.slideCount = event.content.slides.length;
+        this.currentSlideIndex = Math.min(
+          this.currentSlideIndex,
+          Math.max(this.slideCount - 1, 0),
+        );
+      }
+      return;
+    }
+
+    if (event.type === 'slideChange') {
+      this.currentSlideIndex = event.index;
+      return;
+    }
+
+    this.currentContent = event.content;
+    this.slideCount = event.content.slides.length;
+    this.currentSlideIndex = Math.min(
+      this.currentSlideIndex,
+      Math.max(this.slideCount - 1, 0),
+    );
+  }
+
+  protected override handleRequestMessage(
+    message: SaveRequestMessage,
+    sourceWindow: Window,
+  ): boolean {
+    if (message.type !== 'save') {
+      return false;
+    }
+
+    void this.handleSaveRequest(message, sourceWindow);
+    return true;
+  }
+
   private async loadContent(
     content: FileContentV10,
     source: ContentChangeEvent['source'],
@@ -182,5 +229,70 @@ export class EmbeddedEditor extends EmbeddedTarget<
     this.historyCount = state.count;
     this.historyCurrentIndex = state.currentIndex;
     return state;
+  }
+
+  private async handleSaveRequest(
+    message: SaveRequestMessage,
+    sourceWindow: Window,
+  ): Promise<void> {
+    const respond = (
+      payload:
+        | {
+            type: 'response';
+            requestId: string;
+            success: true;
+            result: AlgeoEditorSaveResult;
+          }
+        | {
+            type: 'response';
+            requestId: string;
+            success: false;
+            error: { code: string; message: string };
+          },
+    ) => {
+      sourceWindow.postMessage(payload, '*');
+    };
+
+    try {
+      const result = await this.resolveSaveResult(message.content);
+      respond({
+        type: 'response',
+        requestId: message.requestId,
+        success: true,
+        result,
+      });
+    } catch (error) {
+      respond({
+        type: 'response',
+        requestId: message.requestId,
+        success: false,
+        error: {
+          code: EMBED_ERROR_CODES.UNKNOWN_ERROR,
+          message: error instanceof Error ? error.message : String(error),
+        },
+      });
+    }
+  }
+
+  private async resolveSaveResult(
+    content: FileContentV10,
+  ): Promise<AlgeoEditorSaveResult> {
+    const requestEvent: SaveRequestEvent = {
+      type: 'save',
+      stage: 'request',
+      content,
+    };
+
+    for (const listener of this.getListeners('save')) {
+      const result = await listener(requestEvent);
+      if (result && typeof result === 'object' && 'status' in result) {
+        return result;
+      }
+    }
+
+    return {
+      status: 'error',
+      message: '宿主未配置 save 事件处理器',
+    };
   }
 }

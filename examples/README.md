@@ -28,17 +28,19 @@ npx serve examples
 
 ## 示例列表
 
-| 文件                 | 模式     | 能力说明                                                        |
-| -------------------- | -------- | --------------------------------------------------------------- |
-| 01-basic-iframe.html | 演示模式 | 展示基础 iframe 嵌入方式，以及常见页面布局下的展示效果          |
-| 02-sdk-usage.html    | 演示模式 | 展示如何用 `createPresentation` 快速创建可嵌入的演示实例        |
-| 03-switch-slide.html | 演示模式 | 展示多画板演示内容的切换能力，适合课件式或分页式内容播放        |
-| 04-load-file.html    | 演示模式 | 展示宿主加载 JSON 文件内容后，在 iframe 中直接进行演示          |
-| 05-repl.html         | 演示模式 | 展示如何读取画板中的文本/结构信息，供 AI 理解、问答和内容解读   |
-| 06-editor-mode.html  | 编辑模式 | 展示编辑器模式的基础接入方式，以及 UI 配置和嵌入参数控制能力    |
-| 07-document-api.html | 编辑模式 | 展示宿主通过 DocumentApi 取回当前画板内容，读取最新的结构化数据 |
-| 08-slides-api.html   | 编辑模式 | 展示宿主通过 SlidesApi 切换、新增、复制、删除与重排画板         |
-| 09-history-api.html  | 编辑模式 | 展示宿主通过 HistoryApi 读取、撤销、重做、跳转与清空历史记录    |
+| 文件                    | 模式     | 能力说明                                                        |
+| ----------------------- | -------- | --------------------------------------------------------------- |
+| 01-basic-iframe.html    | 演示模式 | 展示基础 iframe 嵌入方式，以及常见页面布局下的展示效果          |
+| 02-sdk-usage.html       | 演示模式 | 展示如何用 `createPresentation` 快速创建可嵌入的演示实例        |
+| 03-switch-slide.html    | 演示模式 | 展示多画板演示内容的切换能力，适合课件式或分页式内容播放        |
+| 04-load-file.html       | 演示模式 | 展示宿主加载 JSON 文件内容后，在 iframe 中直接进行演示          |
+| 05-repl.html            | 演示模式 | 展示如何读取画板中的文本/结构信息，供 AI 理解、问答和内容解读   |
+| 06-editor-mode.html     | 编辑模式 | 展示编辑器模式的基础接入方式，以及 UI 配置和嵌入参数控制能力    |
+| 07-document-api.html    | 编辑模式 | 展示宿主通过 DocumentApi 取回当前画板内容，读取最新的结构化数据 |
+| 08-slides-api.html      | 编辑模式 | 展示宿主通过 SlidesApi 切换、新增、复制、删除与重排画板         |
+| 09-history-api.html     | 编辑模式 | 展示宿主通过 HistoryApi 读取、撤销、重做、跳转与清空历史记录    |
+| 10-editor-events.html   | 编辑模式 | 展示 editor.on 监听 contentChange、slideChange 与 save 事件     |
+| 11-editor-share-id.html | 编辑模式 | 展示如何加载指定 shareId 的文件数据                             |
 
 ## 全屏支持
 

@@ -6,6 +6,7 @@ export declare class EmbeddedPresentation extends EmbeddedTarget<EmbeddedPresent
     private slideCount;
     constructor(container: HTMLElement);
     initialize(options?: AlgeoPresentationCreateOptions, baseUrl?: string): Promise<void>;
+    protected acceptsEventMessage(): boolean;
     loadShareById(id: string): Promise<LoadShareByIdResult>;
     loadFile(content: FileContentV10): Promise<LoadFileResult>;
     switchSlide(index: number): Promise<SwitchSlideResult>;

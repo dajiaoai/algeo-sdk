@@ -35,6 +35,10 @@ export class EmbeddedPresentation extends EmbeddedTarget<
     });
   }
 
+  protected override acceptsEventMessage(): boolean {
+    return false;
+  }
+
   async loadShareById(id: string): Promise<LoadShareByIdResult> {
     const result = await this.post<LoadShareByIdResult>('loadShareById', {
       id,

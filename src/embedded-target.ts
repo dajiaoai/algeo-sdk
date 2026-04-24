@@ -5,21 +5,19 @@ import {
   EMBED_ERROR_CODES,
   type EmbedInitOptions,
   generateRequestId,
+  type EmbedEventMessage,
+  isEmbedEventMessage,
   isReadyMessage,
   isResponseMessage,
-  type ContentChangeEvent,
-  type DestroyEvent,
+  isSaveRequestMessage,
+  type SaveRequestMessage,
   type ReadyEvent,
-  type SlideChangeEvent,
   type TEventName,
 } from './shared';
 
 export abstract class EmbeddedTarget<
   EventMap extends {
     ready: ReadyEvent;
-    contentChange: ContentChangeEvent;
-    slideChange: SlideChangeEvent;
-    destroy: DestroyEvent;
   },
   EventName extends keyof EventMap & string,
   ListenerMap extends Record<EventName, (event: any) => void>,
@@ -63,6 +61,13 @@ export abstract class EmbeddedTarget<
     return () => this.off(event, listener);
   }
 
+  protected getListeners<T extends EventName>(event: T): ListenerMap[T][] {
+    const bucket = this.listenerBuckets.get(event) as
+      | Set<ListenerMap[T]>
+      | undefined;
+    return bucket ? Array.from(bucket) : [];
+  }
+
   off<T extends EventName>(event: T, listener: ListenerMap[T]): void {
     const bucket = this.listenerBuckets.get(event) as
       | Set<ListenerMap[T]>
@@ -75,6 +80,21 @@ export abstract class EmbeddedTarget<
       | Set<ListenerMap[T]>
       | undefined;
     bucket?.forEach((listener) => listener(payload));
+  }
+
+  protected handleEventMessage(
+    _event: Extract<EventMap[EventName], EmbedEventMessage>,
+  ): void {}
+
+  protected acceptsEventMessage(): boolean {
+    return true;
+  }
+
+  protected handleRequestMessage(
+    _message: SaveRequestMessage,
+    _sourceWindow: Window,
+  ): boolean {
+    return false;
   }
 
   protected async init(options: EmbedInitOptions): Promise<void> {
@@ -141,6 +161,24 @@ export abstract class EmbeddedTarget<
               err?.code ?? EMBED_ERROR_CODES.UNKNOWN_ERROR,
               err?.details,
             ),
+          );
+          return;
+        }
+
+        if (
+          isSaveRequestMessage(data) &&
+          this.handleRequestMessage(data, iframe.contentWindow as Window)
+        ) {
+          return;
+        }
+
+        if (this.acceptsEventMessage() && isEmbedEventMessage(data)) {
+          this.handleEventMessage(
+            data as Extract<EventMap[EventName], EmbedEventMessage>,
+          );
+          this.emit(
+            data.type as TEventName<EventName>,
+            data as unknown as EventMap[TEventName<EventName>],
           );
         }
       };
@@ -217,12 +255,5 @@ export abstract class EmbeddedTarget<
     if (this.iframe?.parentNode) {
       this.iframe.parentNode.removeChild(this.iframe);
     }
-
-    this.emit(
-      'destroy' as TEventName<EventName>,
-      {
-        type: 'destroy',
-      } as unknown as EventMap[TEventName<EventName>],
-    );
   }
 }

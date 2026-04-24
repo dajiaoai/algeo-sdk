@@ -41,10 +41,6 @@ export interface AlgeoEditorUiConfig {
   docPanel?: boolean;
 }
 
-export interface AlgeoEditorSaveContext {
-  content: FileContentV10;
-}
-
 export type AlgeoEditorSaveResult =
   | {
       status: 'success';
@@ -59,9 +55,6 @@ export interface AlgeoEditorCreateOptions {
   shareId?: string;
   initialContent?: FileContentV10;
   ui?: AlgeoEditorUiConfig;
-  onSave?: (
-    context: AlgeoEditorSaveContext,
-  ) => Promise<AlgeoEditorSaveResult> | AlgeoEditorSaveResult;
 }
 
 export interface AlgeoPresentationCreateOptions {
@@ -88,7 +81,12 @@ export interface ReadyEvent {
 
 export interface ContentChangeEvent {
   type: 'contentChange';
-  source: 'loadContent' | 'loadFile' | 'loadShareById' | 'initialContent';
+  source:
+    | 'loadContent'
+    | 'loadFile'
+    | 'loadShareById'
+    | 'initialContent'
+    | 'user';
   content?: FileContentV10;
   shareId?: string;
 }
@@ -98,29 +96,47 @@ export interface SlideChangeEvent {
   index: number;
 }
 
-export interface DestroyEvent {
-  type: 'destroy';
+export interface SaveRequestEvent {
+  type: 'save';
+  content: FileContentV10;
+  stage: 'request';
+}
+
+export interface SaveSuccessEvent {
+  type: 'save';
+  content: FileContentV10;
+  stage: 'success';
+}
+
+export type SaveEvent = SaveRequestEvent | SaveSuccessEvent;
+
+export interface SaveRequestMessage {
+  type: 'save';
+  requestId: string;
+  content: FileContentV10;
 }
 
 export interface EmbeddedEditorEventMap {
   ready: ReadyEvent;
   contentChange: ContentChangeEvent;
   slideChange: SlideChangeEvent;
-  destroy: DestroyEvent;
+  save: SaveEvent;
 }
 
 export interface EmbeddedPresentationEventMap {
   ready: ReadyEvent;
-  contentChange: ContentChangeEvent;
-  slideChange: SlideChangeEvent;
-  destroy: DestroyEvent;
 }
 
 export type EmbeddedEditorEventName = keyof EmbeddedEditorEventMap;
 export type EmbeddedPresentationEventName = keyof EmbeddedPresentationEventMap;
 
 export type EmbeddedEditorEventListenerMap = {
-  [K in EmbeddedEditorEventName]: (event: EmbeddedEditorEventMap[K]) => void;
+  ready: (event: ReadyEvent) => void;
+  contentChange: (event: ContentChangeEvent) => void;
+  slideChange: (event: SlideChangeEvent) => void;
+  save: (
+    event: SaveEvent,
+  ) => void | AlgeoEditorSaveResult | Promise<void | AlgeoEditorSaveResult>;
 };
 
 export type EmbeddedPresentationEventListenerMap = {
@@ -221,6 +237,51 @@ export function isReadyMessage(msg: unknown): msg is EmbedReadyMessage {
   );
 }
 
+export type EmbedEventMessage =
+  | ContentChangeEvent
+  | SlideChangeEvent
+  | SaveSuccessEvent;
+
+export function isSaveRequestMessage(msg: unknown): msg is SaveRequestMessage {
+  return (
+    typeof msg === 'object' &&
+    msg !== null &&
+    'type' in msg &&
+    (msg as { type?: unknown }).type === 'save' &&
+    typeof (msg as { requestId?: unknown }).requestId === 'string' &&
+    typeof (msg as { content?: unknown }).content === 'object'
+  );
+}
+
+export function isEmbedEventMessage(msg: unknown): msg is EmbedEventMessage {
+  if (typeof msg !== 'object' || msg == null || !('type' in msg)) {
+    return false;
+  }
+
+  if ('requestId' in msg) {
+    return false;
+  }
+
+  const type = (msg as { type?: unknown }).type;
+  if (type === 'slideChange') {
+    return typeof (msg as SlideChangeEvent).index === 'number';
+  }
+
+  if (type === 'save') {
+    const stage = (msg as { stage?: unknown }).stage;
+    return (
+      typeof (msg as SaveSuccessEvent).content === 'object' &&
+      (stage === undefined || stage === 'success')
+    );
+  }
+
+  if (type === 'contentChange') {
+    return true;
+  }
+
+  return false;
+}
+
 export function normalizeBaseUrl(baseUrl: string): string {
   return baseUrl.replace(/\/+$/, '');
 }
@@ -259,10 +320,6 @@ export function buildEmbedSrc(options: EmbedInitOptions): string {
   return `${baseUrl}${path}/${encodeURIComponent(initialId)}`;
 }
 
-export type KnownEventName =
-  | 'ready'
-  | 'destroy'
-  | 'contentChange'
-  | 'slideChange';
+export type KnownEventName = 'ready' | 'contentChange' | 'slideChange' | 'save';
 
 export type TEventName<T extends string> = Extract<T, KnownEventName>;

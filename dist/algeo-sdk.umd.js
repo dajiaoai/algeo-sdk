@@ -3901,7 +3901,7 @@
   });
 
   /** SDK 版本号，构建时由 rollup 注入 */
-  const VERSION = '2.3.0';
+  const VERSION = '2.4.0';
   const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
   const DEFAULT_PRESENTATION_PATH = '/e';
   const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -3921,6 +3921,35 @@
           msg !== null &&
           'type' in msg &&
           msg.type === 'ready');
+  }
+  function isSaveRequestMessage(msg) {
+      return (typeof msg === 'object' &&
+          msg !== null &&
+          'type' in msg &&
+          msg.type === 'save' &&
+          typeof msg.requestId === 'string' &&
+          typeof msg.content === 'object');
+  }
+  function isEmbedEventMessage(msg) {
+      if (typeof msg !== 'object' || msg == null || !('type' in msg)) {
+          return false;
+      }
+      if ('requestId' in msg) {
+          return false;
+      }
+      const type = msg.type;
+      if (type === 'slideChange') {
+          return typeof msg.index === 'number';
+      }
+      if (type === 'save') {
+          const stage = msg.stage;
+          return (typeof msg.content === 'object' &&
+              (stage === undefined || stage === 'success'));
+      }
+      if (type === 'contentChange') {
+          return true;
+      }
+      return false;
   }
   function normalizeBaseUrl(baseUrl) {
       return baseUrl.replace(/\/+$/, '');
@@ -3974,6 +4003,10 @@
           bucket.add(listener);
           return () => this.off(event, listener);
       }
+      getListeners(event) {
+          const bucket = this.listenerBuckets.get(event);
+          return bucket ? Array.from(bucket) : [];
+      }
       off(event, listener) {
           const bucket = this.listenerBuckets.get(event);
           bucket?.delete(listener);
@@ -3981,6 +4014,13 @@
       emit(event, payload) {
           const bucket = this.listenerBuckets.get(event);
           bucket?.forEach((listener) => listener(payload));
+      }
+      handleEventMessage(_event) { }
+      acceptsEventMessage() {
+          return true;
+      }
+      handleRequestMessage(_message, _sourceWindow) {
+          return false;
       }
       async init(options) {
           if (this.iframe) {
@@ -4028,6 +4068,15 @@
                       }
                       const err = data.error;
                       pending.reject(new AlgeoError(err?.message ?? '未知错误', err?.code ?? EMBED_ERROR_CODES.UNKNOWN_ERROR, err?.details));
+                      return;
+                  }
+                  if (isSaveRequestMessage(data) &&
+                      this.handleRequestMessage(data, iframe.contentWindow)) {
+                      return;
+                  }
+                  if (this.acceptsEventMessage() && isEmbedEventMessage(data)) {
+                      this.handleEventMessage(data);
+                      this.emit(data.type, data);
                   }
               };
               window.addEventListener('message', this.messageHandler);
@@ -4079,9 +4128,6 @@
           if (this.iframe?.parentNode) {
               this.iframe.parentNode.removeChild(this.iframe);
           }
-          this.emit('destroy', {
-              type: 'destroy',
-          });
       }
   }
 
@@ -4096,6 +4142,9 @@
               baseUrl,
               initialId: options.shareId,
           });
+      }
+      acceptsEventMessage() {
+          return false;
       }
       async loadShareById(id) {
           const result = await this.post('loadShareById', {
@@ -4224,6 +4273,30 @@
               await this.loadContent(options.initialContent, 'initialContent');
           }
       }
+      handleEventMessage(event) {
+          if (event.type === 'contentChange') {
+              if (event.content) {
+                  this.currentContent = event.content;
+                  this.slideCount = event.content.slides.length;
+                  this.currentSlideIndex = Math.min(this.currentSlideIndex, Math.max(this.slideCount - 1, 0));
+              }
+              return;
+          }
+          if (event.type === 'slideChange') {
+              this.currentSlideIndex = event.index;
+              return;
+          }
+          this.currentContent = event.content;
+          this.slideCount = event.content.slides.length;
+          this.currentSlideIndex = Math.min(this.currentSlideIndex, Math.max(this.slideCount - 1, 0));
+      }
+      handleRequestMessage(message, sourceWindow) {
+          if (message.type !== 'save') {
+              return false;
+          }
+          void this.handleSaveRequest(message, sourceWindow);
+          return true;
+      }
       async loadContent(content, source) {
           await this.post('loadContent', { content });
           this.currentContent = content;
@@ -4247,6 +4320,48 @@
           this.historyCount = state.count;
           this.historyCurrentIndex = state.currentIndex;
           return state;
+      }
+      async handleSaveRequest(message, sourceWindow) {
+          const respond = (payload) => {
+              sourceWindow.postMessage(payload, '*');
+          };
+          try {
+              const result = await this.resolveSaveResult(message.content);
+              respond({
+                  type: 'response',
+                  requestId: message.requestId,
+                  success: true,
+                  result,
+              });
+          }
+          catch (error) {
+              respond({
+                  type: 'response',
+                  requestId: message.requestId,
+                  success: false,
+                  error: {
+                      code: EMBED_ERROR_CODES.UNKNOWN_ERROR,
+                      message: error instanceof Error ? error.message : String(error),
+                  },
+              });
+          }
+      }
+      async resolveSaveResult(content) {
+          const requestEvent = {
+              type: 'save',
+              stage: 'request',
+              content,
+          };
+          for (const listener of this.getListeners('save')) {
+              const result = await listener(requestEvent);
+              if (result && typeof result === 'object' && 'status' in result) {
+                  return result;
+              }
+          }
+          return {
+              status: 'error',
+              message: '宿主未配置 save 事件处理器',
+          };
       }
   }
 

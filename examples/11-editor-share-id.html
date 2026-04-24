@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11 编辑模式按 shareId 加载 - Algeo SDK</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      color-scheme: light;
+      --bg: #eef2ff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --panel-strong: #ffffff;
+      --line: #c7d2fe;
+      --text: #172554;
+      --muted: #475569;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --ink: #0f172a;
+      --success: #166534;
+      --danger: #b91c1c;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "PingFang SC", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(191, 219, 254, 0.82), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(165, 180, 252, 0.48), transparent 24%),
+        linear-gradient(180deg, #f8faff 0%, var(--bg) 100%);
+      padding: 20px;
+    }
+
+    a {
+      color: var(--accent-dark);
+    }
+
+    code {
+      font-family: Consolas, Monaco, monospace;
+    }
+
+    .page {
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 8px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 1.75rem;
+      line-height: 1.1;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 920px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(320px, 0.95fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 18px 50px rgba(37, 99, 235, 0.1);
+    }
+
+    .embed {
+      overflow: hidden;
+    }
+
+    .embed-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      background: linear-gradient(90deg, rgba(37, 99, 235, 0.12), rgba(255, 255, 255, 0.64));
+      border-bottom: 1px solid var(--line);
+    }
+
+    .embed-header strong {
+      display: block;
+      font-size: 0.95rem;
+    }
+
+    .embed-header span {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    #algeo-container {
+      height: 680px;
+      background: #f8faff;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 16px;
+    }
+
+    .section {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .section p {
+      margin: 0;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .field input:focus {
+      outline: 2px solid rgba(37, 99, 235, 0.18);
+      border-color: rgba(37, 99, 235, 0.56);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
+      color: white;
+      box-shadow: 0 10px 18px rgba(37, 99, 235, 0.22);
+    }
+
+    .secondary {
+      background: var(--panel-strong);
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .status {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(22, 101, 52, 0.08);
+      border: 1px solid rgba(22, 101, 52, 0.16);
+      color: var(--success);
+      font-size: 0.875rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .status.error {
+      background: rgba(185, 28, 28, 0.08);
+      border-color: rgba(185, 28, 28, 0.18);
+      color: var(--danger);
+    }
+
+    .panel {
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.94);
+      color: #e2e8f0;
+      font: 12px/1.6 Consolas, Monaco, monospace;
+      min-height: 160px;
+      max-height: 280px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      #algeo-container {
+        height: 420px;
+      }
+
+      .panel {
+        max-height: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <a href="index.html">← 返回示例列表</a>
+
+    <section class="hero">
+      <h1>11 编辑模式按 shareId 加载</h1>
+      <p>这个示例用于验证 <code>create(..., { mode: 'editor', baseUrl, editor: { shareId } })</code> 会生成
+        <code>/embed/edit/:appId/:shareId</code>，并在编辑模式下直接加载指定分享内容。修改输入框后点击“加载 shareId”会销毁旧实例并重建 iframe。
+      </p>
+    </section>
+
+    <div class="layout">
+      <section class="card embed">
+        <div class="embed-header">
+          <div>
+            <strong>编辑器预览</strong>
+            <span>通过 SDK 重建 iframe，并观察 shareId 路由与 ready 事件。</span>
+          </div>
+          <span id="readyText">等待初始化</span>
+        </div>
+        <div id="algeo-container"></div>
+      </section>
+
+      <div class="sidebar">
+        <section class="card section">
+          <h2>加载参数</h2>
+          <p>如果输入的 <code>shareId</code> 不存在，示例会自动回退到默认空白的内嵌编辑模式。</p>
+
+          <div class="field">
+            <label for="shareIdInput">shareId</label>
+            <input id="shareIdInput" value="RXRFW0NW" placeholder="输入 shareId">
+          </div>
+
+          <div class="button-row">
+            <button class="primary" id="loadBtn">加载 shareId</button>
+            <button class="secondary" id="clearBtn">清空 shareId</button>
+          </div>
+
+          <div class="hint">清空后会回退到 <code>/embed/edit/:appId</code> 的空白编辑模式；shareId 无效时也会自动回退。</div>
+        </section>
+
+        <section class="card section">
+          <h2>当前状态</h2>
+          <div class="status" id="status">尚未创建实例</div>
+        </section>
+
+        <section class="card section">
+          <h2>实例信息</h2>
+          <div class="panel" id="metaPanel">等待创建...</div>
+        </section>
+
+        <section class="card section">
+          <h2>事件日志</h2>
+          <div class="panel" id="logPanel">等待操作...</div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="../dist/algeo-sdk.umd.js"></script>
+  <script>
+    (function () {
+      const container = document.getElementById('algeo-container');
+      const shareIdInput = document.getElementById('shareIdInput');
+      const loadBtn = document.getElementById('loadBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const status = document.getElementById('status');
+      const metaPanel = document.getElementById('metaPanel');
+      const logPanel = document.getElementById('logPanel');
+      const readyText = document.getElementById('readyText');
+
+      const appId = '123456';
+      const baseUrl = 'http://localhost:8080';
+      let editor = null;
+      let renderCount = 0;
+
+      function setStatus(message, isError) {
+        status.textContent = message;
+        status.className = isError ? 'status error' : 'status';
+      }
+
+      function log(message, payload) {
+        const lines = [new Date().toLocaleTimeString() + ' ' + message];
+        if (payload !== undefined) {
+          lines.push(JSON.stringify(payload, null, 2));
+        }
+        logPanel.textContent = lines.join('\n') + '\n\n' + logPanel.textContent;
+      }
+
+      function updateMeta(appId, shareId) {
+        const iframe = container.querySelector('iframe');
+        metaPanel.textContent = [
+          'baseUrl: ' + baseUrl,
+          'mode: editor',
+          'renderCount: ' + renderCount,
+          'appId: ' + appId,
+          'shareId: ' + (shareId || '(empty)'),
+          'expected path: ' + (shareId ? '/embed/edit/' + appId + '/' + shareId : '/embed/edit/' + appId),
+          'iframe src: ' + (iframe ? iframe.src : '(not created)'),
+        ].join('\n');
+      }
+
+      async function mountEditor(shareIdOverride, isFallbackAttempt) {
+        const shareId = typeof shareIdOverride === 'string'
+          ? shareIdOverride.trim()
+          : shareIdInput.value.trim();
+
+        loadBtn.disabled = true;
+        clearBtn.disabled = true;
+        readyText.textContent = '初始化中...';
+        setStatus('正在创建编辑器实例...', false);
+
+        try {
+          if (editor) {
+            await editor.destroy();
+            editor = null;
+            log('已销毁旧实例');
+          }
+
+          renderCount += 1;
+          editor = await AlgeoSdk.create(container, {
+            mode: 'editor',
+            baseUrl: baseUrl,
+            editor: {
+              auth: { appId: appId },
+              shareId: shareId,
+              ui: {
+                navbar: true,
+                slidePanel: true,
+                toolboxPanel: true,
+                algebraPanel: true,
+                docPanel: false,
+              },
+            },
+          });
+
+          editor.on('ready', function (event) {
+            readyText.textContent = 'ready';
+            setStatus('编辑器 ready，已完成 shareId 初始化', false);
+            updateMeta(appId, shareId);
+            log('ready', event);
+          });
+
+          editor.on('contentChange', function (event) {
+            log('contentChange', {
+              slideCount: Array.isArray(event.content && event.content.slides) ? event.content.slides.length : 0,
+            });
+          });
+
+          updateMeta(appId, shareId);
+          setStatus(
+            shareId
+              ? '已请求加载 shareId: ' + shareId
+              : '未传 shareId，已创建空白编辑模式',
+            false,
+          );
+        } catch (error) {
+          if (shareId && !isFallbackAttempt) {
+            readyText.textContent = 'shareId 无效，回退中...';
+            setStatus('shareId 不存在，正在回退到空白编辑模式...', false);
+            log('shareId 加载失败，回退为空白编辑模式', {
+              shareId: shareId,
+              message: error && error.message ? error.message : String(error),
+            });
+            return await mountEditor('', true);
+          }
+
+          readyText.textContent = '初始化失败';
+          setStatus('创建失败: ' + (error && error.message ? error.message : String(error)), true);
+          log('create 失败', {
+            message: error && error.message ? error.message : String(error),
+          });
+          updateMeta(appId, shareId);
+        } finally {
+          loadBtn.disabled = false;
+          clearBtn.disabled = false;
+        }
+      }
+
+      loadBtn.addEventListener('click', function () {
+        mountEditor();
+      });
+
+      clearBtn.addEventListener('click', function () {
+        shareIdInput.value = '';
+        mountEditor('');
+      });
+
+      shareIdInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          mountEditor();
+        }
+      });
+
+      mountEditor();
+    })();
+  </script>
+</body>
+
+</html>

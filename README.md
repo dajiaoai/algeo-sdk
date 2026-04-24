@@ -111,12 +111,27 @@ const editor = await createEditor(document.getElementById('editor-root'), {
     algebraPanel: false,
     docPanel: false,
   },
-  onSave: async (context) => {
+});
+
+editor.on('ready', (event) => {
+  console.log('iframe 已完成初始化', event);
+});
+
+editor.on('contentChange', (event) => {
+  console.log('用户编辑后返回完整内容', event.content);
+});
+
+editor.on('slideChange', (event) => {
+  console.log('用户切换后的最新画板索引', event.index);
+});
+
+editor.on('save', async (event) => {
+  if (event.stage === 'request') {
     const response = await fetch('/api/geometry-doc/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        content: context.content,
+        content: event.content,
       }),
     });
 
@@ -130,13 +145,13 @@ const editor = await createEditor(document.getElementById('editor-root'), {
     return {
       status: 'success',
     };
-  },
-});
+  }
 
-editor.on('ready', (event) => {
-  console.log('iframe 已完成初始化', event);
+  console.log('用户点击保存按钮且宿主返回成功后的完整内容', event.content);
 });
 ```
+
+编辑器内嵌页点击保存按钮时，会触发 `editor.on('save', listener)` 的请求阶段监听器。只有宿主返回 `{ status: 'success' }` 后，iframe 才会展示成功态，并向外触发 `save` 的成功阶段事件。
 
 如需通过统一入口分发模式，也可以使用 `create`：
 
@@ -179,6 +194,8 @@ console.log('Algeo SDK version:', VERSION);
 #### `createEditor(container, options): Promise<EmbeddedEditor>`
 
 编辑模式快捷入口。该函数负责真正创建并初始化 `EmbeddedEditor`。
+
+如需自定义 `baseUrl`，请使用统一入口 `create(container, { mode: 'editor', baseUrl, editor: options })`。
 
 ```javascript
 create(container, {
@@ -225,13 +242,12 @@ type AlgeoCreateOptions =
 
 **AlgeoEditorCreateOptions：**
 
-| 属性             | 类型                                             | 默认值 | 说明                                                   |
-| ---------------- | ------------------------------------------------ | ------ | ------------------------------------------------------ |
-| `auth`           | `{ appId: string }`                              | -      | 编辑模式鉴权参数，其中 `appId` 会参与默认路由生成      |
-| `shareId`        | `string`                                         | `''`   | 编辑模式初始分享 ID，会映射到 `/embed/edit/:appId/:id` |
-| `initialContent` | `FileContentV10`                                 | -      | 初始化后自动注入的文件内容                             |
-| `ui`             | `Partial<AlgeoEditorUiConfig>`                   | -      | 编辑器 UI 开关配置                                     |
-| `onSave`         | `(context) => SaveResult \| Promise<SaveResult>` | -      | 宿主接管保存流程，`context` 仅包含纯净文件内容         |
+| 属性             | 类型                           | 默认值 | 说明                                                   |
+| ---------------- | ------------------------------ | ------ | ------------------------------------------------------ |
+| `auth`           | `{ appId: string }`            | -      | 编辑模式鉴权参数，其中 `appId` 会参与默认路由生成      |
+| `shareId`        | `string`                       | `''`   | 编辑模式初始分享 ID，会映射到 `/embed/edit/:appId/:id` |
+| `initialContent` | `FileContentV10`               | -      | 初始化后自动注入的文件内容                             |
+| `ui`             | `Partial<AlgeoEditorUiConfig>` | -      | 编辑器 UI 开关配置                                     |
 
 **AlgeoPresentationCreateOptions：**
 
@@ -274,12 +290,9 @@ const presentation = await create(container, {
 
 当前稳定提供以下事件：
 
-| 事件名    | 说明              |
-| --------- | ----------------- |
-| `ready`   | iframe 完成初始化 |
-| `destroy` | 实例销毁时触发    |
-
-`contentChange` 与 `slideChange` 不会在 SDK 主动调用 `loadFile`、`loadShareById`、`switchSlide` 等方法时由本地直接触发。这类事件应由 iframe 页面在用户操作后主动回传给宿主，当前版本尚未在该桥接层中提供该事件通道。
+| 事件名  | 说明              |
+| ------- | ----------------- |
+| `ready` | iframe 完成初始化 |
 
 ---
 
@@ -417,6 +430,17 @@ interface FileContent {
 | --------------------- | ---------------- |
 | `getUiConfig()`       | 获取当前 UI 配置 |
 | `setUiConfig(config)` | 更新 UI 配置     |
+
+#### 编辑器事件
+
+`editor.on(event, listener)` 当前支持以下事件：
+
+| 事件名          | 事件数据                                                   | 说明                                                                             |
+| --------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `ready`         | `{ type: 'ready', mode, version }`                         | iframe 初始化完成                                                                |
+| `contentChange` | `{ type: 'contentChange', source: 'user', content }`       | 用户在 iframe 内编辑后回传完整 `FileContentV10`                                  |
+| `slideChange`   | `{ type: 'slideChange', index }`                           | 用户在 iframe 内切换画板后回传当前索引                                           |
+| `save`          | `{ type: 'save', stage: 'request' \| 'success', content }` | `stage: 'request'` 时用于宿主处理保存，`stage: 'success'` 时表示保存成功后的通知 |
 
 #### 事件与销毁
 

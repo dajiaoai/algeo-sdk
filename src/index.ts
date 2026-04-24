@@ -5,14 +5,12 @@ export type {
   AlgeoCreateOptions,
   AlgeoEditorAuthOptions,
   AlgeoEditorCreateOptions,
-  AlgeoEditorSaveContext,
   AlgeoEditorSaveResult,
   AlgeoEditorUiConfig,
   AlgeoEmbedMode,
   AlgeoErrorPayload,
   AlgeoPresentationCreateOptions,
   ContentChangeEvent,
-  DestroyEvent,
   DocumentApi,
   EmbeddedEditorEventListenerMap,
   EmbeddedEditorEventMap,
@@ -32,6 +30,7 @@ export type {
   SlideIndexResult,
   SlidesApi,
   SwitchSlideResult,
+  SaveEvent,
 } from './shared';
 
 export { EmbeddedPresentation } from './embedded-presentation';

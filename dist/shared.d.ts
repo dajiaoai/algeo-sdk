@@ -23,9 +23,6 @@ export interface AlgeoEditorUiConfig {
     algebraPanel?: boolean;
     docPanel?: boolean;
 }
-export interface AlgeoEditorSaveContext {
-    content: FileContentV10;
-}
 export type AlgeoEditorSaveResult = {
     status: 'success';
 } | {
@@ -37,7 +34,6 @@ export interface AlgeoEditorCreateOptions {
     shareId?: string;
     initialContent?: FileContentV10;
     ui?: AlgeoEditorUiConfig;
-    onSave?: (context: AlgeoEditorSaveContext) => Promise<AlgeoEditorSaveResult> | AlgeoEditorSaveResult;
 }
 export interface AlgeoPresentationCreateOptions {
     shareId?: string;
@@ -58,7 +54,7 @@ export interface ReadyEvent {
 }
 export interface ContentChangeEvent {
     type: 'contentChange';
-    source: 'loadContent' | 'loadFile' | 'loadShareById' | 'initialContent';
+    source: 'loadContent' | 'loadFile' | 'loadShareById' | 'initialContent' | 'user';
     content?: FileContentV10;
     shareId?: string;
 }
@@ -66,25 +62,38 @@ export interface SlideChangeEvent {
     type: 'slideChange';
     index: number;
 }
-export interface DestroyEvent {
-    type: 'destroy';
+export interface SaveRequestEvent {
+    type: 'save';
+    content: FileContentV10;
+    stage: 'request';
+}
+export interface SaveSuccessEvent {
+    type: 'save';
+    content: FileContentV10;
+    stage: 'success';
+}
+export type SaveEvent = SaveRequestEvent | SaveSuccessEvent;
+export interface SaveRequestMessage {
+    type: 'save';
+    requestId: string;
+    content: FileContentV10;
 }
 export interface EmbeddedEditorEventMap {
     ready: ReadyEvent;
     contentChange: ContentChangeEvent;
     slideChange: SlideChangeEvent;
-    destroy: DestroyEvent;
+    save: SaveEvent;
 }
 export interface EmbeddedPresentationEventMap {
     ready: ReadyEvent;
-    contentChange: ContentChangeEvent;
-    slideChange: SlideChangeEvent;
-    destroy: DestroyEvent;
 }
 export type EmbeddedEditorEventName = keyof EmbeddedEditorEventMap;
 export type EmbeddedPresentationEventName = keyof EmbeddedPresentationEventMap;
 export type EmbeddedEditorEventListenerMap = {
-    [K in EmbeddedEditorEventName]: (event: EmbeddedEditorEventMap[K]) => void;
+    ready: (event: ReadyEvent) => void;
+    contentChange: (event: ContentChangeEvent) => void;
+    slideChange: (event: SlideChangeEvent) => void;
+    save: (event: SaveEvent) => void | AlgeoEditorSaveResult | Promise<void | AlgeoEditorSaveResult>;
 };
 export type EmbeddedPresentationEventListenerMap = {
     [K in EmbeddedPresentationEventName]: (event: EmbeddedPresentationEventMap[K]) => void;
@@ -147,6 +156,9 @@ export interface ModeApi {
 export declare function generateRequestId(): string;
 export declare function isResponseMessage(msg: unknown): msg is EmbedResponseMessage;
 export declare function isReadyMessage(msg: unknown): msg is EmbedReadyMessage;
+export type EmbedEventMessage = ContentChangeEvent | SlideChangeEvent | SaveSuccessEvent;
+export declare function isSaveRequestMessage(msg: unknown): msg is SaveRequestMessage;
+export declare function isEmbedEventMessage(msg: unknown): msg is EmbedEventMessage;
 export declare function normalizeBaseUrl(baseUrl: string): string;
 export declare function normalizeMode(mode?: AlgeoEmbedMode): AlgeoEmbedMode;
 export declare function getEmbedPath(mode: AlgeoEmbedMode): string;
@@ -154,5 +166,5 @@ export interface EmbedInitOptions extends AlgeoSdkOptions {
     auth?: AlgeoEditorAuthOptions;
 }
 export declare function buildEmbedSrc(options: EmbedInitOptions): string;
-export type KnownEventName = 'ready' | 'destroy' | 'contentChange' | 'slideChange';
+export type KnownEventName = 'ready' | 'contentChange' | 'slideChange' | 'save';
 export type TEventName<T extends string> = Extract<T, KnownEventName>;
