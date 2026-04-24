@@ -195,11 +195,12 @@ console.log('Algeo SDK version:', VERSION);
 
 编辑模式快捷入口。该函数负责真正创建并初始化 `EmbeddedEditor`。
 
-如需自定义 `baseUrl`，请使用统一入口 `create(container, { mode: 'editor', baseUrl, editor: options })`。
+该快捷入口不暴露 `baseUrl` 配置。如需自定义宿主地址，请使用统一入口 `create(container, { mode: 'editor', baseUrl, editor: options })`。
 
 ```javascript
 create(container, {
   mode: 'editor',
+  baseUrl: 'https://your-host.example',
   editor: options,
 });
 ```
@@ -211,6 +212,7 @@ create(container, {
 ```javascript
 create(container, {
   mode: 'presentation',
+  baseUrl: 'https://your-host.example',
   presentation: options,
 });
 ```

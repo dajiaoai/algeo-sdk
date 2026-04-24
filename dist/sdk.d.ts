@@ -18,5 +18,5 @@ export declare function create(container: HTMLElement, options: {
     mode: 'presentation';
     presentation: AlgeoPresentationCreateOptions;
 }): Promise<EmbeddedPresentation>;
-export declare function createEditor(container: HTMLElement, options?: AlgeoEditorCreateOptions, baseUrl?: string): Promise<EmbeddedEditor>;
-export declare function createPresentation(container: HTMLElement, options?: AlgeoPresentationCreateOptions, baseUrl?: string): Promise<EmbeddedPresentation>;
+export declare function createEditor(container: HTMLElement, options?: AlgeoEditorCreateOptions): Promise<EmbeddedEditor>;
+export declare function createPresentation(container: HTMLElement, options?: AlgeoPresentationCreateOptions): Promise<EmbeddedPresentation>;

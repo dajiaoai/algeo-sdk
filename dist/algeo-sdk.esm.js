@@ -4359,13 +4359,26 @@ class EmbeddedEditor extends EmbeddedTarget {
     }
 }
 
+async function createEditorInstance(container, options = {}, baseUrl) {
+    const editor = new EmbeddedEditor(container);
+    await editor.initialize(options, baseUrl);
+    return editor;
+}
+async function createPresentationInstance(container, options = {}, baseUrl) {
+    const presentation = new EmbeddedPresentation(container);
+    await presentation.initialize(options, baseUrl);
+    return presentation;
+}
+function createEmbeddedInstance(container, options) {
+    if (options.mode === 'editor') {
+        return createEditorInstance(container, options.editor, options.baseUrl);
+    }
+    return createPresentationInstance(container, options.presentation, options.baseUrl);
+}
 class AlgeoSdk {
     constructor() { }
     static async create(container, options) {
-        if (options.mode === 'editor') {
-            return createEditor(container, options.editor, options.baseUrl);
-        }
-        return createPresentation(container, options.presentation, options.baseUrl);
+        return createEmbeddedInstance(container, options);
     }
     static async createEditor(container, options = {}) {
         return createEditor(container, options);
@@ -4375,20 +4388,13 @@ class AlgeoSdk {
     }
 }
 async function create(container, options) {
-    if (options.mode === 'editor') {
-        return createEditor(container, options.editor, options.baseUrl);
-    }
-    return createPresentation(container, options.presentation, options.baseUrl);
+    return createEmbeddedInstance(container, options);
 }
-async function createEditor(container, options = {}, baseUrl) {
-    const editor = new EmbeddedEditor(container);
-    await editor.initialize(options, baseUrl);
-    return editor;
+async function createEditor(container, options = {}) {
+    return createEditorInstance(container, options);
 }
-async function createPresentation(container, options = {}, baseUrl) {
-    const presentation = new EmbeddedPresentation(container);
-    await presentation.initialize(options, baseUrl);
-    return presentation;
+async function createPresentation(container, options = {}) {
+    return createPresentationInstance(container, options);
 }
 
 export { AlgeoError, AlgeoSdk, EMBED_ERROR_CODES, EmbeddedEditor, EmbeddedPresentation, VERSION, create, createEditor, createPresentation };
