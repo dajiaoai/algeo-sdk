@@ -4,6 +4,7 @@ export declare const VERSION = "__ALGEO_SDK_VERSION__";
 /** 从协议层 re-export，供外部使用 */
 export type { FileContentV10, AlgeoErrorPayload };
 export { AlgeoError, EMBED_ERROR_CODES };
+export declare const EMBED_TIMEOUT_MS = 30000;
 export interface AlgeoSdkOptions {
     /** 内嵌页基础 URL，默认 https://dajiaoai.com */
     baseUrl?: string;

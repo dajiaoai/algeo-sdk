@@ -3905,6 +3905,7 @@
   const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
   const DEFAULT_PRESENTATION_PATH = '/e';
   const DEFAULT_EDITOR_PATH = '/embed/edit';
+  const EMBED_TIMEOUT_MS = 30000;
   let requestIdCounter = 0;
   function generateRequestId() {
       return `req-${Date.now()}-${++requestIdCounter}`;
@@ -4022,6 +4023,22 @@
       handleRequestMessage(_message, _sourceWindow) {
           return false;
       }
+      cleanupMessageHandler() {
+          if (this.messageHandler) {
+              window.removeEventListener('message', this.messageHandler);
+              this.messageHandler = undefined;
+          }
+      }
+      cleanupIframe() {
+          if (this.iframe?.parentNode) {
+              this.iframe.parentNode.removeChild(this.iframe);
+          }
+          this.iframe = undefined;
+      }
+      resetRuntimeState() {
+          this._ready = false;
+          this._version = null;
+      }
       async init(options) {
           if (this.iframe) {
               throw new AlgeoError('请勿多次调用init方法。', EMBED_ERROR_CODES.BAD_REQUEST);
@@ -4031,6 +4048,31 @@
                   ...options,
                   mode: this.embedMode,
               });
+              let settled = false;
+              let initTimeoutId;
+              const finalizeFailure = (error) => {
+                  if (settled) {
+                      return;
+                  }
+                  settled = true;
+                  if (initTimeoutId) {
+                      clearTimeout(initTimeoutId);
+                  }
+                  this.resetRuntimeState();
+                  this.cleanupMessageHandler();
+                  this.cleanupIframe();
+                  reject(error);
+              };
+              const finalizeSuccess = () => {
+                  if (settled) {
+                      return;
+                  }
+                  settled = true;
+                  if (initTimeoutId) {
+                      clearTimeout(initTimeoutId);
+                  }
+                  resolve();
+              };
               const iframe = (this.iframe = document.createElement('iframe'));
               iframe.id = 'algeo-embed';
               iframe.src = src;
@@ -4038,14 +4080,22 @@
               iframe.style.width = '100%';
               iframe.style.height = '100%';
               iframe.style.border = 'none';
-              iframe.addEventListener('error', reject);
+              iframe.addEventListener('error', () => {
+                  finalizeFailure(new AlgeoError('iframe 初始化失败', EMBED_ERROR_CODES.IFRAME_NOT_READY));
+              });
               this.container.appendChild(iframe);
+              initTimeoutId = setTimeout(() => {
+                  finalizeFailure(new AlgeoError('iframe 初始化超时', EMBED_ERROR_CODES.TIMEOUT));
+              }, EMBED_TIMEOUT_MS);
               this.messageHandler = (e) => {
                   if (e.source !== iframe.contentWindow) {
                       return;
                   }
                   const { data } = e;
                   if (isReadyMessage(data)) {
+                      if (this._ready) {
+                          return;
+                      }
                       this._ready = true;
                       this._version = data.version;
                       this.emit('ready', {
@@ -4053,7 +4103,7 @@
                           mode: this.embedMode,
                           version: this._version,
                       });
-                      resolve();
+                      finalizeSuccess();
                       return;
                   }
                   if (isResponseMessage(data)) {
@@ -4109,7 +4159,7 @@
                       this.pending.delete(requestId);
                       reject(new AlgeoError('请求超时', EMBED_ERROR_CODES.TIMEOUT));
                   }
-              }, 30000);
+              }, EMBED_TIMEOUT_MS);
           });
       }
       async destroy() {
@@ -4117,17 +4167,13 @@
               return;
           }
           this.destroyed = true;
-          if (this.messageHandler) {
-              window.removeEventListener('message', this.messageHandler);
-              this.messageHandler = undefined;
-          }
+          this.cleanupMessageHandler();
+          this.resetRuntimeState();
           this.pending.forEach(({ reject }) => {
               reject(new AlgeoError('SDK 已销毁', EMBED_ERROR_CODES.DESTROYED));
           });
           this.pending.clear();
-          if (this.iframe?.parentNode) {
-              this.iframe.parentNode.removeChild(this.iframe);
-          }
+          this.cleanupIframe();
       }
   }
 

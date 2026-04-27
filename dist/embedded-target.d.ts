@@ -24,6 +24,9 @@ export declare abstract class EmbeddedTarget<EventMap extends {
     protected handleEventMessage(_event: Extract<EventMap[EventName], EmbedEventMessage>): void;
     protected acceptsEventMessage(): boolean;
     protected handleRequestMessage(_message: SaveRequestMessage, _sourceWindow: Window): boolean;
+    private cleanupMessageHandler;
+    private cleanupIframe;
+    private resetRuntimeState;
     protected init(options: EmbedInitOptions): Promise<void>;
     protected post<T>(type: string, payload: Record<string, unknown>): Promise<T>;
     destroy(): Promise<void>;

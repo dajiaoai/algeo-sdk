@@ -219,7 +219,7 @@ create(container, {
 
 #### `create(container, options)`
 
-异步创建并初始化具体实例。在 iframe 加载完成并收到 ready 消息后 resolve。
+异步创建并初始化具体实例。在 iframe 加载完成并收到 ready 消息后 resolve；若 30 秒内未收到 ready，则会以 `TIMEOUT` 错误 reject。
 
 | 参数        | 类型                 | 说明                    |
 | ----------- | -------------------- | ----------------------- |
@@ -474,7 +474,7 @@ try {
 | 错误码             | 说明                        |
 | ------------------ | --------------------------- |
 | `IFRAME_NOT_READY` | iframe 未加载完成即调用方法 |
-| `TIMEOUT`          | 请求超时（30 秒）           |
+| `TIMEOUT`          | 请求或初始化超时（30 秒）   |
 | `DESTROYED`        | SDK 已销毁                  |
 | `MISSING_APP_ID`   | 编辑模式缺少 `auth.appId`   |
 | `BAD_REQUEST`      | 非法请求（如重复 init）     |

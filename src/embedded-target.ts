@@ -2,6 +2,7 @@ import {
   AlgeoError,
   type AlgeoEmbedMode,
   buildEmbedSrc,
+  EMBED_TIMEOUT_MS,
   EMBED_ERROR_CODES,
   type EmbedInitOptions,
   generateRequestId,
@@ -97,6 +98,25 @@ export abstract class EmbeddedTarget<
     return false;
   }
 
+  private cleanupMessageHandler(): void {
+    if (this.messageHandler) {
+      window.removeEventListener('message', this.messageHandler);
+      this.messageHandler = undefined;
+    }
+  }
+
+  private cleanupIframe(): void {
+    if (this.iframe?.parentNode) {
+      this.iframe.parentNode.removeChild(this.iframe);
+    }
+    this.iframe = undefined;
+  }
+
+  private resetRuntimeState(): void {
+    this._ready = false;
+    this._version = null;
+  }
+
   protected async init(options: EmbedInitOptions): Promise<void> {
     if (this.iframe) {
       throw new AlgeoError(
@@ -111,6 +131,36 @@ export abstract class EmbeddedTarget<
         mode: this.embedMode,
       });
 
+      let settled = false;
+      let initTimeoutId: ReturnType<typeof setTimeout> | undefined;
+
+      const finalizeFailure = (error: AlgeoError) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        if (initTimeoutId) {
+          clearTimeout(initTimeoutId);
+        }
+        this.resetRuntimeState();
+        this.cleanupMessageHandler();
+        this.cleanupIframe();
+        reject(error);
+      };
+
+      const finalizeSuccess = () => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        if (initTimeoutId) {
+          clearTimeout(initTimeoutId);
+        }
+        resolve();
+      };
+
       const iframe = (this.iframe = document.createElement('iframe'));
       iframe.id = 'algeo-embed';
       iframe.src = src;
@@ -118,8 +168,21 @@ export abstract class EmbeddedTarget<
       iframe.style.width = '100%';
       iframe.style.height = '100%';
       iframe.style.border = 'none';
-      iframe.addEventListener('error', reject);
+      iframe.addEventListener('error', () => {
+        finalizeFailure(
+          new AlgeoError(
+            'iframe 初始化失败',
+            EMBED_ERROR_CODES.IFRAME_NOT_READY,
+          ),
+        );
+      });
       this.container.appendChild(iframe);
+
+      initTimeoutId = setTimeout(() => {
+        finalizeFailure(
+          new AlgeoError('iframe 初始化超时', EMBED_ERROR_CODES.TIMEOUT),
+        );
+      }, EMBED_TIMEOUT_MS);
 
       this.messageHandler = (e: MessageEvent) => {
         if (e.source !== iframe.contentWindow) {
@@ -128,6 +191,10 @@ export abstract class EmbeddedTarget<
 
         const { data } = e;
         if (isReadyMessage(data)) {
+          if (this._ready) {
+            return;
+          }
+
           this._ready = true;
           this._version = data.version;
           this.emit(
@@ -138,7 +205,7 @@ export abstract class EmbeddedTarget<
               version: this._version,
             } as unknown as EventMap[TEventName<EventName>],
           );
-          resolve();
+          finalizeSuccess();
           return;
         }
 
@@ -232,7 +299,7 @@ export abstract class EmbeddedTarget<
           this.pending.delete(requestId);
           reject(new AlgeoError('请求超时', EMBED_ERROR_CODES.TIMEOUT));
         }
-      }, 30000);
+      }, EMBED_TIMEOUT_MS);
     });
   }
 
@@ -242,18 +309,14 @@ export abstract class EmbeddedTarget<
     }
 
     this.destroyed = true;
-    if (this.messageHandler) {
-      window.removeEventListener('message', this.messageHandler);
-      this.messageHandler = undefined;
-    }
+    this.cleanupMessageHandler();
+    this.resetRuntimeState();
 
     this.pending.forEach(({ reject }) => {
       reject(new AlgeoError('SDK 已销毁', EMBED_ERROR_CODES.DESTROYED));
     });
     this.pending.clear();
 
-    if (this.iframe?.parentNode) {
-      this.iframe.parentNode.removeChild(this.iframe);
-    }
+    this.cleanupIframe();
   }
 }

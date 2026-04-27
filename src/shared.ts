@@ -18,6 +18,8 @@ const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
 const DEFAULT_PRESENTATION_PATH = '/e';
 const DEFAULT_EDITOR_PATH = '/embed/edit';
 
+export const EMBED_TIMEOUT_MS = 30000;
+
 export interface AlgeoSdkOptions {
   /** 内嵌页基础 URL，默认 https://dajiaoai.com */
   baseUrl?: string;
