@@ -240,7 +240,7 @@
         <div class="embed-header">
           <div>
             <strong>Embedded Editor</strong>
-            <span>baseUrl = http://localhost:8080 · appId = 123456</span>
+            <span id="config-info"></span>
           </div>
           <button class="secondary" id="recreateBtn">重建编辑器</button>
         </div>
@@ -274,10 +274,14 @@
   </div>
 
   <script src="../dist/algeo-sdk.umd.js"></script>
+  <script src="./assets/js/config.js"></script>
   <script>
-    const baseUrl = 'http://localhost:8080';
-    const appId = '123456';
+    const { baseUrl, appId } = window.ALGEO_CONFIG;
     const container = document.getElementById('algeo-container');
+    const configInfo = document.getElementById('config-info');
+    if (configInfo) {
+      configInfo.textContent = `baseUrl = ${baseUrl} · appId = ${appId}`;
+    }
     const status = document.getElementById('status');
     const logs = document.getElementById('logs');
     const snapshot = document.getElementById('snapshot');

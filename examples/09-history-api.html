@@ -302,7 +302,8 @@
       <a href="index.html">← 返回示例列表</a>
       <h1>09 HistoryApi</h1>
       <p>这个示例专门用于联调编辑模式下的历史协议。你可以先加载一份演示内容，然后在 iframe 内手动创建、拖动或删除对象，再回到宿主侧读取历史状态，继续测试
-        <code>undo</code>、<code>redo</code>、<code>jumpTo</code> 和 <code>clear</code>。</p>
+        <code>undo</code>、<code>redo</code>、<code>jumpTo</code> 和 <code>clear</code>。
+      </p>
     </div>
 
     <div class="layout">
@@ -310,7 +311,7 @@
         <div class="embed-header">
           <div>
             <strong>Embedded Editor</strong>
-            <span>baseUrl = http://localhost:8080 · appId = 123456</span>
+            <span id="config-info"></span>
           </div>
           <button class="secondary" id="recreateBtn">重建编辑器</button>
         </div>
@@ -393,9 +394,13 @@
   </div>
 
   <script src="../dist/algeo-sdk.umd.js"></script>
+  <script src="./assets/js/config.js"></script>
   <script>
-    const baseUrl = 'http://localhost:8080';
-    const appId = '123456';
+    const { baseUrl, appId } = window.ALGEO_CONFIG;
+    const configInfo = document.getElementById('config-info');
+    if (configInfo) {
+      configInfo.textContent = `baseUrl = ${baseUrl} · appId = ${appId}`;
+    }
 
     const demoContent = {
       messages: [],

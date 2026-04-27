@@ -169,10 +169,13 @@
 
   <div class="log" id="log"></div>
 
+  <script src="./assets/js/config.js"></script>
   <script>
+    const { shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
     const EMBED_BASE = 'https://dajiaoai.com';
     const logEl = document.getElementById('log');
     const shareIdEl = document.getElementById('shareId');
+    if (shareIdEl) shareIdEl.value = DEFAULT_SHARE_ID;
     const iframes = [
       document.getElementById('algeo-full'),
       document.getElementById('algeo-center'),
@@ -182,7 +185,7 @@
     ];
 
     function load() {
-      const id = shareIdEl.value.trim() || '33TA3484';
+      const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
       const src = EMBED_BASE + '/e/' + encodeURIComponent(id);
       iframes.forEach((el) => { if (el) el.src = src; });
     }

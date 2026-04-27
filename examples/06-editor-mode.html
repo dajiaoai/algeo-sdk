@@ -226,7 +226,7 @@
   <div class="page">
     <a href="index.html">← 返回示例列表</a>
     <h1>06 内嵌编辑模式</h1>
-    <p class="desc">页面加载后会自动创建一个 <code>appId = 123456</code> 的空白编辑器，并可直接测试 <code>setUiConfig</code> /
+    <p class="desc">页面加载后会自动创建一个 <code id="app-id-text"></code> 的空白编辑器，并可直接测试 <code>setUiConfig</code> /
       <code>getUiConfig</code>。
     </p>
 
@@ -260,7 +260,12 @@
   </div>
 
   <script src="../dist/algeo-sdk.umd.js"></script>
+  <script src="./assets/js/config.js"></script>
   <script>
+    const { baseUrl, appId } = window.ALGEO_CONFIG;
+    const appIdText = document.getElementById('app-id-text');
+    if (appIdText) appIdText.textContent = `appId = ${appId}`;
+
     const container = document.getElementById('algeo-container');
     const panel = document.getElementById('panel');
     const logs = document.getElementById('logs');
@@ -268,8 +273,6 @@
     const readConfigBtn = document.getElementById('readConfigBtn');
     const showAllBtn = document.getElementById('showAllBtn');
     const hideAllBtn = document.getElementById('hideAllBtn');
-    const baseUrl = 'http://localhost:8080';
-    const appId = '123456';
 
     const uiFields = [
       { key: 'navbar', label: '顶部导航栏' },

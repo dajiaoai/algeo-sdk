@@ -138,9 +138,12 @@
   <div class="log" id="log"></div>
 
   <script src="../dist/algeo-sdk.umd.js"></script>
+  <script src="./assets/js/config.js"></script>
   <script>
+    const { shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
     const logEl = document.getElementById('log');
     const shareIdEl = document.getElementById('shareId');
+    if (shareIdEl) shareIdEl.value = 'O429Y0FT'; // 保持此处的默认值，因为该示例需要特定文件
     const container = document.getElementById('algeo-container');
     const slideBtnListEl = document.getElementById('slideBtnList');
 
@@ -181,7 +184,7 @@
     }
 
     async function load() {
-      const id = shareIdEl.value.trim() || '33TA3484';
+      const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
       slideBtnListEl.innerHTML = '';
 
       try {

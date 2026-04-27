@@ -126,10 +126,13 @@
   <div class="log" id="log"></div>
 
   <script src="../dist/algeo-sdk.umd.js"></script>
+  <script src="./assets/js/config.js"></script>
   <script>
+    const { shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
     const logEl = document.getElementById('log');
     const statusEl = document.getElementById('status');
     const shareIdEl = document.getElementById('shareId');
+    if (shareIdEl) shareIdEl.value = DEFAULT_SHARE_ID;
     const container = document.getElementById('algeo-container');
     const createToolbar = document.getElementById('createToolbar');
     const sdkToolbar = document.getElementById('sdkToolbar');
@@ -158,7 +161,7 @@
     let sdk = null;
 
     document.getElementById('createBtn').onclick = async () => {
-      const id = shareIdEl.value.trim() || '33TA3484';
+      const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
       try {
         sdk = await AlgeoSdk.createPresentation(container, {
           shareId: id,

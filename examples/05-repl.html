@@ -163,12 +163,15 @@
   <div class="log" id="log"></div>
 
   <script src="../dist/algeo-sdk.umd.js"></script>
+  <script src="./assets/js/config.js"></script>
   <script>
     (async function () {
+      const { shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
       const logEl = document.getElementById('log');
       const outputEl = document.getElementById('output');
       const commandInput = document.getElementById('commandInput');
       const shareIdInput = document.getElementById('shareIdInput');
+      if (shareIdInput) shareIdInput.value = DEFAULT_SHARE_ID;
       const container = document.getElementById('algeo-container');
 
       function log(msg, isErr = false) {
