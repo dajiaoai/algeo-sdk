@@ -3901,7 +3901,7 @@
   });
 
   /** SDK 版本号，构建时由 rollup 注入 */
-  const VERSION = '2.4.0';
+  const VERSION = '2.5.0';
   const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
   const DEFAULT_PRESENTATION_PATH = '/e';
   const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4077,6 +4077,7 @@
               iframe.id = 'algeo-embed';
               iframe.src = src;
               iframe.allow = 'fullscreen';
+              iframe.referrerPolicy = 'origin';
               iframe.style.width = '100%';
               iframe.style.height = '100%';
               iframe.style.border = 'none';
@@ -4192,7 +4193,19 @@
       acceptsEventMessage() {
           return false;
       }
+      setWhitelistError(error) {
+          this.whitelistError = error;
+      }
+      ensureWhitelistAccess(methodName) {
+          if (!this.whitelistError) {
+              return;
+          }
+          const error = new AlgeoError(`演示模式调用 ${methodName} 被白名单限制。${this.whitelistError.message}`, this.whitelistError.code, this.whitelistError.details);
+          console.error(error);
+          throw error;
+      }
       async loadShareById(id) {
+          this.ensureWhitelistAccess('loadShareById');
           const result = await this.post('loadShareById', {
               id,
           });
@@ -4202,6 +4215,7 @@
           return result;
       }
       async loadFile(content) {
+          this.ensureWhitelistAccess('loadFile');
           const result = await this.post('loadContent', { content });
           this.currentContent = content;
           this.currentSlideIndex = 0;
@@ -4209,16 +4223,19 @@
           return result;
       }
       async switchSlide(index) {
+          this.ensureWhitelistAccess('switchSlide');
           const result = await this.post('switchSlide', { index });
           this.currentSlideIndex = index;
           return result;
       }
       async getSlideCount() {
+          this.ensureWhitelistAccess('getSlideCount');
           const result = await this.post('getSlideCount', {});
           this.slideCount = result.count;
           return result;
       }
       async repl(command) {
+          this.ensureWhitelistAccess('repl');
           return this.post('repl', { command });
       }
   }
@@ -4411,6 +4428,33 @@
       }
   }
 
+  const WHITELIST_CHECK_BASE_URL = 'https://open.dajiaoai.com/console';
+  const WHITELIST_CHECK_PATH = '/api/whitelist/check';
+  async function checkPresentationWhitelist(options) {
+      const appId = options.appId?.trim() ?? '';
+      const host = window.location.host.trim();
+      const url = new URL(`${normalizeBaseUrl(WHITELIST_CHECK_BASE_URL)}${WHITELIST_CHECK_PATH}`);
+      url.searchParams.set('appId', appId);
+      url.searchParams.set('host', host);
+      let matched = false;
+      try {
+          const response = await fetch(url.toString(), {
+              method: 'GET',
+              cache: 'no-store',
+          });
+          if (response.ok) {
+              const payload = (await response.json());
+              matched = payload.matched === true;
+          }
+      }
+      catch {
+          matched = false;
+      }
+      if (matched) {
+          return null;
+      }
+      return new AlgeoError(`白名单校验未通过，appId="${appId || '(empty)'}"，host="${host || '(empty)'}"。`, EMBED_ERROR_CODES.BAD_REQUEST);
+  }
   async function createEditorInstance(container, options = {}, baseUrl) {
       const editor = new EmbeddedEditor(container);
       await editor.initialize(options, baseUrl);
@@ -4419,6 +4463,10 @@
   async function createPresentationInstance(container, options = {}, baseUrl) {
       const presentation = new EmbeddedPresentation(container);
       await presentation.initialize(options, baseUrl);
+      const whitelistError = await checkPresentationWhitelist(options);
+      if (whitelistError) {
+          presentation.setWhitelistError(whitelistError);
+      }
       return presentation;
   }
   function createEmbeddedInstance(container, options) {

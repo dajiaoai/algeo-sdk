@@ -165,6 +165,7 @@ export abstract class EmbeddedTarget<
       iframe.id = 'algeo-embed';
       iframe.src = src;
       iframe.allow = 'fullscreen';
+      iframe.referrerPolicy = 'origin';
       iframe.style.width = '100%';
       iframe.style.height = '100%';
       iframe.style.border = 'none';

@@ -37,6 +37,7 @@ export interface AlgeoEditorCreateOptions {
     ui?: AlgeoEditorUiConfig;
 }
 export interface AlgeoPresentationCreateOptions {
+    appId?: string;
     shareId?: string;
 }
 export type AlgeoCreateOptions = {

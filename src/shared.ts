@@ -60,6 +60,7 @@ export interface AlgeoEditorCreateOptions {
 }
 
 export interface AlgeoPresentationCreateOptions {
+  appId?: string;
   shareId?: string;
 }
 

@@ -11,7 +11,7 @@
 npm install @dajiaoai/algeo-sdk
 
 # 安装指定版本（推荐生产环境锁定版本）
-npm install @dajiaoai/algeo-sdk@2.0.0
+npm install @dajiaoai/algeo-sdk@2.5.0
 ```
 
 在 `package.json` 中：
@@ -19,7 +19,7 @@ npm install @dajiaoai/algeo-sdk@2.0.0
 ```json
 {
   "dependencies": {
-    "@dajiaoai/algeo-sdk": "2.0.0" // 精确版本，生产推荐
+    "@dajiaoai/algeo-sdk": "2.5.0" // 精确版本，生产推荐
   }
 }
 ```
@@ -29,7 +29,7 @@ npm install @dajiaoai/algeo-sdk@2.0.0
 ```json
 {
   "dependencies": {
-    "@dajiaoai/algeo-sdk": "^2.0.0" // 兼容 2.x 的更新
+    "@dajiaoai/algeo-sdk": "^2.5.0" // 兼容 2.x 的更新
   }
 }
 ```
@@ -39,14 +39,14 @@ npm install @dajiaoai/algeo-sdk@2.0.0
 **unpkg**：
 
 ```html
-<script src="https://unpkg.com/@dajiaoai/algeo-sdk@2.0.0/dist/algeo-sdk.umd.js"></script>
+<script src="https://unpkg.com/@dajiaoai/algeo-sdk@2.5.0/dist/algeo-sdk.umd.js"></script>
 <script src="https://unpkg.com/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
 ```
 
 **jsDelivr**：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@2.0.0/dist/algeo-sdk.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@2.5.0/dist/algeo-sdk.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
 ```
 
@@ -61,6 +61,7 @@ import { createPresentation } from '@dajiaoai/algeo-sdk';
 
 const container = document.getElementById('algeo-container');
 const presentation = await createPresentation(container, {
+  appId: 'YTVJDQZR',
   shareId: '33TA3484',
 });
 
@@ -87,12 +88,15 @@ presentation.switchSlide(1).then(() => console.log('切换画板'));
   id="algeo-embed"
   src="https://dajiaoai.com/e/33TA3484"
   allow="fullscreen"
+  referrerpolicy="origin"
 ></iframe>
 ```
 
 如需动态加载、切换画板等能力，请使用方式一（SDK）。详见 [API](#API)。
 
 > **全屏支持**：建议在 iframe 上添加 `allow="fullscreen"`，以便内嵌画板使用全屏功能。SDK 方式创建的 iframe 已自动包含此属性。
+
+> **Referrer 透传**：SDK 方式创建的 iframe 会自动设置 `referrerpolicy="origin"`，便于内嵌页稳定获取宿主域名信息；若使用直接 iframe 方式，建议手动补上该属性。
 
 ### 方式三：编辑模式
 
@@ -209,6 +213,8 @@ create(container, {
 
 演示模式快捷入口。该函数负责真正创建并初始化 `EmbeddedPresentation`。
 
+创建成功后，SDK 会额外调用 `https://open.dajiaoai.com/console/api/whitelist/check`，使用 `options.appId` 与当前页面 `hostname` 做白名单校验。若未命中白名单，iframe 仍会完成初始化并呈现页面，`createPresentation` 仍会成功返回实例，但后续 `loadShareById`、`loadFile`、`switchSlide`、`getSlideCount`、`repl` 等演示模式 API 会被拒绝，并在控制台输出包含方法名的错误，便于接入方感知并处理。
+
 ```javascript
 create(container, {
   mode: 'presentation',
@@ -253,9 +259,10 @@ type AlgeoCreateOptions =
 
 **AlgeoPresentationCreateOptions：**
 
-| 属性      | 类型     | 默认值 | 说明                                   |
-| --------- | -------- | ------ | -------------------------------------- |
-| `shareId` | `string` | `''`   | 演示模式初始分享 ID，会映射到 `/e/:id` |
+| 属性      | 类型     | 默认值 | 说明                                                     |
+| --------- | -------- | ------ | -------------------------------------------------------- |
+| `appId`   | `string` | `''`   | 演示模式白名单校验使用的应用标识，SDK 会用它请求校验接口 |
+| `shareId` | `string` | `''`   | 演示模式初始分享 ID，会映射到 `/e/:id`                   |
 
 默认路径规则：
 
@@ -268,6 +275,7 @@ type AlgeoCreateOptions =
 const presentation = await create(container, {
   mode: 'presentation',
   presentation: {
+    appId: 'xxxx',
     shareId: '33TA3484',
   },
 });
@@ -471,10 +479,10 @@ try {
 
 **常见错误码：**
 
-| 错误码             | 说明                        |
-| ------------------ | --------------------------- |
-| `IFRAME_NOT_READY` | iframe 未加载完成即调用方法 |
-| `TIMEOUT`          | 请求或初始化超时（30 秒）   |
-| `DESTROYED`        | SDK 已销毁                  |
-| `MISSING_APP_ID`   | 编辑模式缺少 `auth.appId`   |
-| `BAD_REQUEST`      | 非法请求（如重复 init）     |
+| 错误码             | 说明                                              |
+| ------------------ | ------------------------------------------------- |
+| `IFRAME_NOT_READY` | iframe 未加载完成即调用方法                       |
+| `TIMEOUT`          | 请求或初始化超时（30 秒）                         |
+| `DESTROYED`        | SDK 已销毁                                        |
+| `MISSING_APP_ID`   | 编辑模式缺少 `auth.appId`                         |
+| `BAD_REQUEST`      | 非法请求（如重复 init、演示模式白名单校验未通过） |

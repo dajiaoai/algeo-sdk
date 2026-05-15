@@ -128,7 +128,7 @@
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script src="./assets/js/config.js"></script>
   <script>
-    const { shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
+    const { appId, shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
     const logEl = document.getElementById('log');
     const statusEl = document.getElementById('status');
     const shareIdEl = document.getElementById('shareId');
@@ -164,6 +164,7 @@
       const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
       try {
         sdk = await AlgeoSdk.createPresentation(container, {
+          appId,
           shareId: id,
         });
         statusEl.textContent = 'SDK 已初始化，ready: ' + sdk.ready + ', version: ' + (sdk.version || '-');
