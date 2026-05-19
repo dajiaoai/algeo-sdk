@@ -4129,9 +4129,10 @@ class EmbeddedTarget {
             window.addEventListener('message', this.messageHandler);
         });
     }
-    post(type, payload) {
+    post(type, payload, options = {}) {
         const requestId = generateRequestId();
         const msg = { type, requestId, ...payload };
+        const timeoutMs = options.timeoutMs ?? EMBED_TIMEOUT_MS;
         return new Promise((resolve, reject) => {
             if (this.destroyed) {
                 reject(new AlgeoError('SDK 已销毁', EMBED_ERROR_CODES.DESTROYED));
@@ -4156,7 +4157,7 @@ class EmbeddedTarget {
                     this.pending.delete(requestId);
                     reject(new AlgeoError('请求超时', EMBED_ERROR_CODES.TIMEOUT));
                 }
-            }, EMBED_TIMEOUT_MS);
+            }, timeoutMs);
         });
     }
     async destroy() {
@@ -4278,6 +4279,10 @@ class EmbeddedEditor extends EmbeddedTarget {
                     this.currentSlideIndex = toIndex;
                 }
                 await this.refreshHistoryState();
+            },
+            exportImage: async (options) => {
+                const result = await this.post('exportSlideImage', { options: options ?? {} });
+                return result.images;
             },
         };
         this.history = {

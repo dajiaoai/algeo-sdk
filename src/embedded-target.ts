@@ -258,9 +258,13 @@ export abstract class EmbeddedTarget<
   protected post<T>(
     type: string,
     payload: Record<string, unknown>,
+    options: {
+      timeoutMs?: number;
+    } = {},
   ): Promise<T> {
     const requestId = generateRequestId();
     const msg = { type, requestId, ...payload };
+    const timeoutMs = options.timeoutMs ?? EMBED_TIMEOUT_MS;
 
     return new Promise<T>((resolve, reject) => {
       if (this.destroyed) {
@@ -300,7 +304,7 @@ export abstract class EmbeddedTarget<
           this.pending.delete(requestId);
           reject(new AlgeoError('请求超时', EMBED_ERROR_CODES.TIMEOUT));
         }
-      }, EMBED_TIMEOUT_MS);
+      }, timeoutMs);
     });
   }
 

@@ -28,6 +28,8 @@ export declare abstract class EmbeddedTarget<EventMap extends {
     private cleanupIframe;
     private resetRuntimeState;
     protected init(options: EmbedInitOptions): Promise<void>;
-    protected post<T>(type: string, payload: Record<string, unknown>): Promise<T>;
+    protected post<T>(type: string, payload: Record<string, unknown>, options?: {
+        timeoutMs?: number;
+    }): Promise<T>;
     destroy(): Promise<void>;
 }

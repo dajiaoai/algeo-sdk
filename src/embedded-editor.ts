@@ -10,6 +10,8 @@ import {
   type EmbeddedEditorEventListenerMap,
   type EmbeddedEditorEventMap,
   type EmbeddedEditorEventName,
+  type ExportSlideImageOptions,
+  type ExportSlideImageResult,
   type FileContentV10,
   type GetContentResult,
   type GetHistoryStateResult,
@@ -86,6 +88,13 @@ export class EmbeddedEditor extends EmbeddedTarget<
           this.currentSlideIndex = toIndex;
         }
         await this.refreshHistoryState();
+      },
+      exportImage: async (options?: ExportSlideImageOptions) => {
+        const result = await this.post<ExportSlideImageResult>(
+          'exportSlideImage',
+          { options: options ?? {} },
+        );
+        return result.images;
       },
     };
 

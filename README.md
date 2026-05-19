@@ -11,7 +11,7 @@
 npm install @dajiaoai/algeo-sdk
 
 # 安装指定版本（推荐生产环境锁定版本）
-npm install @dajiaoai/algeo-sdk@2.5.0
+npm install @dajiaoai/algeo-sdk@2.6.0
 ```
 
 在 `package.json` 中：
@@ -19,7 +19,7 @@ npm install @dajiaoai/algeo-sdk@2.5.0
 ```json
 {
   "dependencies": {
-    "@dajiaoai/algeo-sdk": "2.5.0" // 精确版本，生产推荐
+    "@dajiaoai/algeo-sdk": "2.6.0" // 精确版本，生产推荐
   }
 }
 ```
@@ -29,7 +29,7 @@ npm install @dajiaoai/algeo-sdk@2.5.0
 ```json
 {
   "dependencies": {
-    "@dajiaoai/algeo-sdk": "^2.5.0" // 兼容 2.x 的更新
+    "@dajiaoai/algeo-sdk": "^2.6.0" // 兼容 2.x 的更新
   }
 }
 ```
@@ -39,14 +39,14 @@ npm install @dajiaoai/algeo-sdk@2.5.0
 **unpkg**：
 
 ```html
-<script src="https://unpkg.com/@dajiaoai/algeo-sdk@2.5.0/dist/algeo-sdk.umd.js"></script>
+<script src="https://unpkg.com/@dajiaoai/algeo-sdk@2.6.0/dist/algeo-sdk.umd.js"></script>
 <script src="https://unpkg.com/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
 ```
 
 **jsDelivr**：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@2.5.0/dist/algeo-sdk.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@2.6.0/dist/algeo-sdk.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
 ```
 
@@ -410,16 +410,17 @@ interface FileContent {
 
 #### `editor.slides`
 
-| 方法                             | 说明                 |
-| -------------------------------- | -------------------- |
-| `getCount()`                     | 获取当前已知画板数量 |
-| `getCurrentIndex()`              | 获取当前已知画板索引 |
-| `switchTo(index)`                | 切换画板             |
-| `add()`                          | 在末尾新增画板       |
-| `addAt(index)`                   | 在指定位置新增画板   |
-| `remove(index)`                  | 删除指定画板         |
-| `duplicate(index, targetIndex?)` | 复制画板             |
-| `reorder(fromIndex, toIndex)`    | 重排画板             |
+| 方法                             | 说明                                                                                                                                                                                                                                                 |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getCount()`                     | 获取当前已知画板数量                                                                                                                                                                                                                                 |
+| `getCurrentIndex()`              | 获取当前已知画板索引                                                                                                                                                                                                                                 |
+| `switchTo(index)`                | 切换画板                                                                                                                                                                                                                                             |
+| `add()`                          | 在末尾新增画板                                                                                                                                                                                                                                       |
+| `addAt(index)`                   | 在指定位置新增画板                                                                                                                                                                                                                                   |
+| `remove(index)`                  | 删除指定画板                                                                                                                                                                                                                                         |
+| `duplicate(index, targetIndex?)` | 复制画板                                                                                                                                                                                                                                             |
+| `reorder(fromIndex, toIndex)`    | 重排画板                                                                                                                                                                                                                                             |
+| `exportImage(options?)`          | 导出画板为图片，返回 `ExportedSlideImage[]`，每项含 `index`、`blob`、`format`、`width`、`height`。可选参数 `slideIndices`（1-based，不传则导出全部）、`format`（`'png'`/`'jpg'`）、`width`、`height`、`quality`（0~1，仅 jpg）、`autoFit`、`padding` |
 
 #### `editor.history`
 

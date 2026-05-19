@@ -172,6 +172,28 @@ export interface SlideIndexResult {
   index: number;
 }
 
+export interface ExportSlideImageOptions {
+  slideIndices?: number[];
+  format?: 'png' | 'jpg';
+  width?: number;
+  height?: number;
+  quality?: number;
+  autoFit?: boolean;
+  padding?: number;
+}
+
+export interface ExportedSlideImage {
+  index: number;
+  blob: Blob;
+  format: 'png' | 'jpg';
+  width: number;
+  height: number;
+}
+
+export interface ExportSlideImageResult {
+  images: ExportedSlideImage[];
+}
+
 export interface GetContentResult {
   content: FileContentV10;
 }
@@ -197,6 +219,7 @@ export interface SlidesApi {
   remove(index: number): Promise<void>;
   duplicate(index: number, targetIndex?: number): Promise<SlideIndexResult>;
   reorder(fromIndex: number, toIndex: number): Promise<void>;
+  exportImage(options?: ExportSlideImageOptions): Promise<ExportedSlideImage[]>;
 }
 
 export interface HistoryApi {
