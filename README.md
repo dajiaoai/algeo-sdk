@@ -39,15 +39,15 @@ npm install @dajiaoai/algeo-sdk@2.6.0
 **unpkg**：
 
 ```html
-<script src="https://unpkg.com/@dajiaoai/algeo-sdk@2.6.0/dist/algeo-sdk.umd.js"></script>
-<script src="https://unpkg.com/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
+<script src="https://unpkg.com/@dajiaoai/algeo-sdk@2.6.0/dist/algeo-sdk.umd.min.js"></script>
+<script src="https://unpkg.com/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.min.js"></script>
 ```
 
 **jsDelivr**：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@2.6.0/dist/algeo-sdk.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@2.6.0/dist/algeo-sdk.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.min.js"></script>
 ```
 
 > 生产环境建议使用**具体版本号**，避免自动升级带来的兼容性风险。
