@@ -3879,6 +3879,10 @@
     version: literalType("10"),
     shareOptions: shareOptionsSchema.optional()
   });
+  var fileContentV11MetadataSchema = objectType({
+    version: literalType("11"),
+    shareOptions: shareOptionsSchema.optional()
+  });
   var definitionV2Schema = objectType({
     kind: stringType(),
     id: stringType()
@@ -3887,7 +3891,11 @@
     definitions: arrayType(definitionV2Schema),
     uvarMap: arrayType(tupleType([stringType(), numberType()])),
     styleSheet: recordType(stringType(), unknownType()),
-    doc: arrayType(unknownType())
+    doc: arrayType(unknownType()),
+    camera: objectType({
+      offset: tupleType([numberType(), numberType()]),
+      scale: numberType()
+    }).optional()
   });
   var seedChatMessageSchema = objectType({
     id: stringType(),
@@ -3899,9 +3907,82 @@
     messages: arrayType(seedChatMessageSchema),
     metadata: fileContentV10MetadataSchema
   });
+  objectType({
+    slides: arrayType(slideV2Schema),
+    messages: arrayType(arrayType(seedChatMessageSchema)),
+    metadata: fileContentV11MetadataSchema
+  });
+  function upgradeFromV10ToV11(content) {
+    const normalizeTextStyleOpacityInRecord = (style) => {
+      if (!style) {
+        return {};
+      }
+      return {
+        ...style,
+        fillOpacity: style.fillOpacity ? style.fillOpacity * 100 : 100,
+        strokeOpacity: style.strokeOpacity ? style.strokeOpacity * 100 : 100
+      };
+    };
+    const normalizeDistanceMode = (value) => {
+      if (value === "half-pi") {
+        return "half_pi";
+      }
+      return value;
+    };
+    return {
+      slides: content.slides.map((slide) => ({
+        ...slide,
+        styleSheet: {
+          ...slide.styleSheet,
+          xaxis: {
+            ...slide.styleSheet.xaxis,
+            distanceMode: normalizeDistanceMode(
+              slide.styleSheet.xaxis.distanceMode
+            )
+          },
+          yaxis: {
+            ...slide.styleSheet.yaxis,
+            distanceMode: normalizeDistanceMode(
+              slide.styleSheet.yaxis.distanceMode
+            )
+          },
+          grid: {
+            ...slide.styleSheet.grid,
+            distanceMode: normalizeDistanceMode(
+              slide.styleSheet.grid.distanceMode
+            )
+          },
+          textType: normalizeTextStyleOpacityInRecord(
+            slide.styleSheet.textType
+          ),
+          texts: slide.styleSheet.texts.map(([id, style]) => [
+            id,
+            normalizeTextStyleOpacityInRecord(
+              style
+            )
+          ])
+        }
+      })),
+      messages: [content.messages],
+      metadata: {
+        ...content.metadata,
+        version: "11"
+      }
+    };
+  }
+  function convertToLatest(content) {
+    const version = content.metadata.version;
+    if (version === "11") {
+      return content;
+    }
+    if (version === "10") {
+      return convertToLatest(upgradeFromV10ToV11(content));
+    }
+    throw new Error(`Unsupported FileContent version: ${version}`);
+  }
 
   /** SDK 版本号，构建时由 rollup 注入 */
-  const VERSION = '2.6.0';
+  const VERSION = '2.6.1';
   const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
   const DEFAULT_PRESENTATION_PATH = '/e';
   const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4508,6 +4589,7 @@
   exports.EmbeddedEditor = EmbeddedEditor;
   exports.EmbeddedPresentation = EmbeddedPresentation;
   exports.VERSION = VERSION;
+  exports.convertToLatest = convertToLatest;
   exports.create = create;
   exports.createEditor = createEditor;
   exports.createPresentation = createPresentation;

@@ -134,7 +134,7 @@
 <body>
   <a href="index.html">← 返回示例列表</a>
   <h1>04 loadFile</h1>
-  <p class="desc">通过 loadFile 加载 JSON 内容，支持粘贴 JSON 文本或导入 .json / .algeo 文件。需符合 FileContentV10
+  <p class="desc">通过 loadFile 加载 JSON 内容，支持粘贴 JSON 文本或导入 .json / .algeo 文件。需符合 FileContentLatest
     格式（slides、messages、metadata）。</p>
 
   <div class="toolbar">
@@ -172,12 +172,12 @@
       function parseContent(text) {
         const raw = JSON.parse(text);
         if (!raw || typeof raw !== 'object') throw new Error('无效 JSON');
-        if (!raw.metadata) throw new Error('缺少 metadata');
-        return {
-          slides: Array.isArray(raw.slides) ? raw.slides : [],
-          messages: Array.isArray(raw.messages) ? raw.messages : [],
-          metadata: { ...raw.metadata, version: raw.metadata.version || '10' },
-        };
+        try {
+          return AlgeoSdk.convertToLatest(raw);
+        } catch (error) {
+          const message = error?.message || String(error);
+          throw new Error('文件内容不符合协议：' + message);
+        }
       }
 
       let sdk = await AlgeoSdk.createPresentation(container, { appId });

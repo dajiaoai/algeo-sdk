@@ -12,7 +12,7 @@ import {
   type EmbeddedEditorEventName,
   type ExportSlideImageOptions,
   type ExportSlideImageResult,
-  type FileContentV10,
+  type FileContentLatest,
   type GetContentResult,
   type GetHistoryStateResult,
   type HistoryApi,
@@ -36,7 +36,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
   readonly history: HistoryApi;
   readonly mode: ModeApi;
 
-  private currentContent?: FileContentV10;
+  private currentContent?: FileContentLatest;
   private currentSlideIndex = 0;
   private slideCount = 0;
   private historyCount = 0;
@@ -47,7 +47,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
     super(container, 'editor');
 
     this.document = {
-      loadContent: async (content: FileContentV10) => {
+      loadContent: async (content: FileContentLatest) => {
         await this.loadContent(content, 'loadContent');
       },
       getContent: async () => {
@@ -207,7 +207,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
   }
 
   private async loadContent(
-    content: FileContentV10,
+    content: FileContentLatest,
     source: ContentChangeEvent['source'],
   ): Promise<void> {
     await this.post<LoadFileResult>('loadContent', { content });
@@ -284,7 +284,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
   }
 
   private async resolveSaveResult(
-    content: FileContentV10,
+    content: FileContentLatest,
   ): Promise<AlgeoEditorSaveResult> {
     const requestEvent: SaveRequestEvent = {
       type: 'save',

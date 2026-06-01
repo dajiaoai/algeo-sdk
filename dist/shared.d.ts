@@ -1,8 +1,8 @@
-import { AlgeoError, type AlgeoErrorPayload, type EmbedReadyMessage, type EmbedResponseMessage, type FileContentV10, EMBED_ERROR_CODES } from '@dajiaoai/algeo-protocol';
+import { AlgeoError, type AlgeoErrorPayload, type EmbedReadyMessage, type EmbedResponseMessage, type FileContentLatest, EMBED_ERROR_CODES } from '@dajiaoai/algeo-protocol';
 /** SDK 版本号，构建时由 rollup 注入 */
 export declare const VERSION = "__ALGEO_SDK_VERSION__";
 /** 从协议层 re-export，供外部使用 */
-export type { FileContentV10, AlgeoErrorPayload };
+export type { FileContentLatest, AlgeoErrorPayload };
 export { AlgeoError, EMBED_ERROR_CODES };
 export declare const EMBED_TIMEOUT_MS = 30000;
 export interface AlgeoSdkOptions {
@@ -33,7 +33,7 @@ export type AlgeoEditorSaveResult = {
 export interface AlgeoEditorCreateOptions {
     auth?: AlgeoEditorAuthOptions;
     shareId?: string;
-    initialContent?: FileContentV10;
+    initialContent?: FileContentLatest;
     ui?: AlgeoEditorUiConfig;
 }
 export interface AlgeoPresentationCreateOptions {
@@ -57,7 +57,7 @@ export interface ReadyEvent {
 export interface ContentChangeEvent {
     type: 'contentChange';
     source: 'loadContent' | 'loadFile' | 'loadShareById' | 'initialContent' | 'user';
-    content?: FileContentV10;
+    content?: FileContentLatest;
     shareId?: string;
 }
 export interface SlideChangeEvent {
@@ -66,19 +66,19 @@ export interface SlideChangeEvent {
 }
 export interface SaveRequestEvent {
     type: 'save';
-    content: FileContentV10;
+    content: FileContentLatest;
     stage: 'request';
 }
 export interface SaveSuccessEvent {
     type: 'save';
-    content: FileContentV10;
+    content: FileContentLatest;
     stage: 'success';
 }
 export type SaveEvent = SaveRequestEvent | SaveSuccessEvent;
 export interface SaveRequestMessage {
     type: 'save';
     requestId: string;
-    content: FileContentV10;
+    content: FileContentLatest;
 }
 export interface EmbeddedEditorEventMap {
     ready: ReadyEvent;
@@ -138,7 +138,7 @@ export interface ExportSlideImageResult {
     images: ExportedSlideImage[];
 }
 export interface GetContentResult {
-    content: FileContentV10;
+    content: FileContentLatest;
 }
 export interface GetHistoryStateResult {
     count: number;
@@ -147,8 +147,8 @@ export interface GetHistoryStateResult {
     canRedo: boolean;
 }
 export interface DocumentApi {
-    loadContent(content: FileContentV10): Promise<void>;
-    getContent(): Promise<FileContentV10>;
+    loadContent(content: FileContentLatest): Promise<void>;
+    getContent(): Promise<FileContentLatest>;
 }
 export interface SlidesApi {
     getCount(): number;

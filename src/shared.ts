@@ -3,7 +3,7 @@ import {
   type AlgeoErrorPayload,
   type EmbedReadyMessage,
   type EmbedResponseMessage,
-  type FileContentV10,
+  type FileContentLatest,
   EMBED_ERROR_CODES,
 } from '@dajiaoai/algeo-protocol';
 
@@ -11,7 +11,7 @@ import {
 export const VERSION = '__ALGEO_SDK_VERSION__';
 
 /** 从协议层 re-export，供外部使用 */
-export type { FileContentV10, AlgeoErrorPayload };
+export type { FileContentLatest, AlgeoErrorPayload };
 export { AlgeoError, EMBED_ERROR_CODES };
 
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
@@ -55,7 +55,7 @@ export type AlgeoEditorSaveResult =
 export interface AlgeoEditorCreateOptions {
   auth?: AlgeoEditorAuthOptions;
   shareId?: string;
-  initialContent?: FileContentV10;
+  initialContent?: FileContentLatest;
   ui?: AlgeoEditorUiConfig;
 }
 
@@ -90,7 +90,7 @@ export interface ContentChangeEvent {
     | 'loadShareById'
     | 'initialContent'
     | 'user';
-  content?: FileContentV10;
+  content?: FileContentLatest;
   shareId?: string;
 }
 
@@ -101,13 +101,13 @@ export interface SlideChangeEvent {
 
 export interface SaveRequestEvent {
   type: 'save';
-  content: FileContentV10;
+  content: FileContentLatest;
   stage: 'request';
 }
 
 export interface SaveSuccessEvent {
   type: 'save';
-  content: FileContentV10;
+  content: FileContentLatest;
   stage: 'success';
 }
 
@@ -116,7 +116,7 @@ export type SaveEvent = SaveRequestEvent | SaveSuccessEvent;
 export interface SaveRequestMessage {
   type: 'save';
   requestId: string;
-  content: FileContentV10;
+  content: FileContentLatest;
 }
 
 export interface EmbeddedEditorEventMap {
@@ -195,7 +195,7 @@ export interface ExportSlideImageResult {
 }
 
 export interface GetContentResult {
-  content: FileContentV10;
+  content: FileContentLatest;
 }
 
 export interface GetHistoryStateResult {
@@ -206,8 +206,8 @@ export interface GetHistoryStateResult {
 }
 
 export interface DocumentApi {
-  loadContent(content: FileContentV10): Promise<void>;
-  getContent(): Promise<FileContentV10>;
+  loadContent(content: FileContentLatest): Promise<void>;
+  getContent(): Promise<FileContentLatest>;
 }
 
 export interface SlidesApi {

@@ -5,7 +5,7 @@ import {
   type EmbeddedPresentationEventListenerMap,
   type EmbeddedPresentationEventMap,
   type EmbeddedPresentationEventName,
-  type FileContentV10,
+  type FileContentLatest,
   type GetSlideCountResult,
   type LoadFileResult,
   type LoadShareByIdResult,
@@ -18,7 +18,7 @@ export class EmbeddedPresentation extends EmbeddedTarget<
   EmbeddedPresentationEventName,
   EmbeddedPresentationEventListenerMap
 > {
-  private currentContent?: FileContentV10;
+  private currentContent?: FileContentLatest;
   private currentSlideIndex = 0;
   private slideCount = 0;
   private whitelistError?: AlgeoError;
@@ -71,7 +71,7 @@ export class EmbeddedPresentation extends EmbeddedTarget<
     return result;
   }
 
-  async loadFile(content: FileContentV10): Promise<LoadFileResult> {
+  async loadFile(content: FileContentLatest): Promise<LoadFileResult> {
     this.ensureWhitelistAccess('loadFile');
     const result = await this.post<LoadFileResult>('loadContent', { content });
     this.currentContent = content;

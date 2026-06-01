@@ -254,7 +254,7 @@ type AlgeoCreateOptions =
 | ---------------- | ------------------------------ | ------ | ------------------------------------------------------ |
 | `auth`           | `{ appId: string }`            | -      | 编辑模式鉴权参数，其中 `appId` 会参与默认路由生成      |
 | `shareId`        | `string`                       | `''`   | 编辑模式初始分享 ID，会映射到 `/embed/edit/:appId/:id` |
-| `initialContent` | `FileContentV10`               | -      | 初始化后自动注入的文件内容                             |
+| `initialContent` | `FileContentLatest`            | -      | 初始化后自动注入的文件内容                             |
 | `ui`             | `Partial<AlgeoEditorUiConfig>` | -      | 编辑器 UI 开关配置                                     |
 
 **AlgeoPresentationCreateOptions：**
@@ -322,7 +322,7 @@ const presentation = await create(container, {
 
 ##### `presentation.loadFile(content: FileContent): Promise<LoadFileResult>`
 
-加载完整文件数据（覆盖式），需符合 FileContentV10 格式。
+加载完整文件数据（覆盖式），需符合 FileContentLatest 格式。
 
 | 参数      | 类型          | 说明         |
 | --------- | ------------- | ------------ |
@@ -333,9 +333,9 @@ const presentation = await create(container, {
 ```typescript
 interface FileContent {
   slides: unknown[]; // 画板数据数组
-  messages: unknown[]; // 消息数据
+  messages: unknown[]; // 消息数据（最新版本为会话数组）
   metadata: {
-    version: string; // 如 '10'
+    version: string; // 如 '11'
     shareOptions?: unknown;
   };
 }
@@ -449,7 +449,7 @@ interface FileContent {
 | 事件名          | 事件数据                                                   | 说明                                                                             |
 | --------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `ready`         | `{ type: 'ready', mode, version }`                         | iframe 初始化完成                                                                |
-| `contentChange` | `{ type: 'contentChange', source: 'user', content }`       | 用户在 iframe 内编辑后回传完整 `FileContentV10`                                  |
+| `contentChange` | `{ type: 'contentChange', source: 'user', content }`       | 用户在 iframe 内编辑后回传完整 `FileContentLatest`                               |
 | `slideChange`   | `{ type: 'slideChange', index }`                           | 用户在 iframe 内切换画板后回传当前索引                                           |
 | `save`          | `{ type: 'save', stage: 'request' \| 'success', content }` | `stage: 'request'` 时用于宿主处理保存，`stage: 'success'` 时表示保存成功后的通知 |
 
