@@ -10,8 +10,8 @@
 # 安装最新版本
 npm install @dajiaoai/algeo-sdk
 
-# 安装指定版本（推荐生产环境锁定版本）
-npm install @dajiaoai/algeo-sdk@2.6.0
+# 安装指定主次版本
+npm install @dajiaoai/algeo-sdk@2.6.x
 ```
 
 在 `package.json` 中：
@@ -19,7 +19,7 @@ npm install @dajiaoai/algeo-sdk@2.6.0
 ```json
 {
   "dependencies": {
-    "@dajiaoai/algeo-sdk": "2.6.0" // 精确版本，生产推荐
+    "@dajiaoai/algeo-sdk": "~2.6.0"
   }
 }
 ```
@@ -29,7 +29,7 @@ npm install @dajiaoai/algeo-sdk@2.6.0
 ```json
 {
   "dependencies": {
-    "@dajiaoai/algeo-sdk": "^2.6.0" // 兼容 2.x 的更新
+    "@dajiaoai/algeo-sdk": "^2.6.0" // 兼容 2.x 的更新（升级范围更大）
   }
 }
 ```
@@ -50,7 +50,7 @@ npm install @dajiaoai/algeo-sdk@2.6.0
 <script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.min.js"></script>
 ```
 
-> 生产环境建议使用**具体版本号**，避免自动升级带来的兼容性风险。
+> 生产环境建议锁定到 **2.6.x**（如 `~2.6.0`），在兼容边界内自动接收修复版本。
 
 ## 使用方式
 
