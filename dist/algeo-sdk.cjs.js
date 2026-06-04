@@ -4403,12 +4403,15 @@ class EmbeddedEditor extends EmbeddedTarget {
         if (!options.auth?.appId?.trim()) {
             throw new AlgeoError('编辑模式需要提供 auth.appId。', EMBED_ERROR_CODES.MISSING_APP_ID);
         }
-        this.uiConfig = options.ui || {};
+        this.uiConfig = options.ui ? { ...options.ui } : {};
         await this.init({
             baseUrl,
             auth: options.auth,
             initialId: options.shareId,
         });
+        if (Object.keys(this.uiConfig).length > 0) {
+            await this.mode.setUiConfig(this.uiConfig);
+        }
         const content = await this.document.getContent();
         this.currentContent = content;
         this.slideCount = content.slides.length;

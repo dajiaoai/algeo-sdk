@@ -114,6 +114,7 @@ const editor = await createEditor(document.getElementById('editor-root'), {
     toolboxPanel: true,
     algebraPanel: false,
     docPanel: false,
+    helpEntry: false,
   },
 });
 

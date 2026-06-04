@@ -41,6 +41,7 @@ export interface AlgeoEditorUiConfig {
   toolboxPanel?: boolean;
   algebraPanel?: boolean;
   docPanel?: boolean;
+  helpEntry?: boolean;
 }
 
 export type AlgeoEditorSaveResult =
