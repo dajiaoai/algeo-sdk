@@ -25,6 +25,9 @@ export interface AlgeoEditorUiConfig {
     docPanel?: boolean;
     helpEntry?: boolean;
 }
+export interface AlgeoPresentationUiConfig {
+    logo?: boolean;
+}
 export type AlgeoEditorSaveResult = {
     status: 'success';
 } | {
@@ -40,6 +43,7 @@ export interface AlgeoEditorCreateOptions {
 export interface AlgeoPresentationCreateOptions {
     appId?: string;
     shareId?: string;
+    ui?: AlgeoPresentationUiConfig;
 }
 export type AlgeoCreateOptions = {
     baseUrl?: string;
@@ -175,6 +179,10 @@ export interface HistoryApi {
 export interface ModeApi {
     getUiConfig(): AlgeoEditorUiConfig;
     setUiConfig(config: Partial<AlgeoEditorUiConfig>): Promise<void>;
+}
+export interface PresentationModeApi {
+    getUiConfig(): AlgeoPresentationUiConfig;
+    setUiConfig(config: Partial<AlgeoPresentationUiConfig>): Promise<void>;
 }
 export declare function generateRequestId(): string;
 export declare function isResponseMessage(msg: unknown): msg is EmbedResponseMessage;

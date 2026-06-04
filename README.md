@@ -63,6 +63,9 @@ const container = document.getElementById('algeo-container');
 const presentation = await createPresentation(container, {
   appId: 'YTVJDQZR',
   shareId: '33TA3484',
+  ui: {
+    logo: false,
+  },
 });
 
 presentation.on('ready', (event) => {
@@ -260,10 +263,11 @@ type AlgeoCreateOptions =
 
 **AlgeoPresentationCreateOptions：**
 
-| 属性      | 类型     | 默认值 | 说明                                                     |
-| --------- | -------- | ------ | -------------------------------------------------------- |
-| `appId`   | `string` | `''`   | 演示模式白名单校验使用的应用标识，SDK 会用它请求校验接口 |
-| `shareId` | `string` | `''`   | 演示模式初始分享 ID，会映射到 `/e/:id`                   |
+| 属性      | 类型                                 | 默认值 | 说明                                                     |
+| --------- | ------------------------------------ | ------ | -------------------------------------------------------- |
+| `appId`   | `string`                             | `''`   | 演示模式白名单校验使用的应用标识，SDK 会用它请求校验接口 |
+| `shareId` | `string`                             | `''`   | 演示模式初始分享 ID，会映射到 `/e/:id`                   |
+| `ui`      | `Partial<AlgeoPresentationUiConfig>` | -      | 演示模式 UI 配置                                         |
 
 默认路径规则：
 
@@ -290,10 +294,11 @@ const presentation = await create(container, {
 
 #### 实例属性（只读）
 
-| 属性      | 类型             | 说明                                 |
-| --------- | ---------------- | ------------------------------------ |
-| `ready`   | `boolean`        | 是否已就绪（收到 iframe ready 通知） |
-| `version` | `string \| null` | 内嵌页协议版本                       |
+| 属性      | 类型                  | 说明                                 |
+| --------- | --------------------- | ------------------------------------ |
+| `ready`   | `boolean`             | 是否已就绪（收到 iframe ready 通知） |
+| `version` | `string \| null`      | 内嵌页协议版本                       |
+| `mode`    | `PresentationModeApi` | 演示模式展示控制能力                 |
 
 #### 事件订阅
 
@@ -308,6 +313,13 @@ const presentation = await create(container, {
 ---
 
 #### 实例方法
+
+##### `presentation.mode`
+
+| 方法                  | 说明             |
+| --------------------- | ---------------- |
+| `getUiConfig()`       | 获取当前 UI 配置 |
+| `setUiConfig(config)` | 更新 UI 配置     |
 
 ##### `presentation.loadShareById(id: string): Promise<LoadShareByIdResult>`
 

@@ -4259,12 +4259,27 @@ class EmbeddedPresentation extends EmbeddedTarget {
         super(container, 'presentation');
         this.currentSlideIndex = 0;
         this.slideCount = 0;
+        this.uiConfig = {};
+        this.mode = {
+            getUiConfig: () => ({ ...this.uiConfig }),
+            setUiConfig: async (config) => {
+                await this.post('setUiConfig', { config });
+                this.uiConfig = {
+                    ...this.uiConfig,
+                    ...config,
+                };
+            },
+        };
     }
     async initialize(options = {}, baseUrl) {
+        this.uiConfig = options.ui ? { ...options.ui } : {};
         await this.init({
             baseUrl,
             initialId: options.shareId,
         });
+        if (Object.keys(this.uiConfig).length > 0) {
+            await this.mode.setUiConfig(this.uiConfig);
+        }
     }
     acceptsEventMessage() {
         return false;

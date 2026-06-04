@@ -2,6 +2,7 @@ import { EmbeddedTarget } from './embedded-target';
 import {
   AlgeoError,
   type AlgeoPresentationCreateOptions,
+  type AlgeoPresentationUiConfig,
   type EmbeddedPresentationEventListenerMap,
   type EmbeddedPresentationEventMap,
   type EmbeddedPresentationEventName,
@@ -9,6 +10,7 @@ import {
   type GetSlideCountResult,
   type LoadFileResult,
   type LoadShareByIdResult,
+  type PresentationModeApi,
   type ReplResult,
   type SwitchSlideResult,
 } from './shared';
@@ -18,23 +20,43 @@ export class EmbeddedPresentation extends EmbeddedTarget<
   EmbeddedPresentationEventName,
   EmbeddedPresentationEventListenerMap
 > {
+  readonly mode: PresentationModeApi;
+
   private currentContent?: FileContentLatest;
   private currentSlideIndex = 0;
   private slideCount = 0;
   private whitelistError?: AlgeoError;
+  private uiConfig: AlgeoPresentationUiConfig = {};
 
   constructor(container: HTMLElement) {
     super(container, 'presentation');
+
+    this.mode = {
+      getUiConfig: () => ({ ...this.uiConfig }),
+      setUiConfig: async (config: Partial<AlgeoPresentationUiConfig>) => {
+        await this.post('setUiConfig', { config });
+        this.uiConfig = {
+          ...this.uiConfig,
+          ...config,
+        };
+      },
+    };
   }
 
   async initialize(
     options: AlgeoPresentationCreateOptions = {},
     baseUrl?: string,
   ): Promise<void> {
+    this.uiConfig = options.ui ? { ...options.ui } : {};
+
     await this.init({
       baseUrl,
       initialId: options.shareId,
     });
+
+    if (Object.keys(this.uiConfig).length > 0) {
+      await this.mode.setUiConfig(this.uiConfig);
+    }
   }
 
   protected override acceptsEventMessage(): boolean {
