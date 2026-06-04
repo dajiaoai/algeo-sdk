@@ -144,13 +144,17 @@ export class EmbeddedEditor extends EmbeddedTarget<
       );
     }
 
-    this.uiConfig = options.ui || {};
+    this.uiConfig = options.ui ? { ...options.ui } : {};
 
     await this.init({
       baseUrl,
       auth: options.auth,
       initialId: options.shareId,
     });
+
+    if (Object.keys(this.uiConfig).length > 0) {
+      await this.mode.setUiConfig(this.uiConfig);
+    }
 
     const content = await this.document.getContent();
     this.currentContent = content;

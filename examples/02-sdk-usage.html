@@ -42,6 +42,20 @@
       width: 200px;
     }
 
+    .inline-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.875rem;
+      color: #333;
+    }
+
+    .inline-check input {
+      width: auto;
+      padding: 0;
+      border: none;
+    }
+
     button {
       padding: 8px 16px;
       border: none;
@@ -110,11 +124,15 @@
 <body>
   <a href="index.html">← 返回示例列表</a>
   <h1>02 演示模式</h1>
-  <p class="desc">使用 createPresentation 封装 iframe 与 postMessage，以演示模式加载分享内容。</p>
+  <p class="desc">使用 create 以演示模式加载分享内容。</p>
   <div class="status" id="status"></div>
   <div class="toolbar" id="createToolbar">
     <label>分享 ID</label>
-    <input type="text" id="shareId" value="33TA3484" placeholder="输入分享 ID">
+    <input type="text" id="shareId" placeholder="输入分享 ID">
+    <label class="inline-check">
+      <input type="checkbox" id="logo" checked>
+      显示 Logo
+    </label>
     <button class="primary" id="createBtn">创建</button>
   </div>
   <div class="toolbar" id="sdkToolbar" style="display: none;">
@@ -128,10 +146,11 @@
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script src="./assets/js/config.js"></script>
   <script>
-    const { appId, shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
+    const { baseUrl, appId, shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
     const logEl = document.getElementById('log');
     const statusEl = document.getElementById('status');
     const shareIdEl = document.getElementById('shareId');
+    const logoEl = document.getElementById('logo');
     if (shareIdEl) shareIdEl.value = DEFAULT_SHARE_ID;
     const container = document.getElementById('algeo-container');
     const createToolbar = document.getElementById('createToolbar');
@@ -162,10 +181,18 @@
 
     document.getElementById('createBtn').onclick = async () => {
       const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
+      const logo = Boolean(logoEl && logoEl.checked);
       try {
-        sdk = await AlgeoSdk.createPresentation(container, {
-          appId,
-          shareId: id,
+        sdk = await AlgeoSdk.create(container, {
+          baseUrl,
+          mode: 'presentation',
+          presentation: {
+            appId,
+            shareId: id,
+            ui: {
+              logo,
+            },
+          },
         });
         statusEl.textContent = 'SDK 已初始化，ready: ' + sdk.ready + ', version: ' + (sdk.version || '-');
         log('演示模式初始化完成，shareId: ' + id);

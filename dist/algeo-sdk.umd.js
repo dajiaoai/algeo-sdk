@@ -3982,7 +3982,7 @@
   }
 
   /** SDK 版本号，构建时由 rollup 注入 */
-  const VERSION = '2.6.1';
+  const VERSION = '2.7.0';
   const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
   const DEFAULT_PRESENTATION_PATH = '/e';
   const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4265,12 +4265,27 @@
           super(container, 'presentation');
           this.currentSlideIndex = 0;
           this.slideCount = 0;
+          this.uiConfig = {};
+          this.mode = {
+              getUiConfig: () => ({ ...this.uiConfig }),
+              setUiConfig: async (config) => {
+                  await this.post('setUiConfig', { config });
+                  this.uiConfig = {
+                      ...this.uiConfig,
+                      ...config,
+                  };
+              },
+          };
       }
       async initialize(options = {}, baseUrl) {
+          this.uiConfig = options.ui ? { ...options.ui } : {};
           await this.init({
               baseUrl,
               initialId: options.shareId,
           });
+          if (Object.keys(this.uiConfig).length > 0) {
+              await this.mode.setUiConfig(this.uiConfig);
+          }
       }
       acceptsEventMessage() {
           return false;
@@ -4407,12 +4422,15 @@
           if (!options.auth?.appId?.trim()) {
               throw new AlgeoError('编辑模式需要提供 auth.appId。', EMBED_ERROR_CODES.MISSING_APP_ID);
           }
-          this.uiConfig = options.ui || {};
+          this.uiConfig = options.ui ? { ...options.ui } : {};
           await this.init({
               baseUrl,
               auth: options.auth,
               initialId: options.shareId,
           });
+          if (Object.keys(this.uiConfig).length > 0) {
+              await this.mode.setUiConfig(this.uiConfig);
+          }
           const content = await this.document.getContent();
           this.currentContent = content;
           this.slideCount = content.slides.length;

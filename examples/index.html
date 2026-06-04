@@ -86,15 +86,11 @@
     }
 
     .logo {
-      display: grid;
+      display: block;
       flex: 0 0 auto;
-      width: 34px;
-      height: 34px;
-      place-items: center;
-      color: #fff;
-      background: linear-gradient(135deg, var(--brand), #21a67a);
-      border-radius: 8px;
-      box-shadow: 0 10px 24px rgba(18, 103, 233, .24);
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
     }
 
     .nav {
@@ -117,6 +113,12 @@
       border-radius: 8px;
       background: rgba(255, 255, 255, .72);
       transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .nav .icon {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
     }
 
     .nav a:hover,
@@ -175,6 +177,12 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
+    }
+
+    .hero-actions .icon {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
     }
 
     .hero-actions .primary {
@@ -543,12 +551,29 @@
   <main class="page">
     <header class="topbar">
       <a class="brand" href="./" aria-label="Algeo SDK 示例首页">
-        <span class="logo" aria-hidden="true">A</span>
+        <img class="logo" src="assets/imgs/logo.svg" alt="" aria-hidden="true">
         <span>Algeo SDK 示例</span>
       </a>
       <nav class="nav" aria-label="相关链接">
-        <a href="https://open.dajiaoai.com/" target="_blank" rel="noopener">大角几何开放平台</a>
-        <a href="https://github.com/dajiaoai/algeo-sdk" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://open.dajiaoai.com/sdk/" target="_blank" rel="noopener">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M7 7.75A2.75 2.75 0 0 1 9.75 5h6.5A2.75 2.75 0 0 1 19 7.75v8.5A2.75 2.75 0 0 1 16.25 19h-6.5A2.75 2.75 0 0 1 7 16.25v-8.5Z"
+              stroke="currentColor" stroke-width="1.8" />
+            <path d="M10 9.5h4M10 12h4M10 14.5h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M7.5 8.5h-.75A2.75 2.75 0 0 0 4 11.25v6A2.75 2.75 0 0 0 6.75 20h8.5A2.75 2.75 0 0 0 18 17.25V16.5"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <span>查看文档</span>
+        </a>
+        <a href="https://github.com/dajiaoai/algeo-sdk" target="_blank" rel="noopener">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M12 2.8C7.02 2.8 3 6.86 3 11.88c0 4.01 2.59 7.41 6.18 8.6.45.08.62-.2.62-.44 0-.22-.01-.96-.02-1.74-2.52.56-3.05-1.08-3.05-1.08-.41-1.06-1-1.34-1-1.34-.82-.57.06-.56.06-.56.91.07 1.39.95 1.39.95.8 1.37 2.09.98 2.6.75.08-.59.31-.98.56-1.2-2.01-.23-4.13-1.02-4.13-4.54 0-1 .35-1.82.93-2.46-.09-.23-.4-1.16.09-2.42 0 0 .75-.24 2.47.94a8.45 8.45 0 0 1 4.5 0c1.72-1.18 2.47-.94 2.47-.94.49 1.26.18 2.19.09 2.42.58.64.93 1.46.93 2.46 0 3.53-2.12 4.31-4.14 4.54.32.28.61.81.61 1.64 0 1.19-.01 2.15-.01 2.44 0 .24.17.53.63.44A9.09 9.09 0 0 0 21 11.88C21 6.86 16.98 2.8 12 2.8Z"
+              fill="currentColor" />
+          </svg>
+          <span>查看仓库</span>
+        </a>
       </nav>
     </header>
 
@@ -558,8 +583,24 @@
         <h1>把几何画板嵌入你的应用</h1>
         <p class="lead">从基础 iframe、演示播放到编辑器 API，这里集中展示 Algeo SDK 在真实宿主页面中的接入方式和通信能力。</p>
         <div class="hero-actions">
-          <a class="primary" href="01-basic-iframe.html">查看基础嵌入</a>
-          <a href="06-editor-mode.html">进入编辑模式示例</a>
+          <a class="primary" href="https://open.dajiaoai.com/sdk/" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M6.5 7.5A2.5 2.5 0 0 1 9 5h6a2.5 2.5 0 0 1 2.5 2.5v9A2.5 2.5 0 0 1 15 19H9a2.5 2.5 0 0 1-2.5-2.5v-9Z"
+                stroke="currentColor" stroke-width="1.8" />
+              <path d="M9.5 9.5h5M9.5 12h5M9.5 14.5h2.5" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" />
+            </svg>
+            <span>查看文档</span>
+          </a>
+          <a href="https://github.com/dajiaoai/algeo-sdk" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 2.8C7.02 2.8 3 6.86 3 11.88c0 4.01 2.59 7.41 6.18 8.6.45.08.62-.2.62-.44 0-.22-.01-.96-.02-1.74-2.52.56-3.05-1.08-3.05-1.08-.41-1.06-1-1.34-1-1.34-.82-.57.06-.56.06-.56.91.07 1.39.95 1.39.95.8 1.37 2.09.98 2.6.75.08-.59.31-.98.56-1.2-2.01-.23-4.13-1.02-4.13-4.54 0-1 .35-1.82.93-2.46-.09-.23-.4-1.16.09-2.42 0 0 .75-.24 2.47.94a8.45 8.45 0 0 1 4.5 0c1.72-1.18 2.47-.94 2.47-.94.49 1.26.18 2.19.09 2.42.58.64.93 1.46.93 2.46 0 3.53-2.12 4.31-4.14 4.54.32.28.61.81.61 1.64 0 1.19-.01 2.15-.01 2.44 0 .24.17.53.63.44A9.09 9.09 0 0 0 21 11.88C21 6.86 16.98 2.8 12 2.8Z"
+                fill="currentColor" />
+            </svg>
+            <span>查看仓库</span>
+          </a>
         </div>
       </div>
       <div class="showcase" aria-hidden="true">
@@ -581,20 +622,7 @@
       </div>
     </section>
 
-    <section class="stats" aria-label="示例概览">
-      <div class="stat">
-        <strong>11</strong>
-        <span>可运行示例</span>
-      </div>
-      <div class="stat">
-        <strong>2</strong>
-        <span>演示与编辑模式</span>
-      </div>
-      <div class="stat">
-        <strong>API</strong>
-        <span>postMessage、Document、Slides、History 与事件</span>
-      </div>
-    </section>
+
 
     <div class="groups">
       <section class="group">
@@ -603,35 +631,35 @@
           <p>适合展示、播放、加载文件，以及从画板中读取结构化信息。</p>
         </div>
         <div class="grid">
-          <a class="example" href="01-basic-iframe.html">
+          <a class="example" href="01-basic-iframe.html" target="_blank" rel="noopener">
             <div>
               <h3>01 基础嵌入</h3>
               <span>100% 宽度、居中 max-width、vh、双列等高频布局</span>
             </div>
             <div class="meta"><span class="tag">iframe</span><span>打开示例</span></div>
           </a>
-          <a class="example" href="02-sdk-usage.html">
+          <a class="example" href="02-sdk-usage.html" target="_blank" rel="noopener">
             <div>
               <h3>02 SDK 方式</h3>
               <span>使用 AlgeoSdk 封装 iframe 与 postMessage</span>
             </div>
             <div class="meta"><span class="tag">SDK</span><span>打开示例</span></div>
           </a>
-          <a class="example" href="03-switch-slide.html">
+          <a class="example" href="03-switch-slide.html" target="_blank" rel="noopener">
             <div>
               <h3>03 切换画板</h3>
               <span>多画板内容，通过 switchSlide 切换</span>
             </div>
             <div class="meta"><span class="tag">Slides</span><span>打开示例</span></div>
           </a>
-          <a class="example" href="04-load-file.html">
+          <a class="example" href="04-load-file.html" target="_blank" rel="noopener">
             <div>
               <h3>04 loadFile</h3>
               <span>输入 JSON 文本或导入 .json 文件加载内容</span>
             </div>
             <div class="meta"><span class="tag">File</span><span>打开示例</span></div>
           </a>
-          <a class="example" href="05-repl.html">
+          <a class="example" href="05-repl.html" target="_blank" rel="noopener">
             <div>
               <h3>05 REPL</h3>
               <span>执行 REPL 指令，获取面向 AI 的文档/文本内容</span>
@@ -647,49 +675,49 @@
           <p>覆盖编辑器初始化、文档读写、画板管理、历史记录和事件回传。</p>
         </div>
         <div class="grid">
-          <a class="example" href="06-editor-mode.html">
+          <a class="example" href="06-editor-mode.html" target="_blank" rel="noopener">
             <div>
               <h3>06 内嵌编辑模式</h3>
               <span>预接入 editor mode，验证新 URL 构造与初始化参数</span>
             </div>
             <div class="meta"><span class="tag editor">Editor</span><span>打开示例</span></div>
           </a>
-          <a class="example" href="07-document-api.html">
+          <a class="example" href="07-document-api.html" target="_blank" rel="noopener">
             <div>
               <h3>07 DocumentApi</h3>
               <span>设置初始画板内容，以及如何取回当前画板内容</span>
             </div>
             <div class="meta"><span class="tag editor">Document</span><span>打开示例</span></div>
           </a>
-          <a class="example" href="08-slides-api.html">
+          <a class="example" href="08-slides-api.html" target="_blank" rel="noopener">
             <div>
               <h3>08 SlidesApi</h3>
               <span>编辑模式下的切换、新增、复制、删除与重排画板能力</span>
             </div>
             <div class="meta"><span class="tag editor">Slides</span><span>打开示例</span></div>
           </a>
-          <a class="example" href="09-history-api.html">
+          <a class="example" href="09-history-api.html" target="_blank" rel="noopener">
             <div>
               <h3>09 HistoryApi</h3>
               <span>测试撤销、重做、跳转与清空历史记录的宿主调用能力</span>
             </div>
             <div class="meta"><span class="tag editor">History</span><span>打开示例</span></div>
           </a>
-          <a class="example" href="10-editor-events.html">
+          <a class="example" href="10-editor-events.html" target="_blank" rel="noopener">
             <div>
               <h3>10 编辑器事件</h3>
               <span>监听 contentChange、slideChange 与 save，观察用户操作回传</span>
             </div>
             <div class="meta"><span class="tag editor">Events</span><span>打开示例</span></div>
           </a>
-          <a class="example" href="11-editor-share-id.html">
+          <a class="example" href="11-editor-share-id.html" target="_blank" rel="noopener">
             <div>
               <h3>11 shareId 加载编辑器</h3>
               <span>输入 shareId 后重建编辑器，验证 /embed/edit/:appId/:shareId 路由</span>
             </div>
             <div class="meta"><span class="tag editor">ShareId</span><span>打开示例</span></div>
           </a>
-          <a class="example" href="12-export-slide-image.html">
+          <a class="example" href="12-export-slide-image.html" target="_blank" rel="noopener">
             <div>
               <h3>12 导出画板图片</h3>
               <span>默认导出全部画板，也可按索引导出指定画板图片</span>
