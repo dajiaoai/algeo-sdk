@@ -171,8 +171,7 @@
 
   <script src="./assets/js/config.js"></script>
   <script>
-    const { shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
-    const EMBED_BASE = 'https://dajiaoai.com';
+    const { baseUrl, shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
     const logEl = document.getElementById('log');
     const shareIdEl = document.getElementById('shareId');
     if (shareIdEl) shareIdEl.value = DEFAULT_SHARE_ID;
@@ -186,7 +185,8 @@
 
     function load() {
       const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
-      const src = EMBED_BASE + '/e/' + encodeURIComponent(id);
+      const embedBase = baseUrl.replace(/\/+$/, '');
+      const src = embedBase + '/e/' + encodeURIComponent(id);
       iframes.forEach((el) => { if (el) el.src = src; });
     }
 

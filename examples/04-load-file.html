@@ -155,7 +155,7 @@
   <script src="./assets/js/config.js"></script>
   <script>
     (async function () {
-      const { appId } = window.ALGEO_CONFIG;
+      const { baseUrl, appId } = window.ALGEO_CONFIG;
       const logEl = document.getElementById('log');
       const jsonInput = document.getElementById('jsonInput');
       const fileInput = document.getElementById('fileInput');
@@ -180,7 +180,7 @@
         }
       }
 
-      let sdk = await AlgeoSdk.createPresentation(container, { appId });
+      let sdk = await AlgeoSdk.createPresentation(container, { baseUrl, appId });
 
       function doLoad(content) {
         sdk.loadFile(content)

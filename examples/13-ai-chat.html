@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>13 AI Chat Panel - Algeo SDK</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: rgba(255, 255, 255, 0.88);
+      --panel-strong: #ffffff;
+      --line: #dce3ee;
+      --text: #172033;
+      --muted: #677386;
+      --accent: #2563eb;
+      --accent-soft: rgba(37, 99, 235, 0.1);
+      --accent-strong: #1d4ed8;
+      --ok: #047857;
+      --warn: #b45309;
+      --console: #0f172a;
+      --console-text: #e5e7eb;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+      color: var(--text);
+      font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+      background:
+        radial-gradient(circle at top left,
+          rgba(37, 99, 235, 0.14),
+          transparent 28%),
+        radial-gradient(circle at right,
+          rgba(16, 185, 129, 0.13),
+          transparent 24%),
+        linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+    }
+
+    a {
+      color: var(--accent-strong);
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .page {
+      display: grid;
+      gap: 18px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: grid;
+      gap: 8px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 1.85rem;
+      line-height: 1.1;
+    }
+
+    .hero p {
+      max-width: 980px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(360px, 0.85fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      overflow: hidden;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(10px);
+    }
+
+    .embed-header,
+    .section {
+      padding: 16px 18px;
+    }
+
+    .embed-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg,
+          var(--accent-soft),
+          rgba(255, 255, 255, 0.56));
+    }
+
+    .embed-header strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    .embed-header span {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    #algeo-container {
+      height: 720px;
+      background: #f8fafc;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 18px;
+    }
+
+    .section {
+      display: grid;
+      gap: 12px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .section p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 650;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 10px;
+      color: var(--text);
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: rgba(37, 99, 235, 0.5);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      min-height: 40px;
+      padding: 0 14px;
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        opacity 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary {
+      color: #fff;
+      background: var(--accent);
+      box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+    }
+
+    .secondary {
+      color: var(--text);
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+    }
+
+    .danger {
+      color: #fff;
+      background: #dc2626;
+    }
+
+    .status {
+      padding: 12px 14px;
+      color: var(--accent-strong);
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: var(--accent-soft);
+      border: 1px solid rgba(37, 99, 235, 0.16);
+      border-radius: 12px;
+      font-size: 0.9rem;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .metric span {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .metric strong {
+      color: var(--accent-strong);
+      font-size: 1.35rem;
+    }
+
+    .payload,
+    .console {
+      margin: 0;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 12px;
+      font:
+        12px/1.6 Consolas,
+        Monaco,
+        monospace;
+    }
+
+    .payload {
+      max-height: 260px;
+      padding: 12px;
+      color: var(--text);
+      background: #f8fafc;
+      border: 1px solid var(--line);
+    }
+
+    .console {
+      min-height: 220px;
+      max-height: 360px;
+      padding: 14px;
+      color: var(--console-text);
+      background: var(--console);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.55;
+    }
+
+    .hint code {
+      color: var(--accent-strong);
+    }
+
+    .warning {
+      padding: 12px 14px;
+      color: #7c2d12;
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      border-left: 4px solid #ea580c;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.65;
+    }
+
+    .warning strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #9a3412;
+    }
+
+    @media (max-width: 1120px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      #algeo-container {
+        height: 520px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 16px;
+      }
+
+      .embed-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .section-title {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="hero">
+      <a href="index.html">← 返回示例列表</a>
+      <h1>13 AI Chat Panel</h1>
+      <p>
+        这个示例演示编辑器 AI 对话面板的宿主侧接入：开启
+        <code>ui.aiChatPanel</code>，监听
+        <code>aiRequest</code>，调用真实嵌入式 AI 后端接口，并将 OpenAI
+        Responses SSE 流交给
+        <code>editor.ai.consumeStream()</code>，由 SDK 透传给 iframe。
+      </p>
+    </div>
+
+    <div class="layout">
+      <section class="card">
+        <div class="embed-header">
+          <div>
+            <strong>Embedded Editor with AI Chat</strong>
+            <span id="config-info"></span>
+          </div>
+          <div class="button-row">
+            <button class="secondary" id="loadFileBtn">加载大角文件</button>
+            <button class="secondary" id="recreateBtn">重建编辑器</button>
+          </div>
+        </div>
+        <div id="algeo-container"></div>
+        <input id="fileInput" type="file" accept=".json,.algeo,application/json" hidden />
+      </section>
+
+      <aside class="sidebar">
+        <section class="card section">
+          <div class="section-title">
+            <h2>AI 转发配置</h2>
+            <button class="secondary" id="resetAiSettingsBtn">重置配置</button>
+          </div>
+          <div class="field">
+            <label for="baseUrlInput">接口 Base URL</label>
+            <input id="baseUrlInput" type="text" value="https://api.dajiaoai.com" />
+          </div>
+          <div class="field">
+            <label for="apiKeyInput">Api Key</label>
+            <input id="apiKeyInput" type="password" autocomplete="off" placeholder="djo_xxx" />
+            <p class="hint">
+              开放平台注册应用后获取 Api Key：
+              <a href="https://open.dajiaoai.com/api/auth.html" target="_blank"
+                rel="noopener">https://open.dajiaoai.com/api/auth.html</a>
+            </p>
+          </div>
+          <div class="button-row">
+            <button class="danger" id="abortBtn">取消当前生成</button>
+          </div>
+          <div class="status" id="status">等待初始化...</div>
+          <div class="warning" role="alert">
+            <strong>生产接入警告</strong>
+            本示例为了便于本地联调，会直接在浏览器里调用真实接口。生产流程请勿在前端暴露
+            Api Key，应由宿主后端保存 Api
+            Key、完成鉴权/额度校验后代理请求，再把 SSE 流透传给 SDK。
+          </div>
+        </section>
+
+        <section class="card section">
+          <h2>事件计数</h2>
+          <div class="metrics">
+            <div class="metric">
+              <span>aiRequest</span>
+              <strong id="requestCount">0</strong>
+            </div>
+            <div class="metric">
+              <span>aiCancel</span>
+              <strong id="cancelCount">0</strong>
+            </div>
+            <div class="metric">
+              <span>contentChange</span>
+              <strong id="contentCount">0</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="card section">
+          <h2>最近一次 AI payload</h2>
+          <pre class="payload" id="payloadView">尚未收到 aiRequest</pre>
+        </section>
+
+        <section class="card section">
+          <h2>调用日志</h2>
+          <pre class="console" id="logs">等待操作...</pre>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script src="../dist/algeo-sdk.umd.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script>
+    const { baseUrl, appId } = window.ALGEO_CONFIG;
+    const configInfo = document.getElementById('config-info');
+    const container = document.getElementById('algeo-container');
+    const baseUrlInput = document.getElementById('baseUrlInput');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const recreateBtn = document.getElementById('recreateBtn');
+    const loadFileBtn = document.getElementById('loadFileBtn');
+    const fileInput = document.getElementById('fileInput');
+    const resetAiSettingsBtn = document.getElementById('resetAiSettingsBtn');
+    const abortBtn = document.getElementById('abortBtn');
+    const status = document.getElementById('status');
+    const logs = document.getElementById('logs');
+    const payloadView = document.getElementById('payloadView');
+    const requestCount = document.getElementById('requestCount');
+    const cancelCount = document.getElementById('cancelCount');
+    const contentCount = document.getElementById('contentCount');
+
+    if (configInfo) {
+      configInfo.textContent = `baseUrl = ${baseUrl} · appId = ${appId}`;
+    }
+
+    const EMBEDDED_AI_RUN_PATH = '/api/v1/embedded/ai/run';
+    const SETTINGS_STORAGE_KEY = 'algeo-sdk-example-13-ai-settings';
+    const DEFAULT_AI_BASE_URL = 'https://api.dajiaoai.com';
+
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+        if (!raw) {
+          return;
+        }
+
+        const settings = JSON.parse(raw);
+        if (typeof settings.baseUrl === 'string') {
+          baseUrlInput.value = settings.baseUrl;
+        }
+        if (typeof settings.apiKey === 'string') {
+          apiKeyInput.value = settings.apiKey;
+        }
+      } catch (error) {
+        console.warn('加载 AI 示例配置失败', error);
+      }
+    }
+
+    function saveSettings() {
+      try {
+        localStorage.setItem(
+          SETTINGS_STORAGE_KEY,
+          JSON.stringify({
+            baseUrl: baseUrlInput.value.trim(),
+            apiKey: apiKeyInput.value.trim(),
+          }),
+        );
+      } catch (error) {
+        console.warn('保存 AI 示例配置失败', error);
+      }
+    }
+
+    function resetAiSettings() {
+      try {
+        localStorage.removeItem(SETTINGS_STORAGE_KEY);
+      } catch (error) {
+        console.warn('重置 AI 示例配置失败', error);
+      }
+      baseUrlInput.value = DEFAULT_AI_BASE_URL;
+      apiKeyInput.value = '';
+      status.textContent = 'AI 转发配置已重置。';
+    }
+
+    loadSettings();
+    baseUrlInput.addEventListener('input', saveSettings);
+    apiKeyInput.addEventListener('input', saveSettings);
+    resetAiSettingsBtn.addEventListener('click', resetAiSettings);
+
+    let editor = null;
+    let disposeListeners = [];
+    let activeController = null;
+    let activeBackendRunId = null;
+    let counters = {
+      aiRequest: 0,
+      aiCancel: 0,
+      contentChange: 0,
+    };
+
+    function formatJson(value) {
+      return JSON.stringify(value, null, 2);
+    }
+
+    function log(message, payload) {
+      const lines = [new Date().toLocaleTimeString() + ' ' + message];
+      if (payload !== undefined) {
+        lines.push(formatJson(payload));
+      }
+      logs.textContent = lines.join('\n') + '\n\n' + logs.textContent;
+    }
+
+    function updateCounters() {
+      requestCount.textContent = String(counters.aiRequest);
+      cancelCount.textContent = String(counters.aiCancel);
+      contentCount.textContent = String(counters.contentChange);
+    }
+
+    function resetState() {
+      counters = {
+        aiRequest: 0,
+        aiCancel: 0,
+        contentChange: 0,
+      };
+      updateCounters();
+      activeController = null;
+      activeBackendRunId = null;
+      payloadView.textContent = '尚未收到 aiRequest';
+      logs.textContent = '等待操作...';
+    }
+
+    function summarizePayload(payload) {
+      return {
+        model: payload && (payload.model || payload.model_id),
+        messages: Array.isArray(payload && payload.messages)
+          ? payload.messages.length
+          : 0,
+        input: payload && payload.input ? 'provided' : undefined,
+        extra_openai_params: payload && payload.extra_openai_params,
+      };
+    }
+
+    function summarizeContent(content) {
+      const slides = Array.isArray(content && content.slides)
+        ? content.slides
+        : [];
+      const messages = Array.isArray(content && content.messages)
+        ? content.messages
+        : [];
+      return {
+        slides: slides.length,
+        messages: messages.length,
+        version:
+          content && content.metadata ? content.metadata.version : undefined,
+      };
+    }
+
+    async function readAlgeoFile(file) {
+      const text = await file.text();
+      let content = null;
+
+      try {
+        content = JSON.parse(text);
+      } catch (error) {
+        throw new Error('文件不是有效的 JSON 内容');
+      }
+      return content;
+    }
+
+    function buildEmbeddedAiRequestBody(payload) {
+      const extraParams = payload.extra_openai_params || {};
+
+      return {
+        ...extraParams,
+        model: payload.model || payload.model_id,
+        input: payload.input || payload.messages || '',
+        metadata: {
+          ...(extraParams.metadata || {}),
+        },
+      };
+    }
+
+    function getApiKey() {
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) {
+        throw new Error('请先填写 Api Key');
+      }
+      return apiKey;
+    }
+
+    function normalizeApiBaseUrl(value) {
+      const rawValue = (value || '').trim() || DEFAULT_AI_BASE_URL;
+      const hasProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(rawValue);
+      const localHostLike =
+        /^(localhost|127\.0\.0\.1|\[?::1\]?)(:|\/|$)/.test(rawValue);
+      const urlText = hasProtocol
+        ? rawValue
+        : rawValue.startsWith('//')
+          ? window.location.protocol + rawValue
+          : (localHostLike ? 'http://' : 'https://') + rawValue;
+
+      try {
+        const url = new URL(urlText);
+        url.search = '';
+        url.hash = '';
+        return url.toString().replace(/\/+$/, '');
+      } catch (error) {
+        throw new Error('接口 Base URL 不合法，请填写完整域名或地址');
+      }
+    }
+
+    function getRunEndpoint() {
+      const baseUrl = normalizeApiBaseUrl(baseUrlInput.value);
+      if (baseUrlInput.value.trim() !== baseUrl) {
+        baseUrlInput.value = baseUrl;
+        saveSettings();
+      }
+      return new URL(EMBEDDED_AI_RUN_PATH, baseUrl + '/').toString();
+    }
+
+    function getCancelEndpoint() {
+      const url = new URL(getRunEndpoint());
+      url.pathname = url.pathname.replace(/\/run$/, '/cancel');
+      return url.toString();
+    }
+
+    async function cancelBackendRun(runId, reason) {
+      if (!runId) {
+        return;
+      }
+
+      await fetch(getCancelEndpoint(), {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + getApiKey(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          run_id: runId,
+          reason: reason || 'user_cancel',
+        }),
+      });
+    }
+
+    async function consumeBackendStream(event) {
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) {
+        throw new Error('请先填写 Api Key');
+      }
+
+      activeBackendRunId = null;
+
+      const headers = {
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream',
+        Authorization: 'Bearer ' + apiKey,
+        'x-request-id': 'algeo-sdk-example-' + Date.now(),
+      };
+
+      const response = await fetch(getRunEndpoint(), {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(buildEmbeddedAiRequestBody(event.payload)),
+        signal: event.signal,
+      });
+
+      if (!response.ok || !response.body) {
+        throw new Error('AI 请求失败：' + response.status);
+      }
+
+      activeBackendRunId = response.headers.get('X-Run-Id');
+      await editor.ai.consumeStream({
+        stream: response.body,
+        signal: event.signal,
+      });
+    }
+
+    function attachListeners(instance) {
+      disposeListeners.push(
+        instance.on('ready', function (event) {
+          status.textContent = '编辑器已就绪，AI 对话面板已开启。';
+          log('editor.ready', event);
+        }),
+      );
+
+      disposeListeners.push(
+        instance.on('aiRequest', async function (event) {
+          counters.aiRequest += 1;
+          updateCounters();
+          activeController = event.signal;
+          payloadView.textContent = formatJson(event.payload);
+          status.textContent = '收到 aiRequest，正在调用真实后端接口...';
+          log('editor.aiRequest', summarizePayload(event.payload));
+
+          await consumeBackendStream(event);
+
+          activeController = null;
+          activeBackendRunId = null;
+          status.textContent = 'AI 流已结束。';
+          log('editor.aiRequest.done');
+        }),
+      );
+
+      disposeListeners.push(
+        instance.on('aiCancel', function (event) {
+          counters.aiCancel += 1;
+          updateCounters();
+          activeController = null;
+          const cancelRunId = event.runId || activeBackendRunId;
+          void cancelBackendRun(cancelRunId, event.reason)
+            .then(function () {
+              log('backend.cancel.done', {
+                runId: cancelRunId,
+                reason: event.reason,
+              });
+            })
+            .catch(function (error) {
+              log('backend.cancel.error', {
+                message: error.message || String(error),
+              });
+            });
+          activeBackendRunId = null;
+          status.textContent =
+            'AI 生成已取消：' +
+            event.reason +
+            '，runId = ' +
+            (event.runId || 'null');
+          log('editor.aiCancel', event);
+        }),
+      );
+
+      disposeListeners.push(
+        instance.on('contentChange', function (event) {
+          counters.contentChange += 1;
+          updateCounters();
+          log('editor.contentChange', {
+            source: event.source,
+            slides:
+              event.content && event.content.slides
+                ? event.content.slides.length
+                : undefined,
+          });
+        }),
+      );
+    }
+
+    async function destroyEditor() {
+      disposeListeners.forEach(function (dispose) {
+        try {
+          dispose();
+        } catch (error) {
+          console.warn('dispose listener failed', error);
+        }
+      });
+      disposeListeners = [];
+
+      if (editor) {
+        const current = editor;
+        editor = null;
+        await current.destroy();
+      }
+      container.innerHTML = '';
+    }
+
+    async function createEditorInstance() {
+      await destroyEditor();
+      resetState();
+      status.textContent = '正在创建编辑器...';
+      log('createEditor.start', { baseUrl: baseUrl, appId: appId });
+      editor = await AlgeoSdk.create(container, {
+        mode: 'editor',
+        baseUrl: baseUrl,
+        editor: {
+          auth: { appId: appId },
+          ui: {
+            navbar: true,
+            slidePanel: true,
+            toolboxPanel: true,
+            algebraPanel: true,
+            docPanel: false,
+            helpEntry: true,
+            aiChatPanel: true,
+          },
+        },
+      });
+      attachListeners(editor);
+      status.textContent = '编辑器已创建。请在 iframe 的 AI 面板里提交问题。';
+      log('createEditor.done', { version: editor.version });
+      return editor;
+    }
+
+    recreateBtn.addEventListener('click', function () {
+      void createEditorInstance().catch(function (error) {
+        status.textContent = '重建失败：' + error.message;
+        log('createEditor.error', { message: error.message });
+      });
+    });
+
+    loadFileBtn.addEventListener('click', function () {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function () {
+      void (async function () {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) {
+          return;
+        }
+
+        if (!editor) {
+          await createEditorInstance();
+        }
+
+        const content = await readAlgeoFile(file);
+        await editor.document.loadContent(content);
+        status.textContent =
+          '大角文件已加载：' + file.name + '。可以向 AI 面板提问或继续编辑。';
+        log('document.loadContent', {
+          fileName: file.name,
+          ...summarizeContent(content),
+        });
+      })()
+        .catch(function (error) {
+          status.textContent = '加载大角文件失败：' + error.message;
+          log('document.loadContent.error', { message: error.message });
+        })
+        .finally(function () {
+          fileInput.value = '';
+        });
+    });
+
+    abortBtn.addEventListener('click', function () {
+      if (!activeBackendRunId) {
+        status.textContent = '当前没有正在进行的 AI 请求。';
+        return;
+      }
+      void cancelBackendRun(activeBackendRunId, 'user_cancel')
+        .then(function () {
+          status.textContent = '已向真实后端发送取消请求。';
+          log('backend.cancel.manual', { runId: activeBackendRunId });
+        })
+        .catch(function (error) {
+          status.textContent = '取消请求失败：' + error.message;
+          log('backend.cancel.manual.error', {
+            message: error.message || String(error),
+          });
+        });
+    });
+
+    void createEditorInstance().catch(function (error) {
+      status.textContent = '初始化失败：' + error.message;
+      log('createEditor.error', { message: error.message });
+    });
+  </script>
+</body>
+
+</html>

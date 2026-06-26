@@ -1,27 +1,41 @@
 import { EmbeddedTarget } from './embedded-target';
-import { type AlgeoEditorCreateOptions, type ContentChangeEvent, type DocumentApi, type EmbeddedEditorEventListenerMap, type EmbeddedEditorEventMap, type EmbeddedEditorEventName, type HistoryApi, type ModeApi, type SaveEvent, type SaveRequestMessage, type SlidesApi } from './shared';
+import { type AiApi, type AiCancelEvent, type AlgeoEditorCreateOptions, type ContentChangeEvent, type DocumentApi, type EmbedRequestMessage, type EmbeddedEditorEventListenerMap, type EmbeddedEditorEventMap, type EmbeddedEditorEventName, type HistoryApi, type ModeApi, type SaveEvent, type SlidesApi } from './shared';
 export declare class EmbeddedEditor extends EmbeddedTarget<EmbeddedEditorEventMap, EmbeddedEditorEventName, EmbeddedEditorEventListenerMap> {
     readonly document: DocumentApi;
     readonly slides: SlidesApi;
     readonly history: HistoryApi;
     readonly mode: ModeApi;
+    readonly ai: AiApi;
     private currentContent?;
     private currentSlideIndex;
     private slideCount;
     private historyCount;
     private historyCurrentIndex;
     private uiConfig;
+    private activeAiRun?;
     constructor(container: HTMLElement);
     initialize(options?: AlgeoEditorCreateOptions, baseUrl?: string): Promise<void>;
     protected handleEventMessage(event: ContentChangeEvent | SaveEvent | {
         type: 'slideChange';
         index: number;
-    }): void;
-    protected handleRequestMessage(message: SaveRequestMessage, sourceWindow: Window): boolean;
+    } | AiCancelEvent): void;
+    protected handleRequestMessage(message: EmbedRequestMessage, sourceWindow: Window): boolean;
+    destroy(): Promise<void>;
     private loadContent;
     private switchTo;
     private addSlide;
     private refreshHistoryState;
     private handleSaveRequest;
+    private handleAiRequest;
+    private cancelActiveAi;
+    private consumeAiStream;
+    private drainAiSseBuffer;
+    private pushAiSseFrame;
+    private parseAiSseFrame;
+    private getAiSseRunId;
+    private asRecord;
+    private isAiSseTerminalEvent;
+    private pushAiStreamEvent;
+    private setActiveAiRunId;
     private resolveSaveResult;
 }

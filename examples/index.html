@@ -1,13 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script>
     (function () {
       var path = location.pathname;
-      var dir = /\.\w+$/.test(path) ? path.replace(/[^/]*$/, '') || '/' : path;
+      var dir = /\.\w+$/.test(path)
+        ? path.replace(/[^/]*$/, '') || '/'
+        : path;
       if (!dir.endsWith('/')) dir += '/';
       var base = location.origin + dir;
       document.write('<base href="' + base + '">');
@@ -27,8 +29,15 @@
       --brand-strong: #0b4fc2;
       --green: #0c8a64;
       --amber: #b36b00;
-      --shadow: 0 18px 45px rgba(24, 32, 47, .10);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --shadow: 0 18px 45px rgba(24, 32, 47, 0.1);
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        sans-serif;
     }
 
     * {
@@ -40,7 +49,9 @@
       margin: 0;
       color: var(--ink);
       background:
-        radial-gradient(circle at top left, rgba(18, 103, 233, .14), transparent 34rem),
+        radial-gradient(circle at top left,
+          rgba(18, 103, 233, 0.14),
+          transparent 34rem),
         linear-gradient(180deg, #eef4ff 0, var(--bg) 22rem);
     }
 
@@ -49,12 +60,14 @@
       inset: 0;
       z-index: -1;
       pointer-events: none;
-      content: "";
+      content: '';
       background-image:
-        linear-gradient(rgba(18, 103, 233, .07) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(18, 103, 233, .07) 1px, transparent 1px);
+        linear-gradient(rgba(18, 103, 233, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(18, 103, 233, 0.07) 1px, transparent 1px);
       background-size: 44px 44px;
-      mask-image: linear-gradient(180deg, rgba(0, 0, 0, .8), transparent 55%);
+      mask-image: linear-gradient(180deg,
+          rgba(0, 0, 0, 0.8),
+          transparent 55%);
     }
 
     a {
@@ -100,6 +113,7 @@
     }
 
     .nav a,
+    .nav button,
     .hero-actions a {
       display: inline-flex;
       align-items: center;
@@ -111,8 +125,15 @@
       font-weight: 650;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: rgba(255, 255, 255, .72);
-      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+      background: rgba(255, 255, 255, 0.72);
+      color: inherit;
+      cursor: pointer;
+      font: inherit;
+      transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
     }
 
     .nav .icon {
@@ -122,10 +143,11 @@
     }
 
     .nav a:hover,
+    .nav button:hover,
     .hero-actions a:hover {
       transform: translateY(-1px);
-      border-color: rgba(18, 103, 233, .35);
-      box-shadow: 0 12px 24px rgba(24, 32, 47, .10);
+      border-color: rgba(18, 103, 233, 0.35);
+      box-shadow: 0 12px 24px rgba(24, 32, 47, 0.1);
     }
 
     .hero {
@@ -134,6 +156,87 @@
       gap: 32px;
       align-items: stretch;
       margin-bottom: 34px;
+    }
+
+    .config-panel {
+      display: none;
+      margin: -16px 0 28px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(24, 32, 47, 0.08);
+      backdrop-filter: blur(12px);
+    }
+
+    .config-panel.is-open {
+      display: block;
+    }
+
+    .config-form {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .config-field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .config-field label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .config-field input {
+      width: 100%;
+      min-height: 38px;
+      padding: 0 11px;
+      color: var(--ink);
+      font: inherit;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      outline: none;
+      background: #fff;
+    }
+
+    .config-field input:focus {
+      border-color: rgba(18, 103, 233, 0.55);
+      box-shadow: 0 0 0 3px rgba(18, 103, 233, 0.1);
+    }
+
+    .config-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .config-actions button {
+      min-height: 38px;
+      padding: 0 14px;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .config-actions .save {
+      color: #fff;
+      background: var(--brand);
+      border-color: var(--brand);
+    }
+
+    .config-status {
+      min-height: 20px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
     }
 
     .hero-copy {
@@ -152,8 +255,8 @@
       color: var(--brand-strong);
       font-size: 13px;
       font-weight: 700;
-      background: rgba(18, 103, 233, .10);
-      border: 1px solid rgba(18, 103, 233, .16);
+      background: rgba(18, 103, 233, 0.1);
+      border: 1px solid rgba(18, 103, 233, 0.16);
       border-radius: 999px;
     }
 
@@ -161,7 +264,7 @@
       max-width: 760px;
       margin: 0;
       font-size: clamp(38px, 6vw, 68px);
-      line-height: .98;
+      line-height: 0.98;
       letter-spacing: 0;
     }
 
@@ -189,7 +292,7 @@
       color: #fff;
       background: var(--brand);
       border-color: var(--brand);
-      box-shadow: 0 16px 32px rgba(18, 103, 233, .22);
+      box-shadow: 0 16px 32px rgba(18, 103, 233, 0.22);
     }
 
     .hero-actions .primary:hover {
@@ -201,8 +304,8 @@
       overflow: hidden;
       min-height: 360px;
       padding: 22px;
-      background: rgba(255, 255, 255, .78);
-      border: 1px solid rgba(223, 228, 236, .95);
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(223, 228, 236, 0.95);
       border-radius: 18px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(12px);
@@ -246,8 +349,8 @@
       position: relative;
       min-height: 280px;
       background:
-        linear-gradient(90deg, rgba(18, 103, 233, .08) 1px, transparent 1px),
-        linear-gradient(rgba(18, 103, 233, .08) 1px, transparent 1px);
+        linear-gradient(90deg, rgba(18, 103, 233, 0.08) 1px, transparent 1px),
+        linear-gradient(rgba(18, 103, 233, 0.08) 1px, transparent 1px);
       background-size: 26px 26px;
     }
 
@@ -262,7 +365,7 @@
       left: 58px;
       top: 58px;
       clip-path: polygon(50% 0, 100% 100%, 0 100%);
-      background: rgba(18, 103, 233, .08);
+      background: rgba(18, 103, 233, 0.08);
     }
 
     .shape.circle {
@@ -272,7 +375,7 @@
       height: 102px;
       border-color: #21a67a;
       border-radius: 50%;
-      background: rgba(33, 166, 122, .08);
+      background: rgba(33, 166, 122, 0.08);
     }
 
     .shape.line {
@@ -296,7 +399,7 @@
       font-weight: 800;
       background: var(--ink);
       border-radius: 50%;
-      box-shadow: 0 8px 18px rgba(24, 32, 47, .20);
+      box-shadow: 0 8px 18px rgba(24, 32, 47, 0.2);
     }
 
     .point.a {
@@ -323,7 +426,7 @@
 
     .stat {
       padding: 18px;
-      background: rgba(255, 255, 255, .74);
+      background: rgba(255, 255, 255, 0.74);
       border: 1px solid var(--line);
       border-radius: 12px;
     }
@@ -389,8 +492,11 @@
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 12px;
-      box-shadow: 0 1px 1px rgba(24, 32, 47, .04);
-      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+      box-shadow: 0 1px 1px rgba(24, 32, 47, 0.04);
+      transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
     }
 
     .example::after {
@@ -398,16 +504,18 @@
       inset: auto 18px 0 auto;
       width: 58px;
       height: 58px;
-      content: "";
-      background: linear-gradient(135deg, rgba(18, 103, 233, .16), rgba(33, 166, 122, .16));
+      content: '';
+      background: linear-gradient(135deg,
+          rgba(18, 103, 233, 0.16),
+          rgba(33, 166, 122, 0.16));
       clip-path: polygon(50% 0, 100% 100%, 0 100%);
       transform: translateY(24px) rotate(12deg);
     }
 
     .example:hover {
       transform: translateY(-3px);
-      border-color: rgba(18, 103, 233, .34);
-      box-shadow: 0 16px 32px rgba(24, 32, 47, .10);
+      border-color: rgba(18, 103, 233, 0.34);
+      box-shadow: 0 16px 32px rgba(24, 32, 47, 0.1);
     }
 
     .example h3 {
@@ -437,13 +545,13 @@
     .tag {
       padding: 5px 8px;
       color: var(--brand-strong);
-      background: rgba(18, 103, 233, .08);
+      background: rgba(18, 103, 233, 0.08);
       border-radius: 7px;
     }
 
     .tag.editor {
       color: var(--green);
-      background: rgba(12, 138, 100, .09);
+      background: rgba(12, 138, 100, 0.09);
     }
 
     @media (max-width: 860px) {
@@ -463,13 +571,22 @@
         flex-wrap: wrap;
       }
 
-      .nav a {
+      .nav a,
+      .nav button {
         flex: 1 1 160px;
       }
 
       .hero {
         grid-template-columns: 1fr;
         gap: 20px;
+      }
+
+      .config-form {
+        grid-template-columns: 1fr;
+      }
+
+      .config-actions {
+        flex-wrap: wrap;
       }
 
       .hero-copy {
@@ -551,7 +668,7 @@
   <main class="page">
     <header class="topbar">
       <a class="brand" href="./" aria-label="Algeo SDK 示例首页">
-        <img class="logo" src="assets/imgs/logo.svg" alt="" aria-hidden="true">
+        <img class="logo" src="assets/imgs/logo.svg" alt="" aria-hidden="true" />
         <span>Algeo SDK 示例</span>
       </a>
       <nav class="nav" aria-label="相关链接">
@@ -574,14 +691,50 @@
           </svg>
           <span>查看仓库</span>
         </a>
+        <button type="button" id="configToggle" aria-expanded="false" aria-controls="configPanel" title="配置示例参数">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"
+              stroke="currentColor" stroke-width="1.8" />
+            <path
+              d="M19.4 13.4a7.9 7.9 0 0 0 .05-1.4l1.75-1.34-1.85-3.2-2.05.82a7.3 7.3 0 0 0-1.2-.7L15.8 5.4h-3.7l-.3 2.18c-.42.18-.82.42-1.2.7l-2.05-.82-1.85 3.2L8.45 12a7.9 7.9 0 0 0 .05 1.4l-1.72 1.36 1.85 3.2 2.03-.84c.38.28.79.52 1.23.72l.31 2.16h3.7l.31-2.16c.44-.2.85-.44 1.23-.72l2.03.84 1.85-3.2-1.92-1.36Z"
+              stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+          </svg>
+          <span>配置</span>
+        </button>
       </nav>
     </header>
+
+    <section class="config-panel" id="configPanel" aria-label="示例配置">
+      <form class="config-form" id="configForm">
+        <div class="config-field">
+          <label for="configBaseUrl">Base URL</label>
+          <input id="configBaseUrl" name="baseUrl" type="url" autocomplete="off" required />
+        </div>
+        <div class="config-field">
+          <label for="configAppId">App ID</label>
+          <input id="configAppId" name="appId" type="text" autocomplete="off" required />
+        </div>
+        <div class="config-field">
+          <label for="configShareId">Share ID</label>
+          <input id="configShareId" name="shareId" type="text" autocomplete="off" required />
+        </div>
+        <div class="config-actions">
+          <button class="save" type="submit">保存</button>
+          <button type="button" id="configReset">重置</button>
+        </div>
+      </form>
+      <p class="config-status" id="configStatus" aria-live="polite"></p>
+    </section>
 
     <section class="hero">
       <div class="hero-copy">
         <span class="eyebrow">大角几何内嵌画板 SDK</span>
         <h1>把几何画板嵌入你的应用</h1>
-        <p class="lead">从基础 iframe、演示播放到编辑器 API，这里集中展示 Algeo SDK 在真实宿主页面中的接入方式和通信能力。</p>
+        <p class="lead">
+          从基础 iframe、演示播放到编辑器 API，这里集中展示 Algeo SDK
+          在真实宿主页面中的接入方式和通信能力。
+        </p>
         <div class="hero-actions">
           <a class="primary" href="https://open.dajiaoai.com/sdk/" target="_blank" rel="noopener">
             <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -622,8 +775,6 @@
       </div>
     </section>
 
-
-
     <div class="groups">
       <section class="group">
         <div class="section-title">
@@ -636,35 +787,45 @@
               <h3>01 基础嵌入</h3>
               <span>100% 宽度、居中 max-width、vh、双列等高频布局</span>
             </div>
-            <div class="meta"><span class="tag">iframe</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag">iframe</span><span>打开示例</span>
+            </div>
           </a>
           <a class="example" href="02-sdk-usage.html" target="_blank" rel="noopener">
             <div>
               <h3>02 SDK 方式</h3>
               <span>使用 AlgeoSdk 封装 iframe 与 postMessage</span>
             </div>
-            <div class="meta"><span class="tag">SDK</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag">SDK</span><span>打开示例</span>
+            </div>
           </a>
           <a class="example" href="03-switch-slide.html" target="_blank" rel="noopener">
             <div>
               <h3>03 切换画板</h3>
               <span>多画板内容，通过 switchSlide 切换</span>
             </div>
-            <div class="meta"><span class="tag">Slides</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag">Slides</span><span>打开示例</span>
+            </div>
           </a>
           <a class="example" href="04-load-file.html" target="_blank" rel="noopener">
             <div>
               <h3>04 loadFile</h3>
               <span>输入 JSON 文本或导入 .json 文件加载内容</span>
             </div>
-            <div class="meta"><span class="tag">File</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag">File</span><span>打开示例</span>
+            </div>
           </a>
           <a class="example" href="05-repl.html" target="_blank" rel="noopener">
             <div>
               <h3>05 REPL</h3>
               <span>执行 REPL 指令，获取面向 AI 的文档/文本内容</span>
             </div>
-            <div class="meta"><span class="tag">REPL</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag">REPL</span><span>打开示例</span>
+            </div>
           </a>
         </div>
       </section>
@@ -680,54 +841,131 @@
               <h3>06 内嵌编辑模式</h3>
               <span>预接入 editor mode，验证新 URL 构造与初始化参数</span>
             </div>
-            <div class="meta"><span class="tag editor">Editor</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag editor">Editor</span><span>打开示例</span>
+            </div>
           </a>
           <a class="example" href="07-document-api.html" target="_blank" rel="noopener">
             <div>
               <h3>07 DocumentApi</h3>
               <span>设置初始画板内容，以及如何取回当前画板内容</span>
             </div>
-            <div class="meta"><span class="tag editor">Document</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag editor">Document</span><span>打开示例</span>
+            </div>
           </a>
           <a class="example" href="08-slides-api.html" target="_blank" rel="noopener">
             <div>
               <h3>08 SlidesApi</h3>
               <span>编辑模式下的切换、新增、复制、删除与重排画板能力</span>
             </div>
-            <div class="meta"><span class="tag editor">Slides</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag editor">Slides</span><span>打开示例</span>
+            </div>
           </a>
           <a class="example" href="09-history-api.html" target="_blank" rel="noopener">
             <div>
               <h3>09 HistoryApi</h3>
               <span>测试撤销、重做、跳转与清空历史记录的宿主调用能力</span>
             </div>
-            <div class="meta"><span class="tag editor">History</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag editor">History</span><span>打开示例</span>
+            </div>
           </a>
           <a class="example" href="10-editor-events.html" target="_blank" rel="noopener">
             <div>
               <h3>10 编辑器事件</h3>
-              <span>监听 contentChange、slideChange 与 save，观察用户操作回传</span>
+              <span>监听 contentChange、slideChange 与
+                save，观察用户操作回传</span>
             </div>
-            <div class="meta"><span class="tag editor">Events</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag editor">Events</span><span>打开示例</span>
+            </div>
           </a>
           <a class="example" href="11-editor-share-id.html" target="_blank" rel="noopener">
             <div>
               <h3>11 shareId 加载编辑器</h3>
-              <span>输入 shareId 后重建编辑器，验证 /embed/edit/:appId/:shareId 路由</span>
+              <span>输入 shareId 后重建编辑器，验证 /embed/edit/:appId/:shareId
+                路由</span>
             </div>
-            <div class="meta"><span class="tag editor">ShareId</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag editor">ShareId</span><span>打开示例</span>
+            </div>
           </a>
           <a class="example" href="12-export-slide-image.html" target="_blank" rel="noopener">
             <div>
               <h3>12 导出画板图片</h3>
               <span>默认导出全部画板，也可按索引导出指定画板图片</span>
             </div>
-            <div class="meta"><span class="tag editor">Export</span><span>打开示例</span></div>
+            <div class="meta">
+              <span class="tag editor">Export</span><span>打开示例</span>
+            </div>
+          </a>
+          <a class="example" href="13-ai-chat.html" target="_blank" rel="noopener">
+            <div>
+              <h3>13 AI 对话面板</h3>
+              <span>开启 aiChatPanel，监听 aiRequest，并将 SSE 流透传回
+                iframe</span>
+            </div>
+            <div class="meta">
+              <span class="tag editor">AI</span><span>打开示例</span>
+            </div>
           </a>
         </div>
       </section>
     </div>
   </main>
+  <script src="./assets/js/config.js"></script>
+  <script>
+    (function () {
+      var panel = document.getElementById('configPanel');
+      var toggle = document.getElementById('configToggle');
+      var form = document.getElementById('configForm');
+      var reset = document.getElementById('configReset');
+      var status = document.getElementById('configStatus');
+      var baseUrlInput = document.getElementById('configBaseUrl');
+      var appIdInput = document.getElementById('configAppId');
+      var shareIdInput = document.getElementById('configShareId');
+
+      function fillForm(config) {
+        baseUrlInput.value = config.baseUrl || '';
+        appIdInput.value = config.appId || '';
+        shareIdInput.value = config.shareId || '';
+      }
+
+      function setStatus(text) {
+        status.textContent = text;
+      }
+
+      fillForm(window.ALGEO_CONFIG);
+
+      toggle.addEventListener('click', function () {
+        var isOpen = panel.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        if (isOpen) {
+          fillForm(window.ALGEO_CONFIG_API.get());
+          baseUrlInput.focus();
+        }
+      });
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var next = window.ALGEO_CONFIG_API.set({
+          baseUrl: baseUrlInput.value,
+          appId: appIdInput.value,
+          shareId: shareIdInput.value,
+        });
+        fillForm(next);
+        setStatus('已保存到本地浏览器存储，新打开或刷新的示例页会使用该配置。');
+      });
+
+      reset.addEventListener('click', function () {
+        var next = window.ALGEO_CONFIG_API.reset();
+        fillForm(next);
+        setStatus('已恢复为 config.js 默认配置。');
+      });
+    })();
+  </script>
 </body>
 
 </html>
