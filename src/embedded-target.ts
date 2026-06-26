@@ -5,13 +5,14 @@ import {
   EMBED_TIMEOUT_MS,
   EMBED_ERROR_CODES,
   type EmbedInitOptions,
+  type EmbedRequestMessage,
   generateRequestId,
   type EmbedEventMessage,
+  isAiRequestMessage,
   isEmbedEventMessage,
   isReadyMessage,
   isResponseMessage,
   isSaveRequestMessage,
-  type SaveRequestMessage,
   type ReadyEvent,
   type TEventName,
 } from './shared';
@@ -92,7 +93,7 @@ export abstract class EmbeddedTarget<
   }
 
   protected handleRequestMessage(
-    _message: SaveRequestMessage,
+    _message: EmbedRequestMessage,
     _sourceWindow: Window,
   ): boolean {
     return false;
@@ -234,7 +235,7 @@ export abstract class EmbeddedTarget<
         }
 
         if (
-          isSaveRequestMessage(data) &&
+          (isSaveRequestMessage(data) || isAiRequestMessage(data)) &&
           this.handleRequestMessage(data, iframe.contentWindow as Window)
         ) {
           return;
@@ -306,6 +307,17 @@ export abstract class EmbeddedTarget<
         }
       }, timeoutMs);
     });
+  }
+
+  protected postEvent(
+    type: string,
+    payload: Record<string, unknown> = {},
+  ): void {
+    if (this.destroyed || !this._ready) {
+      return;
+    }
+
+    this.iframe?.contentWindow?.postMessage({ type, ...payload }, '*');
   }
 
   async destroy(): Promise<void> {

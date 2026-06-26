@@ -118,6 +118,7 @@ const editor = await createEditor(document.getElementById('editor-root'), {
     algebraPanel: false,
     docPanel: false,
     helpEntry: false,
+    aiChatPanel: true,
   },
 });
 
@@ -157,9 +158,38 @@ editor.on('save', async (event) => {
 
   console.log('用户点击保存按钮且宿主返回成功后的完整内容', event.content);
 });
+
+editor.on('aiRequest', async ({ payload, signal }) => {
+  // 接入方自行进行后端鉴权
+  const response = await fetch('/api/xxxx', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
+    },
+    body: JSON.stringify(payload),
+    signal,
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`AI 请求失败：${response.status}`);
+  }
+
+  await editor.ai.consumeStream({
+    stream: response.body,
+    signal,
+  });
+});
+
+editor.on('aiCancel', ({ runId, reason }) => {
+  console.log('用户取消 AI 生成', runId, reason);
+});
 ```
 
 编辑器内嵌页点击保存按钮时，会触发 `editor.on('save', listener)` 的请求阶段监听器。只有宿主返回 `{ status: 'success' }` 后，iframe 才会展示成功态，并向外触发 `save` 的成功阶段事件。
+
+开启 `ui.aiChatPanel` 后，iframe 内的 AI 对话请求会通过 `editor.on('aiRequest', listener)` 交给宿主处理。宿主完成登录、权限、额度等业务校验后，将后端返回的大角几何标准 SSE 流传给 `editor.ai.consumeStream()` 即可。
 
 如需通过统一入口分发模式，也可以使用 `create`：
 
@@ -260,6 +290,18 @@ type AlgeoCreateOptions =
 | `shareId`        | `string`                       | `''`   | 编辑模式初始分享 ID，会映射到 `/embed/edit/:appId/:id` |
 | `initialContent` | `FileContentLatest`            | -      | 初始化后自动注入的文件内容                             |
 | `ui`             | `Partial<AlgeoEditorUiConfig>` | -      | 编辑器 UI 开关配置                                     |
+
+**AlgeoEditorUiConfig：**
+
+| 属性           | 类型      | 默认值  | 说明                 |
+| -------------- | --------- | ------- | -------------------- |
+| `navbar`       | `boolean` | -       | 是否展示顶部导航栏   |
+| `slidePanel`   | `boolean` | -       | 是否展示画板列表     |
+| `toolboxPanel` | `boolean` | -       | 是否展示工具栏       |
+| `algebraPanel` | `boolean` | -       | 是否展示代数面板     |
+| `docPanel`     | `boolean` | -       | 是否展示文档面板     |
+| `helpEntry`    | `boolean` | -       | 是否展示帮助入口     |
+| `aiChatPanel`  | `boolean` | `false` | 是否展示 AI 对话面板 |
 
 **AlgeoPresentationCreateOptions：**
 
@@ -413,6 +455,7 @@ interface FileContent {
 | `slides`   | `SlidesApi`   | 多画板管理能力                       |
 | `history`  | `HistoryApi`  | 历史记录能力                         |
 | `mode`     | `ModeApi`     | 编辑器展示模式控制                   |
+| `ai`       | `AiApi`       | AI 对话流式响应透传能力              |
 
 #### `editor.document`
 
@@ -455,16 +498,25 @@ interface FileContent {
 | `getUiConfig()`       | 获取当前 UI 配置 |
 | `setUiConfig(config)` | 更新 UI 配置     |
 
+#### `editor.ai`
+
+| 方法                | 说明                                                                |
+| ------------------- | ------------------------------------------------------------------- |
+| `consumeStream()`   | 消费接入方后端返回的大角几何标准 SSE 流，并实时转发给 iframe        |
+| `pushStreamEvent()` | 高级接口；接入方已自行解析 SSE 或使用非标准传输时，手动推送流式事件 |
+
 #### 编辑器事件
 
 `editor.on(event, listener)` 当前支持以下事件：
 
-| 事件名          | 事件数据                                                   | 说明                                                                             |
-| --------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `ready`         | `{ type: 'ready', mode, version }`                         | iframe 初始化完成                                                                |
-| `contentChange` | `{ type: 'contentChange', source: 'user', content }`       | 用户在 iframe 内编辑后回传完整 `FileContentLatest`                               |
-| `slideChange`   | `{ type: 'slideChange', index }`                           | 用户在 iframe 内切换画板后回传当前索引                                           |
-| `save`          | `{ type: 'save', stage: 'request' \| 'success', content }` | `stage: 'request'` 时用于宿主处理保存，`stage: 'success'` 时表示保存成功后的通知 |
+| 事件名          | 事件数据                                                   | 说明                                                                              |
+| --------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `ready`         | `{ type: 'ready', mode, version }`                         | iframe 初始化完成                                                                 |
+| `contentChange` | `{ type: 'contentChange', source, content }`               | 用户、AI 或 SDK 加载内容后回传完整 `FileContentLatest`                            |
+| `slideChange`   | `{ type: 'slideChange', index }`                           | 用户在 iframe 内切换画板后回传当前索引                                            |
+| `save`          | `{ type: 'save', stage: 'request' \| 'success', content }` | `stage: 'request'` 时用于宿主处理保存，`stage: 'success'` 时表示保存成功后的通知  |
+| `aiRequest`     | `{ type: 'aiRequest', payload, signal }`                   | iframe 发起 AI 请求，宿主应调用自有后端并将响应流交给 `editor.ai.consumeStream()` |
+| `aiCancel`      | `{ type: 'aiCancel', runId, reason }`                      | 用户停止生成、新请求替代旧请求或 editor 销毁时触发                                |
 
 #### 事件与销毁
 

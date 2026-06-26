@@ -42,6 +42,6 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@dajiaoai/algeo-protocol": "^1.4.0"
+    "@dajiaoai/algeo-protocol": "^1.5.0"
   }
 }

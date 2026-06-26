@@ -42,6 +42,7 @@ npx serve examples
 | 10-editor-events.html      | 编辑模式 | 展示 editor.on 监听 contentChange、slideChange 与 save 事件     |
 | 11-editor-share-id.html    | 编辑模式 | 展示如何加载指定 shareId 的文件数据                             |
 | 12-export-slide-image.html | 编辑模式 | 展示导出指定画板或全部画板图片                                  |
+| 13-ai-chat.html            | 编辑模式 | 展示 AI 对话面板、aiRequest 事件与 SSE 流透传                   |
 
 ## 全屏支持
 

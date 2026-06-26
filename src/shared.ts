@@ -1,6 +1,8 @@
 import {
   AlgeoError,
   type AlgeoErrorPayload,
+  type AiRunPayloadV1,
+  type AiStreamEventV1,
   type EmbedReadyMessage,
   type EmbedResponseMessage,
   type FileContentLatest,
@@ -12,6 +14,14 @@ export const VERSION = '__ALGEO_SDK_VERSION__';
 
 /** 从协议层 re-export，供外部使用 */
 export type { FileContentLatest, AlgeoErrorPayload };
+export type {
+  AiRawSseEventV1,
+  AiResponseRecordV1,
+  AiRunPayloadV1,
+  AiStreamEventV1,
+  GeometryOpV1,
+  OpenAiChatMessageV1,
+} from '@dajiaoai/algeo-protocol';
 export { AlgeoError, EMBED_ERROR_CODES };
 
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
@@ -42,6 +52,7 @@ export interface AlgeoEditorUiConfig {
   algebraPanel?: boolean;
   docPanel?: boolean;
   helpEntry?: boolean;
+  aiChatPanel?: boolean;
 }
 
 export interface AlgeoPresentationUiConfig {
@@ -95,6 +106,7 @@ export interface ContentChangeEvent {
     | 'loadFile'
     | 'loadShareById'
     | 'initialContent'
+    | 'ai'
     | 'user';
   content?: FileContentLatest;
   shareId?: string;
@@ -125,11 +137,39 @@ export interface SaveRequestMessage {
   content: FileContentLatest;
 }
 
+export interface AiApi {
+  consumeStream(input: {
+    stream: ReadableStream<Uint8Array>;
+    signal?: AbortSignal;
+  }): Promise<void>;
+  pushStreamEvent(event: AiStreamEventV1): void;
+}
+
+export interface AiRequestEvent {
+  type: 'aiRequest';
+  payload: AiRunPayloadV1;
+  signal: AbortSignal;
+}
+
+export interface AiCancelEvent {
+  type: 'aiCancel';
+  runId: string | null;
+  reason: 'user' | 'superseded' | 'destroyed';
+}
+
+export interface AiRequestMessage {
+  type: 'aiRequest';
+  requestId: string;
+  payload: AiRunPayloadV1;
+}
+
 export interface EmbeddedEditorEventMap {
   ready: ReadyEvent;
   contentChange: ContentChangeEvent;
   slideChange: SlideChangeEvent;
   save: SaveEvent;
+  aiRequest: AiRequestEvent;
+  aiCancel: AiCancelEvent;
 }
 
 export interface EmbeddedPresentationEventMap {
@@ -146,6 +186,8 @@ export type EmbeddedEditorEventListenerMap = {
   save: (
     event: SaveEvent,
   ) => void | AlgeoEditorSaveResult | Promise<void | AlgeoEditorSaveResult>;
+  aiRequest: (event: AiRequestEvent) => void | Promise<void>;
+  aiCancel: (event: AiCancelEvent) => void;
 };
 
 export type EmbeddedPresentationEventListenerMap = {
@@ -277,7 +319,10 @@ export function isReadyMessage(msg: unknown): msg is EmbedReadyMessage {
 export type EmbedEventMessage =
   | ContentChangeEvent
   | SlideChangeEvent
-  | SaveSuccessEvent;
+  | SaveSuccessEvent
+  | AiCancelEvent;
+
+export type EmbedRequestMessage = SaveRequestMessage | AiRequestMessage;
 
 export function isSaveRequestMessage(msg: unknown): msg is SaveRequestMessage {
   return (
@@ -287,6 +332,18 @@ export function isSaveRequestMessage(msg: unknown): msg is SaveRequestMessage {
     (msg as { type?: unknown }).type === 'save' &&
     typeof (msg as { requestId?: unknown }).requestId === 'string' &&
     typeof (msg as { content?: unknown }).content === 'object'
+  );
+}
+
+export function isAiRequestMessage(msg: unknown): msg is AiRequestMessage {
+  return (
+    typeof msg === 'object' &&
+    msg !== null &&
+    'type' in msg &&
+    (msg as { type?: unknown }).type === 'aiRequest' &&
+    typeof (msg as { requestId?: unknown }).requestId === 'string' &&
+    typeof (msg as { payload?: unknown }).payload === 'object' &&
+    (msg as { payload?: unknown }).payload !== null
   );
 }
 
@@ -314,6 +371,15 @@ export function isEmbedEventMessage(msg: unknown): msg is EmbedEventMessage {
 
   if (type === 'contentChange') {
     return true;
+  }
+
+  if (type === 'aiCancel') {
+    const runId = (msg as { runId?: unknown }).runId;
+    const reason = (msg as { reason?: unknown }).reason;
+    return (
+      (runId === null || typeof runId === 'string') &&
+      (reason === 'user' || reason === 'superseded' || reason === 'destroyed')
+    );
   }
 
   return false;
@@ -357,6 +423,12 @@ export function buildEmbedSrc(options: EmbedInitOptions): string {
   return `${baseUrl}${path}/${encodeURIComponent(initialId)}`;
 }
 
-export type KnownEventName = 'ready' | 'contentChange' | 'slideChange' | 'save';
+export type KnownEventName =
+  | 'ready'
+  | 'contentChange'
+  | 'slideChange'
+  | 'save'
+  | 'aiRequest'
+  | 'aiCancel';
 
 export type TEventName<T extends string> = Extract<T, KnownEventName>;

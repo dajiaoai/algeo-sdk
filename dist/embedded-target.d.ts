@@ -1,4 +1,4 @@
-import { AlgeoError, type AlgeoEmbedMode, type EmbedInitOptions, type EmbedEventMessage, type SaveRequestMessage, type ReadyEvent } from './shared';
+import { AlgeoError, type AlgeoEmbedMode, type EmbedInitOptions, type EmbedRequestMessage, type EmbedEventMessage, type ReadyEvent } from './shared';
 export declare abstract class EmbeddedTarget<EventMap extends {
     ready: ReadyEvent;
 }, EventName extends keyof EventMap & string, ListenerMap extends Record<EventName, (event: any) => void>> {
@@ -23,7 +23,7 @@ export declare abstract class EmbeddedTarget<EventMap extends {
     protected emit<T extends EventName>(event: T, payload: EventMap[T]): void;
     protected handleEventMessage(_event: Extract<EventMap[EventName], EmbedEventMessage>): void;
     protected acceptsEventMessage(): boolean;
-    protected handleRequestMessage(_message: SaveRequestMessage, _sourceWindow: Window): boolean;
+    protected handleRequestMessage(_message: EmbedRequestMessage, _sourceWindow: Window): boolean;
     private cleanupMessageHandler;
     private cleanupIframe;
     private resetRuntimeState;
@@ -31,5 +31,6 @@ export declare abstract class EmbeddedTarget<EventMap extends {
     protected post<T>(type: string, payload: Record<string, unknown>, options?: {
         timeoutMs?: number;
     }): Promise<T>;
+    protected postEvent(type: string, payload?: Record<string, unknown>): void;
     destroy(): Promise<void>;
 }

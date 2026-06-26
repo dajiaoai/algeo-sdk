@@ -1,8 +1,9 @@
-import { AlgeoError, type AlgeoErrorPayload, type EmbedReadyMessage, type EmbedResponseMessage, type FileContentLatest, EMBED_ERROR_CODES } from '@dajiaoai/algeo-protocol';
+import { AlgeoError, type AlgeoErrorPayload, type AiRunPayloadV1, type AiStreamEventV1, type EmbedReadyMessage, type EmbedResponseMessage, type FileContentLatest, EMBED_ERROR_CODES } from '@dajiaoai/algeo-protocol';
 /** SDK 版本号，构建时由 rollup 注入 */
 export declare const VERSION = "__ALGEO_SDK_VERSION__";
 /** 从协议层 re-export，供外部使用 */
 export type { FileContentLatest, AlgeoErrorPayload };
+export type { AiRawSseEventV1, AiResponseRecordV1, AiRunPayloadV1, AiStreamEventV1, GeometryOpV1, OpenAiChatMessageV1, } from '@dajiaoai/algeo-protocol';
 export { AlgeoError, EMBED_ERROR_CODES };
 export declare const EMBED_TIMEOUT_MS = 30000;
 export interface AlgeoSdkOptions {
@@ -24,6 +25,7 @@ export interface AlgeoEditorUiConfig {
     algebraPanel?: boolean;
     docPanel?: boolean;
     helpEntry?: boolean;
+    aiChatPanel?: boolean;
 }
 export interface AlgeoPresentationUiConfig {
     logo?: boolean;
@@ -61,7 +63,7 @@ export interface ReadyEvent {
 }
 export interface ContentChangeEvent {
     type: 'contentChange';
-    source: 'loadContent' | 'loadFile' | 'loadShareById' | 'initialContent' | 'user';
+    source: 'loadContent' | 'loadFile' | 'loadShareById' | 'initialContent' | 'ai' | 'user';
     content?: FileContentLatest;
     shareId?: string;
 }
@@ -85,11 +87,35 @@ export interface SaveRequestMessage {
     requestId: string;
     content: FileContentLatest;
 }
+export interface AiApi {
+    consumeStream(input: {
+        stream: ReadableStream<Uint8Array>;
+        signal?: AbortSignal;
+    }): Promise<void>;
+    pushStreamEvent(event: AiStreamEventV1): void;
+}
+export interface AiRequestEvent {
+    type: 'aiRequest';
+    payload: AiRunPayloadV1;
+    signal: AbortSignal;
+}
+export interface AiCancelEvent {
+    type: 'aiCancel';
+    runId: string | null;
+    reason: 'user' | 'superseded' | 'destroyed';
+}
+export interface AiRequestMessage {
+    type: 'aiRequest';
+    requestId: string;
+    payload: AiRunPayloadV1;
+}
 export interface EmbeddedEditorEventMap {
     ready: ReadyEvent;
     contentChange: ContentChangeEvent;
     slideChange: SlideChangeEvent;
     save: SaveEvent;
+    aiRequest: AiRequestEvent;
+    aiCancel: AiCancelEvent;
 }
 export interface EmbeddedPresentationEventMap {
     ready: ReadyEvent;
@@ -101,6 +127,8 @@ export type EmbeddedEditorEventListenerMap = {
     contentChange: (event: ContentChangeEvent) => void;
     slideChange: (event: SlideChangeEvent) => void;
     save: (event: SaveEvent) => void | AlgeoEditorSaveResult | Promise<void | AlgeoEditorSaveResult>;
+    aiRequest: (event: AiRequestEvent) => void | Promise<void>;
+    aiCancel: (event: AiCancelEvent) => void;
 };
 export type EmbeddedPresentationEventListenerMap = {
     [K in EmbeddedPresentationEventName]: (event: EmbeddedPresentationEventMap[K]) => void;
@@ -187,8 +215,10 @@ export interface PresentationModeApi {
 export declare function generateRequestId(): string;
 export declare function isResponseMessage(msg: unknown): msg is EmbedResponseMessage;
 export declare function isReadyMessage(msg: unknown): msg is EmbedReadyMessage;
-export type EmbedEventMessage = ContentChangeEvent | SlideChangeEvent | SaveSuccessEvent;
+export type EmbedEventMessage = ContentChangeEvent | SlideChangeEvent | SaveSuccessEvent | AiCancelEvent;
+export type EmbedRequestMessage = SaveRequestMessage | AiRequestMessage;
 export declare function isSaveRequestMessage(msg: unknown): msg is SaveRequestMessage;
+export declare function isAiRequestMessage(msg: unknown): msg is AiRequestMessage;
 export declare function isEmbedEventMessage(msg: unknown): msg is EmbedEventMessage;
 export declare function normalizeBaseUrl(baseUrl: string): string;
 export declare function normalizeMode(mode?: AlgeoEmbedMode): AlgeoEmbedMode;
@@ -197,5 +227,5 @@ export interface EmbedInitOptions extends AlgeoSdkOptions {
     auth?: AlgeoEditorAuthOptions;
 }
 export declare function buildEmbedSrc(options: EmbedInitOptions): string;
-export type KnownEventName = 'ready' | 'contentChange' | 'slideChange' | 'save';
+export type KnownEventName = 'ready' | 'contentChange' | 'slideChange' | 'save' | 'aiRequest' | 'aiCancel';
 export type TEventName<T extends string> = Extract<T, KnownEventName>;

@@ -1,32 +1,5 @@
 'use strict';
 
-// src/embed.ts
-var EMBED_ERROR_CODES = {
-  LOAD_SHARE_FAILED: "EMBED_LOAD_SHARE_FAILED",
-  LOAD_FILE_FAILED: "EMBED_LOAD_FILE_FAILED",
-  APPLY_CONTENT_FAILED: "EMBED_APPLY_CONTENT_FAILED",
-  SWITCH_SLIDE_FAILED: "EMBED_SWITCH_SLIDE_FAILED",
-  INVALID_SLIDE_INDEX: "EMBED_INVALID_SLIDE_INDEX",
-  GET_SLIDE_COUNT_FAILED: "EMBED_GET_SLIDE_COUNT_FAILED",
-  INVALID_REPL_COMMAND: "EMBED_INVALID_REPL_COMMAND",
-  REPL_EXECUTE_FAILED: "EMBED_REPL_EXECUTE_FAILED",
-  UNKNOWN_METHOD: "EMBED_UNKNOWN_METHOD",
-  UNKNOWN_ERROR: "EMBED_UNKNOWN_ERROR",
-  MISSING_APP_ID: "EMBED_MISSING_APP_ID",
-  BAD_REQUEST: "EMBED_BAD_REQUEST",
-  IFRAME_NOT_READY: "EMBED_IFRAME_NOT_READY",
-  TIMEOUT: "EMBED_TIMEOUT",
-  DESTROYED: "EMBED_DESTROYED"
-};
-var AlgeoError = class extends Error {
-  constructor(message, code, details) {
-    super(message);
-    this.code = code;
-    this.details = details;
-    this.name = "AlgeoError";
-  }
-};
-
 var util;
 (function (util) {
     util.assertEqual = (_) => { };
@@ -3856,7 +3829,7 @@ const unknownType = ZodUnknown.create;
 ZodNever.create;
 const arrayType = ZodArray.create;
 const objectType = ZodObject.create;
-ZodUnion.create;
+const unionType = ZodUnion.create;
 ZodIntersection.create;
 const tupleType = ZodTuple.create;
 const recordType = ZodRecord.create;
@@ -3865,6 +3838,66 @@ const enumType = ZodEnum.create;
 ZodPromise.create;
 ZodOptional.create;
 ZodNullable.create;
+
+// src/embed.ts
+var EMBED_ERROR_CODES = {
+  LOAD_SHARE_FAILED: "EMBED_LOAD_SHARE_FAILED",
+  LOAD_FILE_FAILED: "EMBED_LOAD_FILE_FAILED",
+  APPLY_CONTENT_FAILED: "EMBED_APPLY_CONTENT_FAILED",
+  SWITCH_SLIDE_FAILED: "EMBED_SWITCH_SLIDE_FAILED",
+  INVALID_SLIDE_INDEX: "EMBED_INVALID_SLIDE_INDEX",
+  GET_SLIDE_COUNT_FAILED: "EMBED_GET_SLIDE_COUNT_FAILED",
+  INVALID_REPL_COMMAND: "EMBED_INVALID_REPL_COMMAND",
+  REPL_EXECUTE_FAILED: "EMBED_REPL_EXECUTE_FAILED",
+  UNKNOWN_METHOD: "EMBED_UNKNOWN_METHOD",
+  UNKNOWN_ERROR: "EMBED_UNKNOWN_ERROR",
+  MISSING_APP_ID: "EMBED_MISSING_APP_ID",
+  BAD_REQUEST: "EMBED_BAD_REQUEST",
+  IFRAME_NOT_READY: "EMBED_IFRAME_NOT_READY",
+  TIMEOUT: "EMBED_TIMEOUT",
+  DESTROYED: "EMBED_DESTROYED"
+};
+var AlgeoError = class extends Error {
+  constructor(message, code, details) {
+    super(message);
+    this.code = code;
+    this.details = details;
+    this.name = "AlgeoError";
+  }
+};
+var openAiChatMessageV1Schema = objectType({
+  role: stringType(),
+  content: unionType([
+    stringType(),
+    arrayType(
+      objectType({
+        type: stringType()
+      }).passthrough()
+    )
+  ]),
+  name: stringType().optional()
+}).passthrough();
+objectType({
+  model_id: stringType(),
+  messages: arrayType(unionType([openAiChatMessageV1Schema, recordType(unknownType())])),
+  extra_openai_params: recordType(unknownType()).optional()
+});
+objectType({
+  id: stringType(),
+  model: stringType(),
+  call_ids: arrayType(stringType()).optional()
+});
+recordType(unknownType());
+var aiRawSseEventV1Schema = objectType({
+  type: literalType("raw"),
+  runId: stringType(),
+  event: stringType(),
+  data: recordType(unknownType())
+});
+var aiStreamEventV1Schema = aiRawSseEventV1Schema;
+function safeParseAiStreamEventV1(input) {
+  return aiStreamEventV1Schema.safeParse(input);
+}
 
 // src/schema.ts
 var shareOptionsSchema = objectType({
@@ -4008,6 +4041,15 @@ function isSaveRequestMessage(msg) {
         typeof msg.requestId === 'string' &&
         typeof msg.content === 'object');
 }
+function isAiRequestMessage(msg) {
+    return (typeof msg === 'object' &&
+        msg !== null &&
+        'type' in msg &&
+        msg.type === 'aiRequest' &&
+        typeof msg.requestId === 'string' &&
+        typeof msg.payload === 'object' &&
+        msg.payload !== null);
+}
 function isEmbedEventMessage(msg) {
     if (typeof msg !== 'object' || msg == null || !('type' in msg)) {
         return false;
@@ -4026,6 +4068,12 @@ function isEmbedEventMessage(msg) {
     }
     if (type === 'contentChange') {
         return true;
+    }
+    if (type === 'aiCancel') {
+        const runId = msg.runId;
+        const reason = msg.reason;
+        return ((runId === null || typeof runId === 'string') &&
+            (reason === 'user' || reason === 'superseded' || reason === 'destroyed'));
     }
     return false;
 }
@@ -4198,7 +4246,7 @@ class EmbeddedTarget {
                     pending.reject(new AlgeoError(err?.message ?? '未知错误', err?.code ?? EMBED_ERROR_CODES.UNKNOWN_ERROR, err?.details));
                     return;
                 }
-                if (isSaveRequestMessage(data) &&
+                if ((isSaveRequestMessage(data) || isAiRequestMessage(data)) &&
                     this.handleRequestMessage(data, iframe.contentWindow)) {
                     return;
                 }
@@ -4240,6 +4288,12 @@ class EmbeddedTarget {
                 }
             }, timeoutMs);
         });
+    }
+    postEvent(type, payload = {}) {
+        if (this.destroyed || !this._ready) {
+            return;
+        }
+        this.iframe?.contentWindow?.postMessage({ type, ...payload }, '*');
     }
     async destroy() {
         if (this.destroyed) {
@@ -4413,6 +4467,14 @@ class EmbeddedEditor extends EmbeddedTarget {
                 };
             },
         };
+        this.ai = {
+            consumeStream: async ({ stream, signal }) => {
+                await this.consumeAiStream(stream, signal);
+            },
+            pushStreamEvent: (event) => {
+                this.pushAiStreamEvent(event);
+            },
+        };
     }
     async initialize(options = {}, baseUrl) {
         if (!options.auth?.appId?.trim()) {
@@ -4449,16 +4511,29 @@ class EmbeddedEditor extends EmbeddedTarget {
             this.currentSlideIndex = event.index;
             return;
         }
+        if (event.type === 'aiCancel') {
+            event.runId = this.activeAiRun?.runId ?? event.runId;
+            this.cancelActiveAi(event.reason, false);
+            return;
+        }
         this.currentContent = event.content;
         this.slideCount = event.content.slides.length;
         this.currentSlideIndex = Math.min(this.currentSlideIndex, Math.max(this.slideCount - 1, 0));
     }
     handleRequestMessage(message, sourceWindow) {
-        if (message.type !== 'save') {
-            return false;
+        if (message.type === 'save') {
+            void this.handleSaveRequest(message, sourceWindow);
+            return true;
         }
-        void this.handleSaveRequest(message, sourceWindow);
-        return true;
+        if (message.type === 'aiRequest') {
+            void this.handleAiRequest(message, sourceWindow);
+            return true;
+        }
+        return false;
+    }
+    async destroy() {
+        this.cancelActiveAi('destroyed', true);
+        await super.destroy();
     }
     async loadContent(content, source) {
         await this.post('loadContent', { content });
@@ -4507,6 +4582,221 @@ class EmbeddedEditor extends EmbeddedTarget {
                     message: error instanceof Error ? error.message : String(error),
                 },
             });
+        }
+    }
+    async handleAiRequest(message, sourceWindow) {
+        const respond = (payload) => {
+            sourceWindow.postMessage(payload, '*');
+        };
+        const listeners = this.getListeners('aiRequest');
+        if (listeners.length === 0) {
+            respond({
+                type: 'response',
+                requestId: message.requestId,
+                success: false,
+                error: {
+                    code: EMBED_ERROR_CODES.BAD_REQUEST,
+                    message: '宿主未配置 aiRequest 事件处理器',
+                },
+            });
+            return;
+        }
+        this.cancelActiveAi('superseded', true);
+        const controller = new AbortController();
+        this.activeAiRun = {
+            controller,
+            requestId: message.requestId,
+            runId: null,
+        };
+        const requestEvent = {
+            type: 'aiRequest',
+            payload: message.payload,
+            signal: controller.signal,
+        };
+        try {
+            for (const listener of listeners) {
+                await listener(requestEvent);
+            }
+            if (this.activeAiRun?.requestId === message.requestId) {
+                this.activeAiRun = undefined;
+            }
+            respond({
+                type: 'response',
+                requestId: message.requestId,
+                success: true,
+                result: { success: true },
+            });
+        }
+        catch (error) {
+            if (this.activeAiRun?.requestId === message.requestId) {
+                this.activeAiRun = undefined;
+            }
+            respond({
+                type: 'response',
+                requestId: message.requestId,
+                success: false,
+                error: {
+                    code: controller.signal.aborted
+                        ? EMBED_ERROR_CODES.BAD_REQUEST
+                        : EMBED_ERROR_CODES.UNKNOWN_ERROR,
+                    message: error instanceof Error ? error.message : String(error),
+                },
+            });
+        }
+    }
+    cancelActiveAi(reason, shouldEmit) {
+        const activeRun = this.activeAiRun;
+        if (!activeRun) {
+            return;
+        }
+        this.activeAiRun = undefined;
+        activeRun.controller.abort();
+        if (shouldEmit) {
+            this.emit('aiCancel', {
+                type: 'aiCancel',
+                runId: activeRun.runId,
+                reason,
+            });
+        }
+    }
+    async consumeAiStream(stream, signal) {
+        const reader = stream.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let completed = false;
+        const abortReader = () => {
+            void reader.cancel();
+        };
+        if (signal?.aborted) {
+            await reader.cancel();
+            return;
+        }
+        signal?.addEventListener('abort', abortReader, { once: true });
+        try {
+            while (!completed) {
+                const { done, value } = await reader.read();
+                if (signal?.aborted) {
+                    throw new DOMException('AI 请求已取消', 'AbortError');
+                }
+                if (done) {
+                    break;
+                }
+                buffer += decoder.decode(value, { stream: true });
+                const result = this.drainAiSseBuffer(buffer);
+                buffer = result.rest;
+                completed = result.completed;
+            }
+            buffer += decoder.decode();
+            if (signal?.aborted) {
+                throw new DOMException('AI 请求已取消', 'AbortError');
+            }
+            if (!completed && buffer.trim()) {
+                completed = this.pushAiSseFrame(buffer);
+            }
+        }
+        finally {
+            signal?.removeEventListener('abort', abortReader);
+            reader.releaseLock();
+        }
+    }
+    drainAiSseBuffer(buffer) {
+        let rest = buffer;
+        let completed = false;
+        while (!completed) {
+            const normalized = rest.replace(/\r\n/g, '\n');
+            const index = normalized.indexOf('\n\n');
+            if (index < 0) {
+                break;
+            }
+            const frame = normalized.slice(0, index);
+            rest = normalized.slice(index + 2);
+            completed = this.pushAiSseFrame(frame);
+        }
+        return { rest, completed };
+    }
+    pushAiSseFrame(frame) {
+        const event = this.parseAiSseFrame(frame);
+        if (!event) {
+            return false;
+        }
+        this.pushAiStreamEvent(event);
+        return this.isAiSseTerminalEvent(event);
+    }
+    parseAiSseFrame(frame) {
+        let eventType = 'message';
+        const dataLines = [];
+        for (const line of frame.split(/\r?\n/)) {
+            if (!line || line.startsWith(':')) {
+                continue;
+            }
+            const separatorIndex = line.indexOf(':');
+            const field = separatorIndex >= 0 ? line.slice(0, separatorIndex) : line;
+            const rawValue = separatorIndex >= 0 ? line.slice(separatorIndex + 1) : '';
+            const value = rawValue.startsWith(' ') ? rawValue.slice(1) : rawValue;
+            if (field === 'event') {
+                eventType = value;
+            }
+            else if (field === 'data') {
+                dataLines.push(value);
+            }
+        }
+        if (dataLines.length === 0) {
+            return null;
+        }
+        const data = JSON.parse(dataLines.join('\n'));
+        return {
+            type: 'raw',
+            runId: this.getAiSseRunId(data),
+            event: eventType,
+            data,
+        };
+    }
+    getAiSseRunId(data) {
+        const response = this.asRecord(data.response);
+        const explicitRunId = data.run_id ?? data.runId;
+        if (typeof explicitRunId === 'string' && explicitRunId) {
+            this.setActiveAiRunId(explicitRunId);
+            return explicitRunId;
+        }
+        if (this.activeAiRun?.runId) {
+            return this.activeAiRun.runId;
+        }
+        if (typeof response?.id === 'string' && response.id) {
+            this.setActiveAiRunId(response.id);
+            return response.id;
+        }
+        const generatedRunId = `run_${Date.now()}`;
+        this.setActiveAiRunId(generatedRunId);
+        return generatedRunId;
+    }
+    asRecord(value) {
+        return value && typeof value === 'object'
+            ? value
+            : undefined;
+    }
+    isAiSseTerminalEvent(event) {
+        const type = typeof event.data.type === 'string' ? event.data.type : event.event;
+        return (type === 'response.completed' ||
+            type === 'response.failed' ||
+            type === 'response.incomplete' ||
+            type === 'error' ||
+            type === 'run.cancelled');
+    }
+    pushAiStreamEvent(event) {
+        const parsedEvent = safeParseAiStreamEventV1(event);
+        if (!parsedEvent.success) {
+            throw new AlgeoError('Invalid AI stream event', EMBED_ERROR_CODES.BAD_REQUEST, parsedEvent.error);
+        }
+        const streamEvent = parsedEvent.data;
+        this.setActiveAiRunId(streamEvent.runId);
+        this.postEvent('aiStreamEvent', { event: streamEvent });
+        if (this.isAiSseTerminalEvent(streamEvent)) {
+            this.activeAiRun = undefined;
+        }
+    }
+    setActiveAiRunId(runId) {
+        if (this.activeAiRun) {
+            this.activeAiRun.runId = runId;
         }
     }
     async resolveSaveResult(content) {

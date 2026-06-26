@@ -3,6 +3,12 @@ export type { FileContentLatest } from '@dajiaoai/algeo-protocol';
 export { convertToLatest } from '@dajiaoai/algeo-protocol';
 
 export type {
+  AiApi,
+  AiCancelEvent,
+  AiRawSseEventV1,
+  AiRequestEvent,
+  AiRunPayloadV1,
+  AiStreamEventV1,
   AlgeoCreateOptions,
   AlgeoEditorAuthOptions,
   AlgeoEditorCreateOptions,
