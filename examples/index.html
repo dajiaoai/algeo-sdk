@@ -113,6 +113,7 @@
     }
 
     .nav a,
+    .nav button,
     .hero-actions a {
       display: inline-flex;
       align-items: center;
@@ -125,6 +126,9 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.72);
+      color: inherit;
+      cursor: pointer;
+      font: inherit;
       transition:
         transform 0.18s ease,
         border-color 0.18s ease,
@@ -139,6 +143,7 @@
     }
 
     .nav a:hover,
+    .nav button:hover,
     .hero-actions a:hover {
       transform: translateY(-1px);
       border-color: rgba(18, 103, 233, 0.35);
@@ -151,6 +156,87 @@
       gap: 32px;
       align-items: stretch;
       margin-bottom: 34px;
+    }
+
+    .config-panel {
+      display: none;
+      margin: -16px 0 28px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(24, 32, 47, 0.08);
+      backdrop-filter: blur(12px);
+    }
+
+    .config-panel.is-open {
+      display: block;
+    }
+
+    .config-form {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .config-field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .config-field label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .config-field input {
+      width: 100%;
+      min-height: 38px;
+      padding: 0 11px;
+      color: var(--ink);
+      font: inherit;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      outline: none;
+      background: #fff;
+    }
+
+    .config-field input:focus {
+      border-color: rgba(18, 103, 233, 0.55);
+      box-shadow: 0 0 0 3px rgba(18, 103, 233, 0.1);
+    }
+
+    .config-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .config-actions button {
+      min-height: 38px;
+      padding: 0 14px;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .config-actions .save {
+      color: #fff;
+      background: var(--brand);
+      border-color: var(--brand);
+    }
+
+    .config-status {
+      min-height: 20px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
     }
 
     .hero-copy {
@@ -485,13 +571,22 @@
         flex-wrap: wrap;
       }
 
-      .nav a {
+      .nav a,
+      .nav button {
         flex: 1 1 160px;
       }
 
       .hero {
         grid-template-columns: 1fr;
         gap: 20px;
+      }
+
+      .config-form {
+        grid-template-columns: 1fr;
+      }
+
+      .config-actions {
+        flex-wrap: wrap;
       }
 
       .hero-copy {
@@ -596,8 +691,41 @@
           </svg>
           <span>查看仓库</span>
         </a>
+        <button type="button" id="configToggle" aria-expanded="false" aria-controls="configPanel" title="配置示例参数">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"
+              stroke="currentColor" stroke-width="1.8" />
+            <path
+              d="M19.4 13.4a7.9 7.9 0 0 0 .05-1.4l1.75-1.34-1.85-3.2-2.05.82a7.3 7.3 0 0 0-1.2-.7L15.8 5.4h-3.7l-.3 2.18c-.42.18-.82.42-1.2.7l-2.05-.82-1.85 3.2L8.45 12a7.9 7.9 0 0 0 .05 1.4l-1.72 1.36 1.85 3.2 2.03-.84c.38.28.79.52 1.23.72l.31 2.16h3.7l.31-2.16c.44-.2.85-.44 1.23-.72l2.03.84 1.85-3.2-1.92-1.36Z"
+              stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+          </svg>
+          <span>配置</span>
+        </button>
       </nav>
     </header>
+
+    <section class="config-panel" id="configPanel" aria-label="示例配置">
+      <form class="config-form" id="configForm">
+        <div class="config-field">
+          <label for="configBaseUrl">Base URL</label>
+          <input id="configBaseUrl" name="baseUrl" type="url" autocomplete="off" required />
+        </div>
+        <div class="config-field">
+          <label for="configAppId">App ID</label>
+          <input id="configAppId" name="appId" type="text" autocomplete="off" required />
+        </div>
+        <div class="config-field">
+          <label for="configShareId">Share ID</label>
+          <input id="configShareId" name="shareId" type="text" autocomplete="off" required />
+        </div>
+        <div class="config-actions">
+          <button class="save" type="submit">保存</button>
+          <button type="button" id="configReset">重置</button>
+        </div>
+      </form>
+      <p class="config-status" id="configStatus" aria-live="polite"></p>
+    </section>
 
     <section class="hero">
       <div class="hero-copy">
@@ -787,6 +915,57 @@
       </section>
     </div>
   </main>
+  <script src="./assets/js/config.js"></script>
+  <script>
+    (function () {
+      var panel = document.getElementById('configPanel');
+      var toggle = document.getElementById('configToggle');
+      var form = document.getElementById('configForm');
+      var reset = document.getElementById('configReset');
+      var status = document.getElementById('configStatus');
+      var baseUrlInput = document.getElementById('configBaseUrl');
+      var appIdInput = document.getElementById('configAppId');
+      var shareIdInput = document.getElementById('configShareId');
+
+      function fillForm(config) {
+        baseUrlInput.value = config.baseUrl || '';
+        appIdInput.value = config.appId || '';
+        shareIdInput.value = config.shareId || '';
+      }
+
+      function setStatus(text) {
+        status.textContent = text;
+      }
+
+      fillForm(window.ALGEO_CONFIG);
+
+      toggle.addEventListener('click', function () {
+        var isOpen = panel.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        if (isOpen) {
+          fillForm(window.ALGEO_CONFIG_API.get());
+          baseUrlInput.focus();
+        }
+      });
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var next = window.ALGEO_CONFIG_API.set({
+          baseUrl: baseUrlInput.value,
+          appId: appIdInput.value,
+          shareId: shareIdInput.value,
+        });
+        fillForm(next);
+        setStatus('已保存到本地浏览器存储，新打开或刷新的示例页会使用该配置。');
+      });
+
+      reset.addEventListener('click', function () {
+        var next = window.ALGEO_CONFIG_API.reset();
+        fillForm(next);
+        setStatus('已恢复为 config.js 默认配置。');
+      });
+    })();
+  </script>
 </body>
 
 </html>

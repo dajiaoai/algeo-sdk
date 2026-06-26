@@ -140,6 +140,13 @@
       font-size: 1rem;
     }
 
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
     .section p {
       margin: 0;
       color: var(--muted);
@@ -330,6 +337,11 @@
       .metrics {
         grid-template-columns: 1fr;
       }
+
+      .section-title {
+        align-items: flex-start;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
@@ -366,7 +378,10 @@
 
       <aside class="sidebar">
         <section class="card section">
-          <h2>AI 转发配置</h2>
+          <div class="section-title">
+            <h2>AI 转发配置</h2>
+            <button class="secondary" id="resetAiSettingsBtn">重置配置</button>
+          </div>
           <div class="field">
             <label for="baseUrlInput">接口 Base URL</label>
             <input id="baseUrlInput" type="text" value="https://api.dajiaoai.com" />
@@ -434,6 +449,7 @@
     const recreateBtn = document.getElementById('recreateBtn');
     const loadFileBtn = document.getElementById('loadFileBtn');
     const fileInput = document.getElementById('fileInput');
+    const resetAiSettingsBtn = document.getElementById('resetAiSettingsBtn');
     const abortBtn = document.getElementById('abortBtn');
     const status = document.getElementById('status');
     const logs = document.getElementById('logs');
@@ -448,6 +464,7 @@
 
     const EMBEDDED_AI_RUN_PATH = '/api/v1/embedded/ai/run';
     const SETTINGS_STORAGE_KEY = 'algeo-sdk-example-13-ai-settings';
+    const DEFAULT_AI_BASE_URL = 'https://api.dajiaoai.com';
 
     function loadSettings() {
       try {
@@ -482,9 +499,21 @@
       }
     }
 
+    function resetAiSettings() {
+      try {
+        localStorage.removeItem(SETTINGS_STORAGE_KEY);
+      } catch (error) {
+        console.warn('重置 AI 示例配置失败', error);
+      }
+      baseUrlInput.value = DEFAULT_AI_BASE_URL;
+      apiKeyInput.value = '';
+      status.textContent = 'AI 转发配置已重置。';
+    }
+
     loadSettings();
     baseUrlInput.addEventListener('input', saveSettings);
     apiKeyInput.addEventListener('input', saveSettings);
+    resetAiSettingsBtn.addEventListener('click', resetAiSettings);
 
     let editor = null;
     let disposeListeners = [];
@@ -587,7 +616,7 @@
     }
 
     function normalizeApiBaseUrl(value) {
-      const rawValue = (value || '').trim() || 'https://api.dajiaoai.com';
+      const rawValue = (value || '').trim() || DEFAULT_AI_BASE_URL;
       const hasProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(rawValue);
       const localHostLike =
         /^(localhost|127\.0\.0\.1|\[?::1\]?)(:|\/|$)/.test(rawValue);
