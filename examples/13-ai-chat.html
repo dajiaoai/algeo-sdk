@@ -354,8 +354,8 @@
       <p>
         这个示例演示编辑器 AI 对话面板的宿主侧接入：开启
         <code>ui.aiChatPanel</code>，监听
-        <code>aiRequest</code>，调用真实嵌入式 AI 后端接口，并将 OpenAI
-        Responses SSE 流交给
+        <code>aiRequest</code>，调用
+        <code>/api/v1/embedded/ai/run</code>，并将 SSE 流交给
         <code>editor.ai.consumeStream()</code>，由 SDK 透传给 iframe。
       </p>
     </div>
@@ -405,6 +405,25 @@
             Api Key，应由宿主后端保存 Api
             Key、完成鉴权/额度校验后代理请求，再把 SSE 流透传给 SDK。
           </div>
+        </section>
+
+        <section class="card section">
+          <h2>大角几何生图 API</h2>
+          <p>
+            创建生成：
+            <code>POST /api/v1/embedded/ai/run</code>，请求体直接使用
+            <code>aiRequest.payload</code>，响应为
+            <code>text/event-stream</code>。
+          </p>
+          <p>
+            取消生成：
+            <code>POST /api/v1/embedded/ai/cancel</code>，传入
+            <code>run_id</code> 和可选 <code>reason</code>。
+          </p>
+          <p class="hint">
+            生产环境建议由宿主后端保存 Api Key、接收
+            <code>aiRequest.payload</code> 并原样转发给大角几何生图接口。
+          </p>
         </section>
 
         <section class="card section">
@@ -594,19 +613,6 @@
       return content;
     }
 
-    function buildEmbeddedAiRequestBody(payload) {
-      const extraParams = payload.extra_openai_params || {};
-
-      return {
-        ...extraParams,
-        model: payload.model || payload.model_id,
-        input: payload.input || payload.messages || '',
-        metadata: {
-          ...(extraParams.metadata || {}),
-        },
-      };
-    }
-
     function getApiKey() {
       const apiKey = apiKeyInput.value.trim();
       if (!apiKey) {
@@ -687,7 +693,7 @@
       const response = await fetch(getRunEndpoint(), {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify(buildEmbeddedAiRequestBody(event.payload)),
+        body: JSON.stringify(event.payload),
         signal: event.signal,
       });
 
