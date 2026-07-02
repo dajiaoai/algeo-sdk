@@ -491,7 +491,7 @@ interface FileContent {
 | `remove(index)`                  | 删除指定画板                                                                                                                                                                                                                                         |
 | `duplicate(index, targetIndex?)` | 复制画板                                                                                                                                                                                                                                             |
 | `reorder(fromIndex, toIndex)`    | 重排画板                                                                                                                                                                                                                                             |
-| `exportImage(options?)`          | 导出画板为图片，返回 `ExportedSlideImage[]`，每项含 `index`、`blob`、`format`、`width`、`height`。可选参数 `slideIndices`（1-based，不传则导出全部）、`format`（`'png'`/`'jpg'`）、`width`、`height`、`quality`（0~1，仅 jpg）、`autoFit`、`padding` |
+| `exportImage(options?)`          | 导出画板为图片或可编辑排版内容，返回 `ExportedSlideImage[]`，每项含 `index`、`blob`、`format`、`width`、`height`。可选参数 `slideIndices`（1-based，不传则导出全部）、`format`（`'png'`/`'jpg'`/`'svg'`/`'latex'`）、`width`、`height`、`quality`（0~1，仅 jpg）、`autoFit`、`padding` |
 
 #### `editor.history`
 

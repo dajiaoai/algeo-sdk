@@ -247,7 +247,7 @@
 
     <section class="hero">
       <h1>12 导出画板图片</h1>
-      <p>这个示例使用多画板文件 <code>BW4DOLOT</code> 创建编辑器，演示 <code>editor.slides.exportImage()</code> 默认导出全部画板，以及按索引导出指定画板图片。</p>
+      <p>这个示例使用多画板文件 <code>BW4DOLOT</code> 创建编辑器，演示 <code>editor.slides.exportImage()</code> 默认导出全部画板，以及按索引导出指定画板图片、SVG 或 LaTeX 内容。</p>
     </section>
 
     <div class="layout">
@@ -273,6 +273,8 @@
               <select id="formatSelect">
                 <option value="png">png</option>
                 <option value="jpg">jpg</option>
+                <option value="svg">svg</option>
+                <option value="latex">latex</option>
               </select>
             </label>
             <label>宽度
@@ -289,7 +291,7 @@
             <button class="primary" id="exportBtn">导出图片</button>
             <button class="secondary" id="downloadAllBtn">下载最近一次结果</button>
           </div>
-          <div class="hint">返回结果为图片数组，每个元素包含 <code>index</code> 和 <code>blob</code>。</div>
+          <div class="hint">返回结果为导出内容数组，每个元素包含 <code>index</code> 和 <code>blob</code>；<code>latex</code> 内容可保存为 <code>.tex</code>。</div>
         </section>
 
         <section class="card section">
@@ -366,6 +368,10 @@
       anchor.click();
       anchor.remove();
       URL.revokeObjectURL(url);
+    }
+
+    function getDownloadExtension(format) {
+      return format === 'latex' ? 'tex' : format;
     }
 
     function renderExportResult(images) {
@@ -464,7 +470,7 @@
       }
 
       for (const image of latestImages) {
-        downloadBlob(image.blob, 'slide-' + image.index + '.' + image.format);
+        downloadBlob(image.blob, 'slide-' + image.index + '.' + getDownloadExtension(image.format));
       }
 
       setStatus('已触发 ' + latestImages.length + ' 个文件下载');

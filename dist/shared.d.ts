@@ -162,9 +162,10 @@ export interface ReplResult {
 export interface SlideIndexResult {
     index: number;
 }
+export type ExportImageFormat = 'png' | 'jpg' | 'svg' | 'latex';
 export interface ExportSlideImageOptions {
     slideIndices?: number[];
-    format?: 'png' | 'jpg';
+    format?: ExportImageFormat;
     width?: number;
     height?: number;
     quality?: number;
@@ -174,7 +175,7 @@ export interface ExportSlideImageOptions {
 export interface ExportedSlideImage {
     index: number;
     blob: Blob;
-    format: 'png' | 'jpg';
+    format: ExportImageFormat;
     width: number;
     height: number;
 }

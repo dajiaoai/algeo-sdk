@@ -26,6 +26,7 @@ export type {
   EmbeddedPresentationEventListenerMap,
   EmbeddedPresentationEventMap,
   EmbeddedPresentationEventName,
+  ExportImageFormat,
   ExportSlideImageOptions,
   ExportedSlideImage,
   ExportSlideImageResult,
