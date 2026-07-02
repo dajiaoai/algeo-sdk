@@ -138,11 +138,20 @@ export interface SaveRequestMessage {
 }
 
 export interface AiApi {
+  setDraft(draft: AiDraftPayloadV1): Promise<void>;
+  clearDraft(): Promise<void>;
   consumeStream(input: {
     stream: ReadableStream<Uint8Array>;
     signal?: AbortSignal;
   }): Promise<void>;
   pushStreamEvent(event: AiStreamEventV1): void;
+}
+
+export interface AiDraftPayloadV1 {
+  text?: string;
+  images?: string[];
+  openPanel?: boolean;
+  focus?: boolean;
 }
 
 export interface AiRequestEvent {

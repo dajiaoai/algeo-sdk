@@ -190,6 +190,15 @@ editor.on('aiRequest', async ({ payload, signal }) => {
 editor.on('aiCancel', ({ runId, reason }) => {
   console.log('用户取消 AI 生成', runId, reason);
 });
+
+await editor.ai.setDraft({
+  text: '请根据这张图生成一道几何题',
+  images: ['https://example.com/figure.png'],
+  openPanel: true,
+  focus: true,
+});
+
+await editor.ai.clearDraft();
 ```
 
 编辑器内嵌页点击保存按钮时，会触发 `editor.on('save', listener)` 的请求阶段监听器。只有宿主返回 `{ status: 'success' }` 后，iframe 才会展示成功态，并向外触发 `save` 的成功阶段事件。
@@ -363,11 +372,11 @@ const presentation = await create(container, {
 
 ##### `presentation.mode`
 
-| 方法                  | 说明             |
-| --------------------- | ---------------- |
-| `getUiConfig()`       | 获取当前 UI 配置 |
-| `setUiConfig(config)` | 更新 UI 配置     |
-| `setMasterTemplate(template)` | 设置母版风格 |
+| 方法                          | 说明             |
+| ----------------------------- | ---------------- |
+| `getUiConfig()`               | 获取当前 UI 配置 |
+| `setUiConfig(config)`         | 更新 UI 配置     |
+| `setMasterTemplate(template)` | 设置母版风格     |
 
 ##### `presentation.loadShareById(id: string): Promise<LoadShareByIdResult>`
 
@@ -499,16 +508,18 @@ interface FileContent {
 
 #### `editor.mode`
 
-| 方法                  | 说明             |
-| --------------------- | ---------------- |
-| `getUiConfig()`       | 获取当前 UI 配置 |
-| `setUiConfig(config)` | 更新 UI 配置     |
-| `setMasterTemplate(template)` | 设置母版风格 |
+| 方法                          | 说明             |
+| ----------------------------- | ---------------- |
+| `getUiConfig()`               | 获取当前 UI 配置 |
+| `setUiConfig(config)`         | 更新 UI 配置     |
+| `setMasterTemplate(template)` | 设置母版风格     |
 
 #### `editor.ai`
 
 | 方法                | 说明                                                                |
 | ------------------- | ------------------------------------------------------------------- |
+| `setDraft()`        | 设置 AI 对话框草稿，支持 `text`、`images`、`openPanel`、`focus`     |
+| `clearDraft()`      | 清空 AI 对话框草稿文本与图片                                        |
 | `consumeStream()`   | 消费接入方后端返回的大角几何标准 SSE 流，并实时转发给 iframe        |
 | `pushStreamEvent()` | 高级接口；接入方已自行解析 SSE 或使用非标准传输时，手动推送流式事件 |
 

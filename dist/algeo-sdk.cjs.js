@@ -4473,6 +4473,12 @@ class EmbeddedEditor extends EmbeddedTarget {
             setMasterTemplate: (template) => this.post('setMasterTemplate', { template }),
         };
         this.ai = {
+            setDraft: async (draft) => {
+                await this.post('setAiDraft', { draft });
+            },
+            clearDraft: async () => {
+                await this.post('clearAiDraft', {});
+            },
             consumeStream: async ({ stream, signal }) => {
                 await this.consumeAiStream(stream, signal);
             },

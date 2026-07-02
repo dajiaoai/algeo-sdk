@@ -4,6 +4,7 @@ import {
   AlgeoError,
   type AiApi,
   type AiCancelEvent,
+  type AiDraftPayloadV1,
   type AiRequestEvent,
   type AiRunPayloadV1,
   type AiStreamEventV1,
@@ -148,6 +149,12 @@ export class EmbeddedEditor extends EmbeddedTarget<
     };
 
     this.ai = {
+      setDraft: async (draft: AiDraftPayloadV1) => {
+        await this.post('setAiDraft', { draft });
+      },
+      clearDraft: async () => {
+        await this.post('clearAiDraft', {});
+      },
       consumeStream: async ({ stream, signal }) => {
         await this.consumeAiStream(stream, signal);
       },

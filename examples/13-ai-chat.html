@@ -50,7 +50,8 @@
 
     button,
     input,
-    select {
+    select,
+    textarea {
       font: inherit;
     }
 
@@ -130,6 +131,47 @@
       gap: 18px;
     }
 
+    .tabs-card {
+      display: grid;
+      gap: 0;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .tab-button {
+      min-height: 36px;
+      padding: 0 8px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .tab-button[aria-selected='true'] {
+      color: var(--accent-strong);
+      background: var(--accent-soft);
+      border-color: rgba(37, 99, 235, 0.18);
+      box-shadow: none;
+    }
+
+    .tabs-card>.tab-panel {
+      display: none;
+    }
+
+    .tabs-card>.tab-panel.active {
+      display: grid;
+    }
+
     .section {
       display: grid;
       gap: 12px;
@@ -154,6 +196,13 @@
       line-height: 1.6;
     }
 
+    .divider {
+      width: 100%;
+      margin: 4px 0;
+      border: 0;
+      border-top: 1px solid var(--line);
+    }
+
     .field {
       display: grid;
       gap: 6px;
@@ -166,7 +215,8 @@
     }
 
     .field input,
-    .field select {
+    .field select,
+    .field textarea {
       width: 100%;
       min-height: 40px;
       padding: 8px 10px;
@@ -177,8 +227,15 @@
       outline: none;
     }
 
+    .field textarea {
+      min-height: 92px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
     .field input:focus,
-    .field select:focus {
+    .field select:focus,
+    .field textarea:focus {
       border-color: rgba(37, 99, 235, 0.5);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
     }
@@ -342,6 +399,10 @@
         align-items: flex-start;
         flex-direction: column;
       }
+
+      .tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
   </style>
 </head>
@@ -377,7 +438,21 @@
       </section>
 
       <aside class="sidebar">
-        <section class="card section">
+        <section class="card tabs-card">
+          <div class="tabs" role="tablist" aria-label="AI 示例面板">
+            <button class="tab-button" type="button" role="tab" aria-selected="true" aria-controls="tab-config"
+              data-tab-target="tab-config">配置</button>
+            <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-draft"
+              data-tab-target="tab-draft">草稿</button>
+            <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-events"
+              data-tab-target="tab-events">事件</button>
+            <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-payload"
+              data-tab-target="tab-payload">Payload</button>
+            <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-logs"
+              data-tab-target="tab-logs">日志</button>
+          </div>
+
+          <section class="section tab-panel active" id="tab-config" role="tabpanel">
           <div class="section-title">
             <h2>AI 转发配置</h2>
             <button class="secondary" id="resetAiSettingsBtn">重置配置</button>
@@ -405,9 +480,45 @@
             Api Key，应由宿主后端保存 Api
             Key、完成鉴权/额度校验后代理请求，再把 SSE 流透传给 SDK。
           </div>
-        </section>
+          </section>
 
-        <section class="card section">
+          <section class="section tab-panel" id="tab-draft" role="tabpanel">
+          <h2>AI 草稿预填</h2>
+          <div class="field">
+            <label for="draftTextInput">草稿文本</label>
+            <textarea id="draftTextInput">请根据这张图生成一道几何题</textarea>
+          </div>
+          <div class="field">
+            <label for="draftImagesInput">图片 URL</label>
+            <textarea id="draftImagesInput"
+              placeholder="每行一个图片 URL，例如：https://example.com/figure.png">https://dl.easeplay.vip/algeo/68a2db249e0a6b6ab3ab2364/f2d76c61-slide-1%20(3).png</textarea>
+            <p class="hint">
+              支持每行一个 URL，也可以用英文逗号分隔。设置草稿后仍可在 iframe 的 AI 面板里继续编辑文本和图片。
+            </p>
+          </div>
+          <div class="button-row">
+            <button class="primary" id="setDraftBtn">加载草稿到 AI 面板</button>
+            <button class="secondary" id="clearDraftBtn">清空 AI 草稿</button>
+          </div>
+          </section>
+
+          <section class="section tab-panel" id="tab-events" role="tabpanel">
+          <h2>事件计数</h2>
+          <div class="metrics">
+            <div class="metric">
+              <span>aiRequest</span>
+              <strong id="requestCount">0</strong>
+            </div>
+            <div class="metric">
+              <span>aiCancel</span>
+              <strong id="cancelCount">0</strong>
+            </div>
+            <div class="metric">
+              <span>contentChange</span>
+              <strong id="contentCount">0</strong>
+            </div>
+          </div>
+          <hr class="divider" />
           <h2>大角几何生图 API</h2>
           <p>
             创建生成：
@@ -424,34 +535,17 @@
             生产环境建议由宿主后端保存 Api Key、接收
             <code>aiRequest.payload</code> 并原样转发给大角几何生图接口。
           </p>
-        </section>
+          </section>
 
-        <section class="card section">
-          <h2>事件计数</h2>
-          <div class="metrics">
-            <div class="metric">
-              <span>aiRequest</span>
-              <strong id="requestCount">0</strong>
-            </div>
-            <div class="metric">
-              <span>aiCancel</span>
-              <strong id="cancelCount">0</strong>
-            </div>
-            <div class="metric">
-              <span>contentChange</span>
-              <strong id="contentCount">0</strong>
-            </div>
-          </div>
-        </section>
-
-        <section class="card section">
+          <section class="section tab-panel" id="tab-payload" role="tabpanel">
           <h2>最近一次 AI payload</h2>
           <pre class="payload" id="payloadView">尚未收到 aiRequest</pre>
-        </section>
+          </section>
 
-        <section class="card section">
+          <section class="section tab-panel" id="tab-logs" role="tabpanel">
           <h2>调用日志</h2>
           <pre class="console" id="logs">等待操作...</pre>
+          </section>
         </section>
       </aside>
     </div>
@@ -470,12 +564,18 @@
     const fileInput = document.getElementById('fileInput');
     const resetAiSettingsBtn = document.getElementById('resetAiSettingsBtn');
     const abortBtn = document.getElementById('abortBtn');
+    const draftTextInput = document.getElementById('draftTextInput');
+    const draftImagesInput = document.getElementById('draftImagesInput');
+    const setDraftBtn = document.getElementById('setDraftBtn');
+    const clearDraftBtn = document.getElementById('clearDraftBtn');
     const status = document.getElementById('status');
     const logs = document.getElementById('logs');
     const payloadView = document.getElementById('payloadView');
     const requestCount = document.getElementById('requestCount');
     const cancelCount = document.getElementById('cancelCount');
     const contentCount = document.getElementById('contentCount');
+    const tabButtons = Array.from(document.querySelectorAll('.tab-button'));
+    const tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
 
     if (configInfo) {
       configInfo.textContent = `baseUrl = ${baseUrl} · appId = ${appId}`;
@@ -484,6 +584,26 @@
     const EMBEDDED_AI_RUN_PATH = '/api/v1/embedded/ai/run';
     const SETTINGS_STORAGE_KEY = 'algeo-sdk-example-13-ai-settings';
     const DEFAULT_AI_BASE_URL = 'https://api.dajiaoai.com';
+
+    function activateTab(targetId) {
+      tabButtons.forEach(function (button) {
+        const selected = button.dataset.tabTarget === targetId;
+        button.setAttribute('aria-selected', selected ? 'true' : 'false');
+      });
+
+      tabPanels.forEach(function (panel) {
+        panel.classList.toggle('active', panel.id === targetId);
+      });
+    }
+
+    tabButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        if (!button.dataset.tabTarget) {
+          return;
+        }
+        activateTab(button.dataset.tabTarget);
+      });
+    });
 
     function loadSettings() {
       try {
@@ -655,6 +775,55 @@
       const url = new URL(getRunEndpoint());
       url.pathname = url.pathname.replace(/\/run$/, '/cancel');
       return url.toString();
+    }
+
+    function parseDraftImageUrls(value) {
+      return (value || '')
+        .split(/[\n,]/)
+        .map(function (url) {
+          return url.trim();
+        })
+        .filter(Boolean);
+    }
+
+    async function ensureEditor() {
+      if (!editor) {
+        await createEditorInstance();
+      }
+      return editor;
+    }
+
+    async function setAiDraftFromForm() {
+      const instance = await ensureEditor();
+      const text = draftTextInput.value;
+      const images = parseDraftImageUrls(draftImagesInput.value);
+
+      await instance.ai.setDraft({
+        text: text,
+        images: images,
+        openPanel: true,
+        focus: true,
+      });
+
+      status.textContent =
+        '已加载 AI 草稿：' +
+        (text.trim() ? '包含文本' : '无文本') +
+        '，图片 ' +
+        images.length +
+        ' 张。';
+      log('editor.ai.setDraft', {
+        text: text,
+        images: images,
+        openPanel: true,
+        focus: true,
+      });
+    }
+
+    async function clearAiDraftFromForm() {
+      const instance = await ensureEditor();
+      await instance.ai.clearDraft();
+      status.textContent = 'AI 草稿已清空。';
+      log('editor.ai.clearDraft');
     }
 
     async function cancelBackendRun(runId, reason) {
@@ -831,6 +1000,20 @@
 
     loadFileBtn.addEventListener('click', function () {
       fileInput.click();
+    });
+
+    setDraftBtn.addEventListener('click', function () {
+      void setAiDraftFromForm().catch(function (error) {
+        status.textContent = '加载 AI 草稿失败：' + error.message;
+        log('editor.ai.setDraft.error', { message: error.message });
+      });
+    });
+
+    clearDraftBtn.addEventListener('click', function () {
+      void clearAiDraftFromForm().catch(function (error) {
+        status.textContent = '清空 AI 草稿失败：' + error.message;
+        log('editor.ai.clearDraft.error', { message: error.message });
+      });
     });
 
     fileInput.addEventListener('change', function () {
