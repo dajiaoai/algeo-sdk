@@ -77,6 +77,9 @@ presentation
   .getSlideCount()
   .then(({ count }) => console.log('画板数量:', count));
 presentation.switchSlide(1).then(() => console.log('切换画板'));
+presentation.mode
+  .setMasterTemplate(masterTemplateContent)
+  .then(() => console.log('母版风格已更新'));
 
 // 销毁
 // presentation.destroy();
@@ -133,6 +136,8 @@ editor.on('contentChange', (event) => {
 editor.on('slideChange', (event) => {
   console.log('用户切换后的最新画板索引', event.index);
 });
+
+await editor.mode.setMasterTemplate(masterTemplateContent);
 
 editor.on('save', async (event) => {
   if (event.stage === 'request') {
@@ -362,6 +367,7 @@ const presentation = await create(container, {
 | --------------------- | ---------------- |
 | `getUiConfig()`       | 获取当前 UI 配置 |
 | `setUiConfig(config)` | 更新 UI 配置     |
+| `setMasterTemplate(template)` | 设置母版风格 |
 
 ##### `presentation.loadShareById(id: string): Promise<LoadShareByIdResult>`
 
@@ -497,6 +503,7 @@ interface FileContent {
 | --------------------- | ---------------- |
 | `getUiConfig()`       | 获取当前 UI 配置 |
 | `setUiConfig(config)` | 更新 UI 配置     |
+| `setMasterTemplate(template)` | 设置母版风格 |
 
 #### `editor.ai`
 

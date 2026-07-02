@@ -143,6 +143,8 @@ export class EmbeddedEditor extends EmbeddedTarget<
           ...config,
         };
       },
+      setMasterTemplate: (template) =>
+        this.post('setMasterTemplate', { template }),
     };
 
     this.ai = {

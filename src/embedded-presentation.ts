@@ -40,6 +40,10 @@ export class EmbeddedPresentation extends EmbeddedTarget<
           ...config,
         };
       },
+      setMasterTemplate: (template) => {
+        this.ensureWhitelistAccess('setMasterTemplate');
+        return this.post('setMasterTemplate', { template });
+      },
     };
   }
 

@@ -139,6 +139,9 @@ export interface LoadShareByIdResult {
 export interface LoadFileResult {
     success: true;
 }
+export interface SetMasterTemplateResult {
+    success: true;
+}
 export interface SwitchSlideResult {
     success: true;
 }
@@ -207,10 +210,12 @@ export interface HistoryApi {
 export interface ModeApi {
     getUiConfig(): AlgeoEditorUiConfig;
     setUiConfig(config: Partial<AlgeoEditorUiConfig>): Promise<void>;
+    setMasterTemplate(template: string): Promise<SetMasterTemplateResult>;
 }
 export interface PresentationModeApi {
     getUiConfig(): AlgeoPresentationUiConfig;
     setUiConfig(config: Partial<AlgeoPresentationUiConfig>): Promise<void>;
+    setMasterTemplate(template: string): Promise<SetMasterTemplateResult>;
 }
 export declare function generateRequestId(): string;
 export declare function isResponseMessage(msg: unknown): msg is EmbedResponseMessage;
