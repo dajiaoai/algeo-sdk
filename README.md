@@ -9,29 +9,6 @@
 ```bash
 # 安装最新版本
 npm install @dajiaoai/algeo-sdk
-
-# 安装指定主次版本
- npm install @dajiaoai/algeo-sdk@2.7.0
-```
-
-在 `package.json` 中：
-
-```json
-{
-  "dependencies": {
-    "@dajiaoai/algeo-sdk": "~2.7.0"
-  }
-}
-```
-
-或使用 semver 范围：
-
-```json
-{
-  "dependencies": {
-    "@dajiaoai/algeo-sdk": "^2.7.0" // 兼容 2.x 的更新（升级范围更大）
-  }
-}
 ```
 
 ### CDN
@@ -39,18 +16,14 @@ npm install @dajiaoai/algeo-sdk
 **unpkg**：
 
 ```html
-<script src="https://unpkg.com/@dajiaoai/algeo-sdk@2.7.0/dist/algeo-sdk.umd.min.js"></script>
 <script src="https://unpkg.com/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.min.js"></script>
 ```
 
 **jsDelivr**：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@2.7.0/dist/algeo-sdk.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@dajiaoai/algeo-sdk@latest/dist/algeo-sdk.umd.min.js"></script>
 ```
-
-> 生产环境建议锁定到 **2.7.x**（如 `~2.7.0`），在兼容边界内自动接收修复版本。
 
 ## 使用方式
 
