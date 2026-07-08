@@ -89,6 +89,14 @@
       background: linear-gradient(90deg, rgba(17, 104, 234, 0.08), rgba(255, 255, 255, 0.94));
     }
 
+    .embed-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
     #algeo-container {
       height: 680px;
       background: #fbfdff;
@@ -138,6 +146,10 @@
       font: inherit;
       color: var(--text);
       background: #fff;
+    }
+
+    input[type="file"] {
+      display: none;
     }
 
     .button-row {
@@ -256,7 +268,11 @@
           <div>
             <strong>Embedded Editor</strong>
           </div>
-          <button class="secondary" id="reloadBtn">重建编辑器</button>
+          <div class="embed-actions">
+            <button class="secondary" id="importBtn">导入文件</button>
+            <button class="secondary" id="reloadBtn">重建编辑器</button>
+            <input type="file" id="fileInput" accept=".json,.algeo,application/json">
+          </div>
         </div>
         <div id="algeo-container"></div>
       </section>
@@ -319,6 +335,8 @@
     const logsEl = document.getElementById('logs');
     const resultPanelEl = document.getElementById('resultPanel');
     const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const fileInput = document.getElementById('fileInput');
     const reloadBtn = document.getElementById('reloadBtn');
     const downloadAllBtn = document.getElementById('downloadAllBtn');
     const slideIndicesInput = document.getElementById('slideIndicesInput');
@@ -337,6 +355,7 @@
 
     function setActionButtonsDisabled(disabled) {
       exportBtn.disabled = disabled;
+      importBtn.disabled = disabled;
       downloadAllBtn.disabled = disabled || latestImages.length === 0;
     }
 
@@ -357,6 +376,20 @@
         .filter((value) => Number.isInteger(value) && value > 0);
 
       return indices.length > 0 ? Array.from(new Set(indices)) : [];
+    }
+
+    function parseContent(text) {
+      const raw = JSON.parse(text);
+      if (!raw || typeof raw !== 'object') {
+        throw new Error('无效 JSON');
+      }
+
+      try {
+        return AlgeoSdk.convertToLatest(raw);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error('文件内容不符合协议：' + message);
+      }
     }
 
     function downloadBlob(blob, fileName) {
@@ -392,6 +425,21 @@
       }).join('\n\n');
 
       resultPanelEl.textContent = summary;
+    }
+
+    async function importFile(file) {
+      if (!editor) {
+        throw new Error('编辑器尚未初始化');
+      }
+
+      const text = await file.text();
+      const content = parseContent(text);
+      await editor.document.loadContent(content);
+      latestImages = [];
+      renderExportResult([]);
+      setActionButtonsDisabled(false);
+      setStatus('已通过 document.loadContent() 导入文件：' + file.name);
+      log('导入文件完成，file=' + file.name + '，slides=' + content.slides.length);
     }
 
     async function createEditorInstance() {
@@ -484,6 +532,26 @@
         setActionButtonsDisabled(true);
         setStatus(message, true);
         log('重建编辑器失败：' + message);
+      });
+    });
+    importBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+    fileInput.addEventListener('change', (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        return;
+      }
+
+      importBtn.disabled = true;
+      setStatus('正在导入文件...');
+      importFile(file).catch((error) => {
+        const message = error instanceof Error ? error.message : String(error);
+        setStatus('导入失败：' + message, true);
+        log('导入文件失败：' + message);
+      }).finally(() => {
+        importBtn.disabled = !editor;
+        fileInput.value = '';
       });
     });
     exportBtn.addEventListener('click', () => { void exportImages(); });
