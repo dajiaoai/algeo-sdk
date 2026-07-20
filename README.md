@@ -351,6 +351,16 @@ const presentation = await create(container, {
 | `setUiConfig(config)`         | 更新 UI 配置     |
 | `setMasterTemplate(template)` | 设置母版风格     |
 
+##### `presentation.resize(): void`
+
+主动通知内嵌页重新测量容器尺寸并重绘画布。
+
+调用后会通过 `postMessage` 向 iframe 发送一条 `{ type: 'resize' }` 消息；内嵌页（如 studio-web 的 `embedBridge`）收到后会自行测量容器尺寸并同步重绘画布一帧，使画布采用恢复可见后的真实尺寸。
+
+SDK 内部已通过 `ResizeObserver` 在容器从隐藏（`display:none`，尺寸为 0）变为可见时**自动触发一次** `resize`；当宿主以其它方式改变容器尺寸（如布局切换、面板展开）而未触发该场景时，可手动调用此方法强制刷新。
+
+---
+
 ##### `presentation.loadShareById(id: string): Promise<LoadShareByIdResult>`
 
 按分享 ID 加载内容。
@@ -508,6 +518,15 @@ interface FileContent {
 | `save`          | `{ type: 'save', stage: 'request' \| 'success', content }` | `stage: 'request'` 时用于宿主处理保存，`stage: 'success'` 时表示保存成功后的通知  |
 | `aiRequest`     | `{ type: 'aiRequest', payload, signal }`                   | iframe 发起 AI 请求，宿主应调用自有后端并将响应流交给 `editor.ai.consumeStream()` |
 | `aiCancel`      | `{ type: 'aiCancel', runId, reason }`                      | 用户停止生成、新请求替代旧请求或 editor 销毁时触发                                |
+
+#### `editor.resize(): void`
+
+主动通知内嵌页重新测量容器尺寸并重绘画布。
+
+调用后会通过 `postMessage` 向 iframe 发送一条 `{ type: 'resize' }` 消息；内嵌页（如 studio-web 的 `embedEditBridge`）收到后会自行测量容器尺寸并同步重绘画布一帧，使画布采用恢复可见后的真实尺寸。
+
+SDK 内部已通过 `ResizeObserver` 在容器从隐藏（`display:none`，尺寸为 0）变为可见时**自动触发一次** `resize`；当宿主以其它方式改变容器尺寸（如布局切换、面板展开）而未触发该场景时，可手动调用此方法强制刷新。
+
 
 #### 事件与销毁
 

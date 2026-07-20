@@ -45,6 +45,7 @@ npx serve examples
 | 13-ai-chat.html                      | 编辑模式 | 展示 AI 对话面板、aiRequest 事件与 SSE 流透传                   |
 | 14-master-template.html              | 编辑模式 | 通过 `setMasterTemplate` 应用母版                               |
 | 15-presentation-master-template.html | 演示模式 | 通过 `setMasterTemplate` 应用母版                               |
+| 16-hidden-tab-resize.html            | 演示 + 编辑 | 切换可见时调用 `resize()` 重绘画布 |
 
 ## 全屏支持
 

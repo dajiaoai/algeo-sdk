@@ -14,9 +14,15 @@ export declare abstract class EmbeddedTarget<EventMap extends {
     private destroyed;
     protected _ready: boolean;
     protected _version: string | null;
+    private resizeObserver?;
+    private lastContainerSize;
     protected constructor(container: HTMLElement, embedMode: AlgeoEmbedMode);
     get ready(): boolean;
     get version(): string | null;
+    /**
+     * 主动通知内嵌页重新测量尺寸并重绘画布。
+     */
+    resize(): void;
     on<T extends EventName>(event: T, listener: ListenerMap[T]): () => void;
     protected getListeners<T extends EventName>(event: T): ListenerMap[T][];
     off<T extends EventName>(event: T, listener: ListenerMap[T]): void;
@@ -32,5 +38,11 @@ export declare abstract class EmbeddedTarget<EventMap extends {
         timeoutMs?: number;
     }): Promise<T>;
     protected postEvent(type: string, payload?: Record<string, unknown>): void;
+    /**
+     * 让内嵌页重新测量尺寸并重绘画布：向 iframe 发送 `resize` 事件。
+     * 真正的重绘逻辑由内嵌页（bridge）监听该消息后执行。
+     */
+    private setupResizeObserver;
+    private cleanupResizeObserver;
     destroy(): Promise<void>;
 }

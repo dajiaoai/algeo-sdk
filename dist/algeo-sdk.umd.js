@@ -4117,12 +4117,25 @@
             this.destroyed = false;
             this._ready = false;
             this._version = null;
+            this.lastContainerSize = {
+                width: 0,
+                height: 0,
+            };
         }
         get ready() {
             return this._ready;
         }
         get version() {
             return this._version;
+        }
+        /**
+         * 主动通知内嵌页重新测量尺寸并重绘画布。
+         */
+        resize() {
+            if (this.destroyed || !this._ready) {
+                return;
+            }
+            this.postEvent('resize');
         }
         on(event, listener) {
             let bucket = this.listenerBuckets.get(event);
@@ -4167,6 +4180,7 @@
         resetRuntimeState() {
             this._ready = false;
             this._version = null;
+            this.cleanupResizeObserver();
         }
         async init(options) {
             if (this.iframe) {
@@ -4214,6 +4228,7 @@
                     finalizeFailure(new AlgeoError('iframe 初始化失败', EMBED_ERROR_CODES.IFRAME_NOT_READY));
                 });
                 this.container.appendChild(iframe);
+                this.setupResizeObserver();
                 initTimeoutId = setTimeout(() => {
                     finalizeFailure(new AlgeoError('iframe 初始化超时', EMBED_ERROR_CODES.TIMEOUT));
                 }, EMBED_TIMEOUT_MS);
@@ -4228,6 +4243,7 @@
                         }
                         this._ready = true;
                         this._version = data.version;
+                        this.resize();
                         this.emit('ready', {
                             type: 'ready',
                             mode: this.embedMode,
@@ -4299,11 +4315,42 @@
             }
             this.iframe?.contentWindow?.postMessage({ type, ...payload }, '*');
         }
+        /**
+         * 让内嵌页重新测量尺寸并重绘画布：向 iframe 发送 `resize` 事件。
+         * 真正的重绘逻辑由内嵌页（bridge）监听该消息后执行。
+         */
+        setupResizeObserver() {
+            if (typeof ResizeObserver === 'undefined' || !this.container) {
+                return;
+            }
+            this.lastContainerSize = {
+                width: this.container.clientWidth,
+                height: this.container.clientHeight,
+            };
+            this.resizeObserver = new ResizeObserver(() => {
+                const width = this.container.clientWidth;
+                const height = this.container.clientHeight;
+                const prev = this.lastContainerSize;
+                this.lastContainerSize = { width, height };
+                const becameVisible = (prev.width === 0 || prev.height === 0) && width > 0 && height > 0;
+                if (becameVisible) {
+                    this.resize();
+                }
+            });
+            this.resizeObserver.observe(this.container);
+        }
+        cleanupResizeObserver() {
+            if (this.resizeObserver) {
+                this.resizeObserver.disconnect();
+                this.resizeObserver = undefined;
+            }
+        }
         async destroy() {
             if (this.destroyed) {
                 return;
             }
             this.destroyed = true;
+            this.cleanupResizeObserver();
             this.cleanupMessageHandler();
             this.resetRuntimeState();
             this.pending.forEach(({ reject }) => {

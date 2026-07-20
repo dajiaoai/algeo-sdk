@@ -37,6 +37,11 @@ export abstract class EmbeddedTarget<
   private destroyed = false;
   protected _ready = false;
   protected _version: string | null = null;
+  private resizeObserver?: ResizeObserver;
+  private lastContainerSize: { width: number; height: number } = {
+    width: 0,
+    height: 0,
+  };
 
   protected constructor(
     protected readonly container: HTMLElement,
@@ -49,6 +54,17 @@ export abstract class EmbeddedTarget<
 
   get version(): string | null {
     return this._version;
+  }
+
+  /**
+   * 主动通知内嵌页重新测量尺寸并重绘画布。
+   */
+  resize(): void {
+    if (this.destroyed || !this._ready) {
+      return;
+    }
+
+    this.postEvent('resize');
   }
 
   on<T extends EventName>(event: T, listener: ListenerMap[T]): () => void {
@@ -116,6 +132,7 @@ export abstract class EmbeddedTarget<
   private resetRuntimeState(): void {
     this._ready = false;
     this._version = null;
+    this.cleanupResizeObserver();
   }
 
   protected async init(options: EmbedInitOptions): Promise<void> {
@@ -179,6 +196,7 @@ export abstract class EmbeddedTarget<
         );
       });
       this.container.appendChild(iframe);
+      this.setupResizeObserver();
 
       initTimeoutId = setTimeout(() => {
         finalizeFailure(
@@ -199,6 +217,7 @@ export abstract class EmbeddedTarget<
 
           this._ready = true;
           this._version = data.version;
+          this.resize();
           this.emit(
             'ready' as TEventName<EventName>,
             {
@@ -320,12 +339,50 @@ export abstract class EmbeddedTarget<
     this.iframe?.contentWindow?.postMessage({ type, ...payload }, '*');
   }
 
+  /**
+   * 让内嵌页重新测量尺寸并重绘画布：向 iframe 发送 `resize` 事件。
+   * 真正的重绘逻辑由内嵌页（bridge）监听该消息后执行。
+   */
+  private setupResizeObserver(): void {
+    if (typeof ResizeObserver === 'undefined' || !this.container) {
+      return;
+    }
+
+    this.lastContainerSize = {
+      width: this.container.clientWidth,
+      height: this.container.clientHeight,
+    };
+
+    this.resizeObserver = new ResizeObserver(() => {
+      const width = this.container.clientWidth;
+      const height = this.container.clientHeight;
+      const prev = this.lastContainerSize;
+      this.lastContainerSize = { width, height };
+
+      const becameVisible =
+        (prev.width === 0 || prev.height === 0) && width > 0 && height > 0;
+      if (becameVisible) {
+        this.resize();
+      }
+    });
+
+    this.resizeObserver.observe(this.container);
+  }
+
+  private cleanupResizeObserver(): void {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = undefined;
+    }
+  }
+
   async destroy(): Promise<void> {
     if (this.destroyed) {
       return;
     }
 
     this.destroyed = true;
+    this.cleanupResizeObserver();
     this.cleanupMessageHandler();
     this.resetRuntimeState();
 
