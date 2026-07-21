@@ -4015,7 +4015,7 @@
     }
 
     /** SDK 版本号，构建时由 rollup 注入 */
-    const VERSION = '2.9.0';
+    const VERSION = '2.9.1';
     const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
     const DEFAULT_PRESENTATION_PATH = '/e';
     const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4486,8 +4486,14 @@
                     await this.refreshHistoryState();
                 },
                 exportImage: async (options) => {
-                    const result = await this.post('exportSlideImage', { options: options ?? {} });
+                    const result = await this.post('exportSlideImage', { options });
                     return result.images;
+                },
+                exportLatex: async (options) => {
+                    const result = await this.post('exportLatex', {
+                        options: options ?? {},
+                    });
+                    return result.items;
                 },
             };
             this.history = {

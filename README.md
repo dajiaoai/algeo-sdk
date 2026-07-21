@@ -464,17 +464,100 @@ interface FileContent {
 
 #### `editor.slides`
 
-| 方法                             | 说明                                                                                                                                                                                                                                                 |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getCount()`                     | 获取当前已知画板数量                                                                                                                                                                                                                                 |
-| `getCurrentIndex()`              | 获取当前已知画板索引                                                                                                                                                                                                                                 |
-| `switchTo(index)`                | 切换画板                                                                                                                                                                                                                                             |
-| `add()`                          | 在末尾新增画板                                                                                                                                                                                                                                       |
-| `addAt(index)`                   | 在指定位置新增画板                                                                                                                                                                                                                                   |
-| `remove(index)`                  | 删除指定画板                                                                                                                                                                                                                                         |
-| `duplicate(index, targetIndex?)` | 复制画板                                                                                                                                                                                                                                             |
-| `reorder(fromIndex, toIndex)`    | 重排画板                                                                                                                                                                                                                                             |
-| `exportImage(options?)`          | 导出画板为图片或可编辑排版内容，返回 `ExportedSlideImage[]`，每项含 `index`、`blob`、`format`、`width`、`height`。可选参数 `slideIndices`（1-based，不传则导出全部）、`format`（`'png'`/`'jpg'`/`'svg'`/`'latex'`）、`width`、`height`、`quality`（0~1，仅 jpg）、`autoFit`、`padding` |
+| 方法                             | 说明                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------ |
+| `getCount()`                     | 获取当前已知画板数量                                                                 |
+| `getCurrentIndex()`              | 获取当前已知画板索引                                                                 |
+| `switchTo(index)`                | 切换画板                                                                             |
+| `add()`                          | 在末尾新增画板                                                                       |
+| `addAt(index)`                   | 在指定位置新增画板                                                                   |
+| `remove(index)`                  | 删除指定画板                                                                         |
+| `duplicate(index, targetIndex?)` | 复制画板                                                                             |
+| `reorder(fromIndex, toIndex)`    | 重排画板                                                                             |
+| `exportImage(options)`           | 按 `view` / `contain` / `size` 模式导出 PNG、JPG 或 SVG，返回 `ExportedSlideImage[]` |
+| `exportLatex(options?)`          | 将画板导出为 LaTeX/TikZ 源码，返回 `ExportedLatex[]`                                 |
+
+##### `editor.slides.exportImage(options)`
+
+所有模式均读取文件中的 `camera.scale`；文件未提供时默认为 `50`。`slideIndices` 使用从 `1` 开始的画板索引，省略时导出全部画板。
+
+适合精确导出一个世界坐标视野时使用 `view`：
+
+```ts
+const images = await editor.slides.exportImage({
+  mode: 'view',
+  slideIndices: [1],
+  format: 'png',
+  viewBounds: { x: -5, y: -5, width: 10, height: 10 },
+  pixelRatio: 2,
+});
+```
+
+`viewBounds` 的位置和宽高均为世界坐标。输出尺寸为 `viewBounds × camera.scale × pixelRatio`。
+
+适合完整包住全部内容且不限定最终宽高时使用 `contain`：
+
+```ts
+const images = await editor.slides.exportImage({
+  mode: 'contain',
+  format: 'svg',
+  pixelRatio: 1,
+  padding: { horizontal: 24, vertical: 16 },
+});
+```
+
+输出相机以内容可视包围盒为中心。最终尺寸为 `内容包围盒 × camera.scale × pixelRatio`，再加两侧 `padding`。`padding` 是最终输出中的每侧绝对像素，也可传单个数字表示四边相同。
+
+适合需要固定最终输出宽高时使用 `size`：
+
+```ts
+const images = await editor.slides.exportImage({
+  mode: 'size',
+  format: 'jpg',
+  width: 1200,
+  height: 900,
+  minPadding: { horizontal: 40, vertical: 32 },
+  quality: 0.92,
+});
+```
+
+`size` 不接收 `pixelRatio`。实现会从目标宽高扣除每侧 `minPadding`，再根据内容可视包围盒自动计算 pixelRatio，使内容完整缩放、居中，并严格输出指定的 `width × height`。`quality` 仅对 JPG 生效，范围为 `0～1`。
+
+每张图片的返回结构为：
+
+```ts
+interface ExportedSlideImage {
+  index: number; // 1-based 画板索引
+  blob: Blob;
+  format: 'png' | 'jpg' | 'svg';
+  width: number;
+  height: number;
+}
+```
+
+##### `editor.slides.exportLatex(options?)`
+
+需要继续编辑、排版或编译几何图形时，可直接导出 LaTeX/TikZ 源码：
+
+```ts
+const items = await editor.slides.exportLatex({
+  slideIndices: [1, 3],
+  standalone: true,
+});
+```
+
+- `slideIndices`：可选，使用从 `1` 开始的索引；省略时导出全部画板。
+- `standalone`：可选，默认 `true`。为 `true` 时生成包含 document class、依赖宏包及 document 环境的可独立编译文档；为 `false` 时仅生成 TikZ 片段。
+- 导出使用文件中的 camera 信息，并按画板完整可视包围盒确定 TikZ 的 bounding box 与裁剪区域。
+
+返回结构为：
+
+```ts
+interface ExportedLatex {
+  index: number; // 1-based 画板索引
+  code: string;
+}
+```
 
 #### `editor.history`
 
@@ -526,7 +609,6 @@ interface FileContent {
 调用后会通过 `postMessage` 向 iframe 发送一条 `{ type: 'resize' }` 消息；内嵌页（如 studio-web 的 `embedEditBridge`）收到后会自行测量容器尺寸并同步重绘画布一帧，使画布采用恢复可见后的真实尺寸。
 
 SDK 内部已通过 `ResizeObserver` 在容器从隐藏（`display:none`，尺寸为 0）变为可见时**自动触发一次** `resize`；当宿主以其它方式改变容器尺寸（如布局切换、面板展开）而未触发该场景时，可手动调用此方法强制刷新。
-
 
 #### 事件与销毁
 

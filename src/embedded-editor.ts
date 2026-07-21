@@ -18,6 +18,9 @@ import {
   type EmbeddedEditorEventListenerMap,
   type EmbeddedEditorEventMap,
   type EmbeddedEditorEventName,
+  type ExportImageOptions,
+  type ExportLatexOptions,
+  type ExportLatexResult,
   type ExportSlideImageOptions,
   type ExportSlideImageResult,
   type FileContentLatest,
@@ -103,12 +106,18 @@ export class EmbeddedEditor extends EmbeddedTarget<
         }
         await this.refreshHistoryState();
       },
-      exportImage: async (options?: ExportSlideImageOptions) => {
+      exportImage: async (options: ExportImageOptions) => {
         const result = await this.post<ExportSlideImageResult>(
           'exportSlideImage',
-          { options: options ?? {} },
+          { options },
         );
         return result.images;
+      },
+      exportLatex: async (options?: ExportLatexOptions) => {
+        const result = await this.post<ExportLatexResult>('exportLatex', {
+          options: options ?? {},
+        });
+        return result.items;
       },
     };
 

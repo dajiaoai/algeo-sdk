@@ -233,11 +233,75 @@ export interface SlideIndexResult {
   index: number;
 }
 
-export type ExportImageFormat = 'png' | 'jpg' | 'svg' | 'latex';
+export type ExportImageFormat = 'png' | 'jpg' | 'svg';
 
-export interface ExportSlideImageOptions {
+/**
+ * 导出的逻辑视野区域（世界坐标）。
+ */
+export interface ExportViewBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** 导出留白，单位为输出像素 px。 */
+export type ExportPadding = number | { horizontal?: number; vertical?: number };
+
+interface ExportImageBaseOptions {
   slideIndices?: number[];
   format?: ExportImageFormat;
+  /** 仅 jpg 生效，0~1 */
+  quality?: number;
+}
+
+/**
+ * 场景一（size）：
+ * 从目标输出宽高扣除每侧 minPadding 后，根据图形可视包围盒自动计算 pixelRatio，
+ * 使图形完整 contain 在可用区域并居中；最终画布严格等于指定输出宽高。
+ */
+export interface ExportImageSizeMode extends ExportImageBaseOptions {
+  mode: 'size';
+  width: number;
+  height: number;
+  /** 每侧最小留白，单位为输出像素 px。 */
+  minPadding?: ExportPadding;
+}
+
+/**
+ * 场景二（view）：viewBounds 的位置及宽高均为世界坐标，渲染相机从文件读取
+ * 输出像素 = viewBounds 世界尺寸 x camera.scale x pixelRatio。
+ */
+export interface ExportImageViewMode extends ExportImageBaseOptions {
+  mode: 'view';
+  viewBounds: ExportViewBounds;
+  pixelRatio?: number;
+}
+
+/**
+ * 场景三（contain）：
+ * 内容按文件 camera 的 scale 1:1 渲染，最终画布 = 包围盒世界尺寸 x scale x pixelRatio + 两侧 padding。
+ * padding 为最终输出的绝对像素，可分别指定水平与垂直方向。
+ */
+export interface ExportImageContainMode extends ExportImageBaseOptions {
+  mode: 'contain';
+  pixelRatio?: number;
+  /** 每侧绝对留白，单位为最终输出像素 px */
+  padding?: ExportPadding;
+}
+
+export type ExportImageOptions =
+  | ExportImageSizeMode
+  | ExportImageViewMode
+  | ExportImageContainMode;
+
+/**
+ * 旧的扁平导出参数。
+ * @deprecated 请改用 ExportImageOptions 的三种 mode；format:'latex' 请改用 exportLatex。
+ */
+export interface ExportSlideImageOptions {
+  slideIndices?: number[];
+  format?: ExportImageFormat | 'latex';
   width?: number;
   height?: number;
   quality?: number;
@@ -255,6 +319,21 @@ export interface ExportedSlideImage {
 
 export interface ExportSlideImageResult {
   images: ExportedSlideImage[];
+}
+
+export interface ExportLatexOptions {
+  slideIndices?: number[];
+  /** 是否生成可独立编译的 standalone 文档，默认 true */
+  standalone?: boolean;
+}
+
+export interface ExportedLatex {
+  index: number;
+  code: string;
+}
+
+export interface ExportLatexResult {
+  items: ExportedLatex[];
 }
 
 export interface GetContentResult {
@@ -282,7 +361,21 @@ export interface SlidesApi {
   remove(index: number): Promise<void>;
   duplicate(index: number, targetIndex?: number): Promise<SlideIndexResult>;
   reorder(fromIndex: number, toIndex: number): Promise<void>;
-  exportImage(options?: ExportSlideImageOptions): Promise<ExportedSlideImage[]>;
+  /**
+  /**
+   * 导出画板图片。支持三种 mode：
+   * - size：目标输出宽高、minPadding 与图形包围盒
+   *   自动计算 pixelRatio，使图形完整 contain 在可用区域。
+   * - view：指定视野 viewBounds 与 pixelRatio
+   * - contain：由 pixelRatio 与绝对 px padding 自动计算最终宽高。
+   *
+   * 旧的扁平 ExportSlideImageOptions 已废弃，实现层不再接受；请改用上述三模式 ExportImageOptions。
+   * format:'latex' 请改用 exportLatex。
+   */
+  exportImage(options: ExportImageOptions): Promise<ExportedSlideImage[]>;
+
+  /** 导出画板为 LaTeX/TikZ 源码 */
+  exportLatex(options?: ExportLatexOptions): Promise<ExportedLatex[]>;
 }
 
 export interface HistoryApi {
