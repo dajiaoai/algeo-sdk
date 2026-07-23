@@ -43,7 +43,7 @@ export interface AlgeoEditorCreateOptions {
     ui?: AlgeoEditorUiConfig;
 }
 export interface AlgeoPresentationCreateOptions {
-    appId?: string;
+    auth?: AlgeoEditorAuthOptions;
     shareId?: string;
     ui?: AlgeoPresentationUiConfig;
 }

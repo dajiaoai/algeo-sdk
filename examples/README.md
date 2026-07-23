@@ -53,5 +53,5 @@ npx serve examples
 
 ## 测试说明
 
-- 将示例中的 `33TA3484` 替换为真实分享 ID 进行测试
+- 在示例首页配置真实的分享 ID；各示例会统一读取 `config.js` 中的配置
 - 依赖 `../dist/algeo-sdk.umd.js`，需先执行 `npm run build`

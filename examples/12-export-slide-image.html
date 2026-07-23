@@ -1,810 +1,691 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>12 导出画板图片 - Algeo SDK</title>
-    <style>
-      * {
-        box-sizing: border-box;
-      }
 
-      :root {
-        color-scheme: light;
-        --bg: #f4f7fb;
-        --panel: #ffffff;
-        --line: #d6deea;
-        --text: #18202f;
-        --muted: #617086;
-        --brand: #1168ea;
-        --brand-strong: #0b4fc2;
-        --danger: #b42318;
-        --shadow: 0 16px 40px rgba(24, 32, 47, 0.1);
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>12 导出画板图片 - Algeo SDK</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-      body {
-        margin: 0;
-        padding: 20px;
-        min-height: 100vh;
-        font-family: 'Segoe UI', 'PingFang SC', sans-serif;
-        color: var(--text);
-        background: linear-gradient(180deg, #fbfdff, var(--bg));
-      }
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --line: #d6deea;
+      --text: #18202f;
+      --muted: #617086;
+      --brand: #1168ea;
+      --brand-strong: #0b4fc2;
+      --danger: #b42318;
+      --shadow: 0 16px 40px rgba(24, 32, 47, 0.1);
+    }
 
-      a {
-        color: var(--brand-strong);
-      }
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #fbfdff, var(--bg));
+    }
 
-      code {
-        font-family: Consolas, Monaco, monospace;
-      }
+    a {
+      color: var(--brand-strong);
+    }
 
-      .page {
-        display: grid;
-        gap: 16px;
-      }
+    code {
+      font-family: Consolas, Monaco, monospace;
+    }
 
-      .hero {
-        display: grid;
-        gap: 8px;
-      }
+    .page {
+      display: grid;
+      gap: 16px;
+    }
 
-      .hero h1 {
-        margin: 0;
-        font-size: 1.75rem;
-      }
+    .hero {
+      display: grid;
+      gap: 8px;
+    }
 
-      .hero p {
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.65;
-      }
+    .hero h1 {
+      margin: 0;
+      font-size: 1.75rem;
+    }
 
-      .layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1.55fr) minmax(340px, 1fr);
-        gap: 16px;
-        align-items: start;
-      }
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
 
-      .card {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 18px;
-        box-shadow: var(--shadow);
-      }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(340px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
 
-      .embed {
-        overflow: hidden;
-      }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
 
-      .embed-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 14px 16px;
-        border-bottom: 1px solid var(--line);
-        background: linear-gradient(
-          90deg,
+    .embed {
+      overflow: hidden;
+    }
+
+    .embed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg,
           rgba(17, 104, 234, 0.08),
-          rgba(255, 255, 255, 0.94)
-        );
-      }
+          rgba(255, 255, 255, 0.94));
+    }
 
-      .embed-actions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-        justify-content: flex-end;
+    .embed-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    #algeo-container {
+      height: 680px;
+      background: #fbfdff;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 16px;
+    }
+
+    .section {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .section p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .field-grid label {
+      display: grid;
+      gap: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+    }
+
+    input[type='file'] {
+      display: none;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font: inherit;
+      cursor: pointer;
+      transition:
+        transform 0.18s ease,
+        opacity 0.18s ease,
+        box-shadow 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--brand), #4b7ff8);
+      box-shadow: 0 12px 26px rgba(17, 104, 234, 0.22);
+    }
+
+    .secondary {
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .status {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(17, 104, 234, 0.08);
+      border: 1px solid rgba(17, 104, 234, 0.18);
+      color: var(--brand-strong);
+      font-size: 0.875rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .status.error {
+      background: rgba(180, 35, 24, 0.08);
+      border-color: rgba(180, 35, 24, 0.18);
+      color: var(--danger);
+    }
+
+    .logs,
+    .panel {
+      padding: 14px;
+      border-radius: 14px;
+      font:
+        12px/1.6 Consolas,
+        Monaco,
+        monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow: auto;
+    }
+
+    .logs {
+      min-height: 180px;
+      max-height: 260px;
+      background: #101828;
+      color: #e5e7eb;
+    }
+
+    .panel {
+      min-height: 120px;
+      max-height: 220px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      color: #1f2937;
+    }
+
+    .hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* 说明图标 + 悬浮提示 */
+    .section h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-icon {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      font-style: italic;
+      cursor: help;
+      outline: none;
+    }
+
+    .info-tip {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      z-index: 30;
+      width: max-content;
+      max-width: 320px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #101828;
+      color: #e5e7eb;
+      font-size: 0.78rem;
+      font-weight: 400;
+      font-style: normal;
+      line-height: 1.65;
+      box-shadow: 0 14px 32px rgba(16, 24, 40, 0.28);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px);
+      transition:
+        opacity 0.16s ease,
+        transform 0.16s ease,
+        visibility 0.16s;
+      pointer-events: none;
+    }
+
+    .info-icon:hover .info-tip,
+    .info-icon:focus .info-tip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    /* 分段控件 */
+    .segmented {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      background: #eef2f8;
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    .segmented button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 14px;
+      border-radius: 9px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .segmented button.active {
+      background: #fff;
+      color: var(--brand-strong);
+      box-shadow: 0 2px 8px rgba(24, 32, 47, 0.08);
+      font-weight: 600;
+    }
+
+    .segmented.small button {
+      padding: 6px 12px;
+      font-size: 0.82rem;
+    }
+
+    .view-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .view-toggle>span {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .mode-fields {
+      display: grid;
+      gap: 10px;
+      margin-top: 4px;
+      border-top: 1px dashed var(--line);
+      padding-top: 12px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .code-panel {
+      margin: 0;
+      padding: 14px;
+      border-radius: 14px;
+      background: #101828;
+      color: #e5e7eb;
+      font:
+        12px/1.6 Consolas,
+        Monaco,
+        monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow: auto;
+      max-height: 360px;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
       }
 
       #algeo-container {
-        height: 680px;
-        background: #fbfdff;
-      }
-
-      .sidebar {
-        display: grid;
-        gap: 16px;
-      }
-
-      .section {
-        padding: 16px;
-        display: grid;
-        gap: 12px;
-      }
-
-      .section h2 {
-        margin: 0;
-        font-size: 1rem;
-      }
-
-      .section p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.875rem;
-        line-height: 1.6;
-      }
-
-      .field-grid {
-        display: grid;
-        gap: 10px;
-      }
-
-      .field-grid label {
-        display: grid;
-        gap: 6px;
-        font-size: 0.875rem;
-        font-weight: 600;
-      }
-
-      input,
-      select {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        font: inherit;
-        color: var(--text);
-        background: #fff;
-      }
-
-      input[type='file'] {
-        display: none;
-      }
-
-      .button-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      button {
-        border: 0;
-        border-radius: 999px;
-        padding: 10px 16px;
-        font: inherit;
-        cursor: pointer;
-        transition:
-          transform 0.18s ease,
-          opacity 0.18s ease,
-          box-shadow 0.18s ease;
-      }
-
-      button:hover {
-        transform: translateY(-1px);
-      }
-
-      button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-      }
-
-      .primary {
-        color: #fff;
-        background: linear-gradient(135deg, var(--brand), #4b7ff8);
-        box-shadow: 0 12px 26px rgba(17, 104, 234, 0.22);
-      }
-
-      .secondary {
-        color: var(--text);
-        background: #fff;
-        border: 1px solid var(--line);
-      }
-
-      .status {
-        padding: 12px 14px;
-        border-radius: 14px;
-        background: rgba(17, 104, 234, 0.08);
-        border: 1px solid rgba(17, 104, 234, 0.18);
-        color: var(--brand-strong);
-        font-size: 0.875rem;
-        white-space: pre-wrap;
-        word-break: break-word;
-      }
-
-      .status.error {
-        background: rgba(180, 35, 24, 0.08);
-        border-color: rgba(180, 35, 24, 0.18);
-        color: var(--danger);
+        height: 420px;
       }
 
       .logs,
       .panel {
-        padding: 14px;
-        border-radius: 14px;
-        font:
-          12px/1.6 Consolas,
-          Monaco,
-          monospace;
-        white-space: pre-wrap;
-        word-break: break-word;
-        overflow: auto;
+        max-height: none;
       }
+    }
+  </style>
+</head>
 
-      .logs {
-        min-height: 180px;
-        max-height: 260px;
-        background: #101828;
-        color: #e5e7eb;
-      }
+<body>
+  <div class="page">
+    <a href="index.html">← 返回示例列表</a>
 
-      .panel {
-        min-height: 120px;
-        max-height: 220px;
-        background: #f8fafc;
-        border: 1px solid var(--line);
-        color: #1f2937;
-      }
+    <section class="hero">
+      <h1>12 导出画板图片</h1>
+      <p>
+        这个示例使用公共配置中的分享文件创建编辑器，演示
+        <code>editor.slides.exportImage()</code> 的三种导出方式（<code>size</code>
+        / <code>view</code> / <code>contain</code>），以及
+        <code>editor.slides.exportLatex()</code> 导出 LaTeX/TikZ
+        源码。右侧可切换导出方式，并切换为代码模式查看当前配置对应的调用代码。
+      </p>
+    </section>
 
-      .hint {
-        font-size: 0.82rem;
-        color: var(--muted);
-      }
-
-      /* 说明图标 + 悬浮提示 */
-      .section h2 {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .info-icon {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background: var(--brand);
-        color: #fff;
-        font-size: 0.7rem;
-        font-weight: 700;
-        font-style: italic;
-        cursor: help;
-        outline: none;
-      }
-
-      .info-tip {
-        position: absolute;
-        top: calc(100% + 8px);
-        left: 0;
-        z-index: 30;
-        width: max-content;
-        max-width: 320px;
-        padding: 10px 12px;
-        border-radius: 10px;
-        background: #101828;
-        color: #e5e7eb;
-        font-size: 0.78rem;
-        font-weight: 400;
-        font-style: normal;
-        line-height: 1.65;
-        box-shadow: 0 14px 32px rgba(16, 24, 40, 0.28);
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-4px);
-        transition:
-          opacity 0.16s ease,
-          transform 0.16s ease,
-          visibility 0.16s;
-        pointer-events: none;
-      }
-
-      .info-icon:hover .info-tip,
-      .info-icon:focus .info-tip {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-      }
-
-      /* 分段控件 */
-      .segmented {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-        background: #eef2f8;
-        padding: 4px;
-        border-radius: 12px;
-      }
-
-      .segmented button {
-        border: 0;
-        background: transparent;
-        color: var(--muted);
-        padding: 8px 14px;
-        border-radius: 9px;
-        font: inherit;
-        cursor: pointer;
-      }
-
-      .segmented button.active {
-        background: #fff;
-        color: var(--brand-strong);
-        box-shadow: 0 2px 8px rgba(24, 32, 47, 0.08);
-        font-weight: 600;
-      }
-
-      .segmented.small button {
-        padding: 6px 12px;
-        font-size: 0.82rem;
-      }
-
-      .view-toggle {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-      }
-
-      .view-toggle > span {
-        font-size: 0.8rem;
-        color: var(--muted);
-      }
-
-      .mode-fields {
-        display: grid;
-        gap: 10px;
-        margin-top: 4px;
-        border-top: 1px dashed var(--line);
-        padding-top: 12px;
-      }
-
-      .hidden {
-        display: none !important;
-      }
-
-      .code-panel {
-        margin: 0;
-        padding: 14px;
-        border-radius: 14px;
-        background: #101828;
-        color: #e5e7eb;
-        font:
-          12px/1.6 Consolas,
-          Monaco,
-          monospace;
-        white-space: pre-wrap;
-        word-break: break-word;
-        overflow: auto;
-        max-height: 360px;
-      }
-
-      @media (max-width: 980px) {
-        .layout {
-          grid-template-columns: 1fr;
-        }
-
-        #algeo-container {
-          height: 420px;
-        }
-
-        .logs,
-        .panel {
-          max-height: none;
-        }
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="page">
-      <a href="index.html">← 返回示例列表</a>
-
-      <section class="hero">
-        <h1>12 导出画板图片</h1>
-        <p>
-          这个示例使用多画板文件 <code>BW4DOLOT</code> 创建编辑器，演示
-          <code>editor.slides.exportImage()</code> 的三种导出方式（<code
-            >size</code
-          >
-          / <code>view</code> / <code>contain</code>），以及
-          <code>editor.slides.exportLatex()</code> 导出 LaTeX/TikZ
-          源码。右侧可切换导出方式，并切换为代码模式查看当前配置对应的调用代码。
-        </p>
+    <div class="layout">
+      <section class="card embed">
+        <div class="embed-header">
+          <div>
+            <strong>Embedded Editor</strong>
+          </div>
+          <div class="embed-actions">
+            <button class="secondary" id="importBtn">导入文件</button>
+            <button class="secondary" id="reloadBtn">重建编辑器</button>
+            <input type="file" id="fileInput" accept=".json,.algeo,application/json" />
+          </div>
+        </div>
+        <div id="algeo-container"></div>
       </section>
 
-      <div class="layout">
-        <section class="card embed">
-          <div class="embed-header">
-            <div>
-              <strong>Embedded Editor</strong>
-            </div>
-            <div class="embed-actions">
-              <button class="secondary" id="importBtn">导入文件</button>
-              <button class="secondary" id="reloadBtn">重建编辑器</button>
-              <input
-                type="file"
-                id="fileInput"
-                accept=".json,.algeo,application/json"
-              />
+      <div class="sidebar">
+        <section class="card section">
+          <h2>
+            导出方式
+            <span class="info-icon" tabindex="0" role="note" aria-label="导出方式说明">i<span
+                class="info-tip"><strong>view</strong>：需要精确导出某个世界坐标视野时使用；输出尺寸由 viewBounds ×
+                文件 camera.scale × pixelRatio 计算。<br /><strong>contain</strong>：需要完整包住全部内容且不限定最终宽高时使用；输出尺寸由内容包围盒
+                × 文件 camera.scale × pixelRatio，再加四周绝对 px padding
+                计算。<br /><strong>size</strong>：需要固定最终输出宽高时使用；扣除四周 minPadding
+                后，根据内容可视包围盒自动计算
+                pixelRatio，使内容完整缩放并居中。<br /><strong>latex</strong>：需要继续编辑、排版或编译几何图形时使用；输出 LaTeX/TikZ
+                源码而非位图。</span></span>
+          </h2>
+          <div class="segmented" id="modeSwitch">
+            <button data-mode="view" class="active">view</button>
+            <button data-mode="contain">contain</button>
+            <button data-mode="size">size</button>
+            <button data-mode="latex">latex</button>
+          </div>
+
+          <div class="view-toggle">
+            <div class="segmented small" id="viewSwitch">
+              <button data-view="form" class="active">参数</button>
+              <button data-view="code">代码</button>
             </div>
           </div>
-          <div id="algeo-container"></div>
+
+          <div id="formView">
+            <div class="field-grid">
+              <label>导出画板索引（留空导出全部，1-based，逗号分隔）
+                <input id="slideIndicesInput" placeholder="例如：1,3" />
+              </label>
+            </div>
+
+            <div class="field-grid" id="commonImageFields" style="margin-top: 10px">
+              <label>格式
+                <select id="formatSelect">
+                  <option value="png">png</option>
+                  <option value="jpg">jpg</option>
+                  <option value="svg">svg</option>
+                </select>
+              </label>
+              <label id="qualityField" class="hidden">质量（0~1，仅 jpg 生效）
+                <input id="qualityInput" type="number" min="0" max="1" step="0.01" value="0.92" />
+              </label>
+            </div>
+
+            <div class="mode-fields" data-for="size">
+              <label>输出框宽度像素
+                <input id="widthInput" type="number" min="1" step="1" value="1200" />
+              </label>
+              <label>输出框高度像素
+                <input id="heightInput" type="number" min="1" step="1" value="900" />
+              </label>
+              <label>最小留白·水平（每侧像素）
+                <input id="minPadHInput" type="number" min="0" step="1" value="0" />
+              </label>
+              <label>最小留白·垂直（每侧像素）
+                <input id="minPadVInput" type="number" min="0" step="1" value="0" />
+              </label>
+            </div>
+
+            <div class="mode-fields hidden" data-for="view">
+              <label>pixelRatio（缩放比例，可选）
+                <input id="viewPixelRatioInput" type="number" min="0.1" step="0.1" value="1" />
+              </label>
+              <label>视野 X（世界坐标）
+                <input id="vbXInput" type="number" step="1" value="-5" />
+              </label>
+              <label>视野 Y（世界坐标）
+                <input id="vbYInput" type="number" step="1" value="-5" />
+              </label>
+              <label>视野宽度（世界坐标）
+                <input id="vbWInput" type="number" min="1" step="1" value="10" />
+              </label>
+              <label>视野高度（世界坐标）
+                <input id="vbHInput" type="number" min="1" step="1" value="10" />
+              </label>
+            </div>
+
+            <div class="mode-fields hidden" data-for="contain">
+              <label>pixelRatio（缩放比例，可选）
+                <input id="containPixelRatioInput" type="number" min="0.1" step="0.1" value="1" />
+              </label>
+              <label>留白·水平（每侧像素单位）
+                <input id="paddingHInput" type="number" min="0" step="1" value="0" />
+              </label>
+              <label>留白·垂直（每侧像素单位）
+                <input id="paddingVInput" type="number" min="0" step="1" value="0" />
+              </label>
+            </div>
+
+            <div class="mode-fields hidden" data-for="latex">
+              <label>生成独立可编译文档（standalone）
+                <select id="standaloneSelect">
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              </label>
+              <div class="hint">
+                可以在<a href="https://texample.net/projectile-motion/" target="_blank"
+                  rel="noopener noreferrer">这个网站</a>在线渲染查看 TikZ 效果
+              </div>
+            </div>
+
+            <div class="button-row" style="margin-top: 12px">
+              <button class="primary" id="exportBtn">导出</button>
+              <button class="secondary" id="downloadAllBtn">下载结果</button>
+            </div>
+          </div>
+
+          <div id="codeView" class="hidden">
+            <pre class="code-panel"><code id="codePanel"></code></pre>
+            <div class="hint">
+              以上为当前配置对应的 SDK 调用代码（只读预览）。
+            </div>
+          </div>
         </section>
 
-        <div class="sidebar">
-          <section class="card section">
-            <h2>
-              导出方式
-              <span
-                class="info-icon"
-                tabindex="0"
-                role="note"
-                aria-label="导出方式说明"
-                >i<span class="info-tip"
-                  ><strong>view</strong
-                  >：需要精确导出某个世界坐标视野时使用；输出尺寸由 viewBounds ×
-                  文件 camera.scale × pixelRatio 计算。<br /><strong
-                    >contain</strong
-                  >：需要完整包住全部内容且不限定最终宽高时使用；输出尺寸由内容包围盒
-                  × 文件 camera.scale × pixelRatio，再加四周绝对 px padding
-                  计算。<br /><strong>size</strong
-                  >：需要固定最终输出宽高时使用；扣除四周 minPadding
-                  后，根据内容可视包围盒自动计算
-                  pixelRatio，使内容完整缩放并居中。<br /><strong>latex</strong
-                  >：需要继续编辑、排版或编译几何图形时使用；输出 LaTeX/TikZ
-                  源码而非位图。</span
-                ></span
-              >
-            </h2>
-            <div class="segmented" id="modeSwitch">
-              <button data-mode="view" class="active">view</button>
-              <button data-mode="contain">contain</button>
-              <button data-mode="size">size</button>
-              <button data-mode="latex">latex</button>
-            </div>
+        <section class="card section">
+          <h2>导出结果</h2>
+          <div class="status" id="status">等待初始化...</div>
+          <div class="panel" id="resultPanel">尚未导出</div>
+        </section>
 
-            <div class="view-toggle">
-              <div class="segmented small" id="viewSwitch">
-                <button data-view="form" class="active">参数</button>
-                <button data-view="code">代码</button>
-              </div>
-            </div>
-
-            <div id="formView">
-              <div class="field-grid">
-                <label
-                  >导出画板索引（留空导出全部，1-based，逗号分隔）
-                  <input id="slideIndicesInput" placeholder="例如：1,3" />
-                </label>
-              </div>
-
-              <div
-                class="field-grid"
-                id="commonImageFields"
-                style="margin-top: 10px"
-              >
-                <label
-                  >格式
-                  <select id="formatSelect">
-                    <option value="png">png</option>
-                    <option value="jpg">jpg</option>
-                    <option value="svg">svg</option>
-                  </select>
-                </label>
-                <label id="qualityField" class="hidden"
-                  >质量（0~1，仅 jpg 生效）
-                  <input
-                    id="qualityInput"
-                    type="number"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value="0.92"
-                  />
-                </label>
-              </div>
-
-              <div class="mode-fields" data-for="size">
-                <label
-                  >输出框宽度像素
-                  <input
-                    id="widthInput"
-                    type="number"
-                    min="1"
-                    step="1"
-                    value="1200"
-                  />
-                </label>
-                <label
-                  >输出框高度像素
-                  <input
-                    id="heightInput"
-                    type="number"
-                    min="1"
-                    step="1"
-                    value="900"
-                  />
-                </label>
-                <label
-                  >最小留白·水平（每侧像素）
-                  <input
-                    id="minPadHInput"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value="0"
-                  />
-                </label>
-                <label
-                  >最小留白·垂直（每侧像素）
-                  <input
-                    id="minPadVInput"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value="0"
-                  />
-                </label>
-              </div>
-
-              <div class="mode-fields hidden" data-for="view">
-                <label
-                  >pixelRatio（缩放比例，可选）
-                  <input
-                    id="viewPixelRatioInput"
-                    type="number"
-                    min="0.1"
-                    step="0.1"
-                    value="1"
-                  />
-                </label>
-                <label
-                  >视野 X（世界坐标）
-                  <input id="vbXInput" type="number" step="1" value="-5" />
-                </label>
-                <label
-                  >视野 Y（世界坐标）
-                  <input id="vbYInput" type="number" step="1" value="-5" />
-                </label>
-                <label
-                  >视野宽度
-                  <input
-                    id="vbWInput"
-                    type="number"
-                    min="1"
-                    step="1"
-                    value="10"
-                  />
-                </label>
-                <label
-                  >视野高度
-                  <input
-                    id="vbHInput"
-                    type="number"
-                    min="1"
-                    step="1"
-                    value="10"
-                  />
-                </label>
-              </div>
-
-              <div class="mode-fields hidden" data-for="contain">
-                <label
-                  >pixelRatio（缩放比例，可选）
-                  <input
-                    id="containPixelRatioInput"
-                    type="number"
-                    min="0.1"
-                    step="0.1"
-                    value="1"
-                  />
-                </label>
-                <label
-                  >留白·水平（每侧像素单位）
-                  <input
-                    id="paddingHInput"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value="0"
-                  />
-                </label>
-                <label
-                  >留白·垂直（每侧像素单位）
-                  <input
-                    id="paddingVInput"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value="0"
-                  />
-                </label>
-              </div>
-
-              <div class="mode-fields hidden" data-for="latex">
-                <label
-                  >生成独立可编译文档（standalone）
-                  <select id="standaloneSelect">
-                    <option value="true">true</option>
-                    <option value="false">false</option>
-                  </select>
-                </label>
-              </div>
-
-              <div class="button-row" style="margin-top: 12px">
-                <button class="primary" id="exportBtn">导出</button>
-                <button class="secondary" id="downloadAllBtn">下载结果</button>
-              </div>
-            </div>
-
-            <div id="codeView" class="hidden">
-              <pre class="code-panel"><code id="codePanel"></code></pre>
-              <div class="hint">
-                以上为当前配置对应的 SDK 调用代码（只读预览）。
-              </div>
-            </div>
-          </section>
-
-          <section class="card section">
-            <h2>导出结果</h2>
-            <div class="status" id="status">等待初始化...</div>
-            <div class="panel" id="resultPanel">尚未导出</div>
-          </section>
-
-          <section class="card section">
-            <h2>日志</h2>
-            <div class="logs" id="logs">等待操作...</div>
-          </section>
-        </div>
+        <section class="card section">
+          <h2>日志</h2>
+          <div class="logs" id="logs">等待操作...</div>
+        </section>
       </div>
     </div>
+  </div>
 
-    <script src="../dist/algeo-sdk.umd.js"></script>
-    <script src="./assets/js/config.js"></script>
-    <script>
-      const { baseUrl: BASE_URL, appId: APP_ID } = window.ALGEO_CONFIG;
-      const SHARE_ID = 'BW4DOLOT';
+  <script src="../dist/algeo-sdk.umd.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script>
+    const {
+      baseUrl: BASE_URL,
+      appId: APP_ID,
+      shareId: SHARE_ID,
+    } = window.ALGEO_CONFIG;
 
-      const container = document.getElementById('algeo-container');
-      const statusEl = document.getElementById('status');
-      const logsEl = document.getElementById('logs');
-      const resultPanelEl = document.getElementById('resultPanel');
-      const exportBtn = document.getElementById('exportBtn');
-      const importBtn = document.getElementById('importBtn');
-      const fileInput = document.getElementById('fileInput');
-      const reloadBtn = document.getElementById('reloadBtn');
-      const downloadAllBtn = document.getElementById('downloadAllBtn');
+    const container = document.getElementById('algeo-container');
+    const statusEl = document.getElementById('status');
+    const logsEl = document.getElementById('logs');
+    const resultPanelEl = document.getElementById('resultPanel');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const fileInput = document.getElementById('fileInput');
+    const reloadBtn = document.getElementById('reloadBtn');
+    const downloadAllBtn = document.getElementById('downloadAllBtn');
 
-      const modeSwitch = document.getElementById('modeSwitch');
-      const viewSwitch = document.getElementById('viewSwitch');
-      const formView = document.getElementById('formView');
-      const codeView = document.getElementById('codeView');
-      const codePanel = document.getElementById('codePanel');
+    const modeSwitch = document.getElementById('modeSwitch');
+    const viewSwitch = document.getElementById('viewSwitch');
+    const formView = document.getElementById('formView');
+    const codeView = document.getElementById('codeView');
+    const codePanel = document.getElementById('codePanel');
 
-      const slideIndicesInput = document.getElementById('slideIndicesInput');
-      const formatSelect = document.getElementById('formatSelect');
-      const qualityInput = document.getElementById('qualityInput');
-      const qualityField = document.getElementById('qualityField');
-      const viewPixelRatioInput = document.getElementById(
-        'viewPixelRatioInput',
-      );
-      const containPixelRatioInput = document.getElementById(
-        'containPixelRatioInput',
-      );
-      const commonImageFields = document.getElementById('commonImageFields');
+    const slideIndicesInput = document.getElementById('slideIndicesInput');
+    const formatSelect = document.getElementById('formatSelect');
+    const qualityInput = document.getElementById('qualityInput');
+    const qualityField = document.getElementById('qualityField');
+    const viewPixelRatioInput = document.getElementById(
+      'viewPixelRatioInput',
+    );
+    const containPixelRatioInput = document.getElementById(
+      'containPixelRatioInput',
+    );
+    const commonImageFields = document.getElementById('commonImageFields');
 
-      const widthInput = document.getElementById('widthInput');
-      const heightInput = document.getElementById('heightInput');
-      const minPadHInput = document.getElementById('minPadHInput');
-      const minPadVInput = document.getElementById('minPadVInput');
+    const widthInput = document.getElementById('widthInput');
+    const heightInput = document.getElementById('heightInput');
+    const minPadHInput = document.getElementById('minPadHInput');
+    const minPadVInput = document.getElementById('minPadVInput');
 
-      const vbXInput = document.getElementById('vbXInput');
-      const vbYInput = document.getElementById('vbYInput');
-      const vbWInput = document.getElementById('vbWInput');
-      const vbHInput = document.getElementById('vbHInput');
+    const vbXInput = document.getElementById('vbXInput');
+    const vbYInput = document.getElementById('vbYInput');
+    const vbWInput = document.getElementById('vbWInput');
+    const vbHInput = document.getElementById('vbHInput');
 
-      const paddingHInput = document.getElementById('paddingHInput');
-      const paddingVInput = document.getElementById('paddingVInput');
+    const paddingHInput = document.getElementById('paddingHInput');
+    const paddingVInput = document.getElementById('paddingVInput');
 
-      const standaloneSelect = document.getElementById('standaloneSelect');
+    const standaloneSelect = document.getElementById('standaloneSelect');
 
-      let editor = null;
-      let currentMode = 'view';
-      let currentView = 'form';
-      let latestResult = { kind: 'image', items: [] };
+    let editor = null;
+    let currentMode = 'view';
+    let currentView = 'form';
+    let latestResult = { kind: 'image', items: [] };
 
-      function setStatus(message, isError = false) {
-        statusEl.textContent = message;
-        statusEl.classList.toggle('error', isError);
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle('error', isError);
+    }
+
+    function setActionButtonsDisabled(disabled) {
+      exportBtn.disabled = disabled;
+      importBtn.disabled = disabled;
+      downloadAllBtn.disabled = disabled || latestResult.items.length === 0;
+    }
+
+    function log(message) {
+      const ts = new Date().toLocaleTimeString();
+      logsEl.textContent =
+        '[' + ts + '] ' + message + '\n' + logsEl.textContent;
+    }
+
+    function parseSlideIndices(value) {
+      const trimmed = (value || '').trim();
+      if (!trimmed) {
+        return undefined;
       }
 
-      function setActionButtonsDisabled(disabled) {
-        exportBtn.disabled = disabled;
-        importBtn.disabled = disabled;
-        downloadAllBtn.disabled = disabled || latestResult.items.length === 0;
+      const indices = trimmed
+        .split(',')
+        .map((part) => Number(part.trim()))
+        .filter((value) => Number.isInteger(value) && value > 0);
+
+      return indices.length > 0 ? Array.from(new Set(indices)) : [];
+    }
+
+    function parseContent(text) {
+      const raw = JSON.parse(text);
+      if (!raw || typeof raw !== 'object') {
+        throw new Error('无效 JSON');
       }
 
-      function log(message) {
-        const ts = new Date().toLocaleTimeString();
-        logsEl.textContent =
-          '[' + ts + '] ' + message + '\n' + logsEl.textContent;
+      try {
+        return AlgeoSdk.convertToLatest(raw);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : String(error);
+        throw new Error('文件内容不符合协议：' + message);
+      }
+    }
+
+    function downloadBlob(blob, fileName) {
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadText(text, fileName) {
+      const blob = new Blob([text], { type: 'text/x-tex' });
+      downloadBlob(blob, fileName);
+    }
+
+    function renderExportResult() {
+      if (!latestResult.items.length) {
+        resultPanelEl.textContent = '尚未导出';
+        return;
       }
 
-      function parseSlideIndices(value) {
-        const trimmed = (value || '').trim();
-        if (!trimmed) {
-          return undefined;
-        }
-
-        const indices = trimmed
-          .split(',')
-          .map((part) => Number(part.trim()))
-          .filter((value) => Number.isInteger(value) && value > 0);
-
-        return indices.length > 0 ? Array.from(new Set(indices)) : [];
-      }
-
-      function parseContent(text) {
-        const raw = JSON.parse(text);
-        if (!raw || typeof raw !== 'object') {
-          throw new Error('无效 JSON');
-        }
-
-        try {
-          return AlgeoSdk.convertToLatest(raw);
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : String(error);
-          throw new Error('文件内容不符合协议：' + message);
-        }
-      }
-
-      function downloadBlob(blob, fileName) {
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = fileName;
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        URL.revokeObjectURL(url);
-      }
-
-      function downloadText(text, fileName) {
-        const blob = new Blob([text], { type: 'text/x-tex' });
-        downloadBlob(blob, fileName);
-      }
-
-      function renderExportResult() {
-        if (!latestResult.items.length) {
-          resultPanelEl.textContent = '尚未导出';
-          return;
-        }
-
-        if (latestResult.kind === 'latex') {
-          const summary = latestResult.items
-            .map((item) => {
-              return JSON.stringify(
-                {
-                  index: item.index,
-                  codeLength: item.code ? item.code.length : 0,
-                  preview: item.code ? item.code.slice(0, 120) : '',
-                },
-                null,
-                2,
-              );
-            })
-            .join('\n\n');
-          resultPanelEl.textContent = summary;
-          return;
-        }
-
+      if (latestResult.kind === 'latex') {
         const summary = latestResult.items
-          .map((image) => {
+          .map((item) => {
             return JSON.stringify(
               {
-                index: image.index,
-                format: image.format,
-                width: image.width,
-                height: image.height,
-                size: image.blob.size,
-                type: image.blob.type,
+                index: item.index,
+                codeLength: item.code ? item.code.length : 0,
+                preview: item.code ? item.code.slice(0, 120) : '',
               },
               null,
               2,
@@ -812,384 +693,405 @@
           })
           .join('\n\n');
         resultPanelEl.textContent = summary;
+        return;
       }
 
-      function applyModeVisibility() {
-        const isImageMode = currentMode !== 'latex';
-        commonImageFields.classList.toggle('hidden', !isImageMode);
-        qualityField.classList.toggle(
-          'hidden',
-          !isImageMode || formatSelect.value !== 'jpg',
+      const summary = latestResult.items
+        .map((image) => {
+          return JSON.stringify(
+            {
+              index: image.index,
+              format: image.format,
+              width: image.width,
+              height: image.height,
+              size: image.blob.size,
+              type: image.blob.type,
+            },
+            null,
+            2,
+          );
+        })
+        .join('\n\n');
+      resultPanelEl.textContent = summary;
+    }
+
+    function applyModeVisibility() {
+      const isImageMode = currentMode !== 'latex';
+      commonImageFields.classList.toggle('hidden', !isImageMode);
+      qualityField.classList.toggle(
+        'hidden',
+        !isImageMode || formatSelect.value !== 'jpg',
+      );
+
+      document.querySelectorAll('.mode-fields').forEach((el) => {
+        const forMode = el.getAttribute('data-for');
+        el.classList.toggle('hidden', forMode !== currentMode);
+      });
+
+      document.querySelectorAll('#modeSwitch button').forEach((btn) => {
+        btn.classList.toggle(
+          'active',
+          btn.getAttribute('data-mode') === currentMode,
         );
+      });
+    }
 
-        document.querySelectorAll('.mode-fields').forEach((el) => {
-          const forMode = el.getAttribute('data-for');
-          el.classList.toggle('hidden', forMode !== currentMode);
-        });
-
-        document.querySelectorAll('#modeSwitch button').forEach((btn) => {
-          btn.classList.toggle(
-            'active',
-            btn.getAttribute('data-mode') === currentMode,
-          );
-        });
+    function applyViewVisibility() {
+      formView.classList.toggle('hidden', currentView !== 'form');
+      codeView.classList.toggle('hidden', currentView !== 'code');
+      document.querySelectorAll('#viewSwitch button').forEach((btn) => {
+        btn.classList.toggle(
+          'active',
+          btn.getAttribute('data-view') === currentView,
+        );
+      });
+      if (currentView === 'code') {
+        codePanel.textContent = buildExportCode();
       }
+    }
 
-      function applyViewVisibility() {
-        formView.classList.toggle('hidden', currentView !== 'form');
-        codeView.classList.toggle('hidden', currentView !== 'code');
-        document.querySelectorAll('#viewSwitch button').forEach((btn) => {
-          btn.classList.toggle(
-            'active',
-            btn.getAttribute('data-view') === currentView,
-          );
-        });
-        if (currentView === 'code') {
-          codePanel.textContent = buildExportCode();
-        }
-      }
+    function buildExportCode() {
+      const slideIndices = parseSlideIndices(slideIndicesInput.value);
 
-      function buildExportCode() {
-        const slideIndices = parseSlideIndices(slideIndicesInput.value);
-
-        if (currentMode === 'latex') {
-          const standalone = standaloneSelect.value === 'true';
-          const lines = [
-            '// 导出 LaTeX / TikZ 源码',
-            'const items = await editor.slides.exportLatex({',
-          ];
-          if (slideIndices !== undefined) {
-            lines.push('  slideIndices: ' + JSON.stringify(slideIndices) + ',');
-          }
-          lines.push('  standalone: ' + standalone + ',', '});');
-          return lines.join('\n');
-        }
-
-        const format = formatSelect.value;
-        const quality = Number(qualityInput.value);
+      if (currentMode === 'latex') {
+        const standalone = standaloneSelect.value === 'true';
         const lines = [
-          '// 场景：' + currentMode + ' 导出图片',
-          'const images = await editor.slides.exportImage({',
-          "  mode: '" + currentMode + "',",
-          "  format: '" + format + "',",
+          '// 导出 LaTeX / TikZ 源码',
+          'const items = await editor.slides.exportLatex({',
         ];
-
         if (slideIndices !== undefined) {
-          lines.splice(
-            3,
-            0,
-            '  slideIndices: ' + JSON.stringify(slideIndices) + ',',
-          );
+          lines.push('  slideIndices: ' + JSON.stringify(slideIndices) + ',');
         }
-
-        if (format === 'jpg') {
-          lines.push('  quality: ' + quality + ',');
-        }
-        if (currentMode === 'size') {
-          lines.push('  width: ' + Number(widthInput.value) + ',');
-          lines.push('  height: ' + Number(heightInput.value) + ',');
-          lines.push(
-            '  minPadding: { horizontal: ' +
-              Number(minPadHInput.value) +
-              ', vertical: ' +
-              Number(minPadVInput.value) +
-              ' },',
-          );
-        } else if (currentMode === 'contain') {
-          lines.push(
-            '  pixelRatio: ' + Number(containPixelRatioInput.value) + ',',
-          );
-          lines.push(
-            '  padding: { horizontal: ' +
-              Number(paddingHInput.value) +
-              ', vertical: ' +
-              Number(paddingVInput.value) +
-              ' },',
-          );
-        } else if (currentMode === 'view') {
-          lines.push(
-            '  pixelRatio: ' + Number(viewPixelRatioInput.value) + ',',
-          );
-          lines.push('  viewBounds: {');
-          lines.push('    x: ' + Number(vbXInput.value) + ',');
-          lines.push('    y: ' + Number(vbYInput.value) + ',');
-          lines.push('    width: ' + Number(vbWInput.value) + ',');
-          lines.push('    height: ' + Number(vbHInput.value) + ',');
-          lines.push('  },');
-        }
-
-        lines.push('});');
+        lines.push('  standalone: ' + standalone + ',', '});');
         return lines.join('\n');
       }
 
-      function collectExportOptions() {
-        const slideIndices = parseSlideIndices(slideIndicesInput.value);
-        const base = { slideIndices };
+      const format = formatSelect.value;
+      const quality = Number(qualityInput.value);
+      const lines = [
+        '// 场景：' + currentMode + ' 导出图片',
+        'const images = await editor.slides.exportImage({',
+        "  mode: '" + currentMode + "',",
+        "  format: '" + format + "',",
+      ];
 
-        if (currentMode === 'latex') {
-          return {
-            ...base,
-            standalone: standaloneSelect.value === 'true',
-          };
-        }
-
-        const format = formatSelect.value;
-        const options = {
-          ...base,
-          mode: currentMode,
-          format,
-        };
-        if (format === 'jpg') {
-          options.quality = Number(qualityInput.value);
-        }
-
-        if (currentMode === 'size') {
-          options.width = Number(widthInput.value);
-          options.height = Number(heightInput.value);
-          options.minPadding = {
-            horizontal: Number(minPadHInput.value),
-            vertical: Number(minPadVInput.value),
-          };
-        } else if (currentMode === 'contain') {
-          options.pixelRatio = Number(containPixelRatioInput.value);
-          options.padding = {
-            horizontal: Number(paddingHInput.value),
-            vertical: Number(paddingVInput.value),
-          };
-        } else if (currentMode === 'view') {
-          options.pixelRatio = Number(viewPixelRatioInput.value);
-          options.viewBounds = {
-            x: Number(vbXInput.value),
-            y: Number(vbYInput.value),
-            width: Number(vbWInput.value),
-            height: Number(vbHInput.value),
-          };
-        }
-
-        return options;
-      }
-
-      async function importFile(file) {
-        if (!editor) {
-          throw new Error('编辑器尚未初始化');
-        }
-
-        const text = await file.text();
-        const content = parseContent(text);
-        await editor.document.loadContent(content);
-        latestResult = { kind: 'image', items: [] };
-        renderExportResult();
-        setActionButtonsDisabled(false);
-        setStatus('已通过 document.loadContent() 导入文件：' + file.name);
-        log(
-          '导入文件完成，file=' +
-            file.name +
-            '，slides=' +
-            content.slides.length,
+      if (slideIndices !== undefined) {
+        lines.splice(
+          3,
+          0,
+          '  slideIndices: ' + JSON.stringify(slideIndices) + ',',
         );
       }
 
-      async function createEditorInstance() {
-        if (editor && typeof editor.destroy === 'function') {
-          await editor.destroy();
-        }
-
-        container.innerHTML = '';
-        editor = null;
-        latestResult = { kind: 'image', items: [] };
-        renderExportResult();
-        setActionButtonsDisabled(true);
-        setStatus('正在创建编辑器...');
-
-        editor = await AlgeoSdk.create(container, {
-          mode: 'editor',
-          baseUrl: BASE_URL,
-          editor: {
-            auth: { appId: APP_ID },
-            shareId: SHARE_ID,
-          },
-        });
-
-        setActionButtonsDisabled(false);
-        setStatus('编辑器已就绪，可直接导出画板图片');
-        log('编辑器初始化完成，shareId=' + SHARE_ID);
+      if (format === 'jpg') {
+        lines.push('  quality: ' + quality + ',');
+      }
+      if (currentMode === 'size') {
+        lines.push('  width: ' + Number(widthInput.value) + ',');
+        lines.push('  height: ' + Number(heightInput.value) + ',');
+        lines.push(
+          '  minPadding: { horizontal: ' +
+          Number(minPadHInput.value) +
+          ', vertical: ' +
+          Number(minPadVInput.value) +
+          ' },',
+        );
+      } else if (currentMode === 'contain') {
+        lines.push(
+          '  pixelRatio: ' + Number(containPixelRatioInput.value) + ',',
+        );
+        lines.push(
+          '  padding: { horizontal: ' +
+          Number(paddingHInput.value) +
+          ', vertical: ' +
+          Number(paddingVInput.value) +
+          ' },',
+        );
+      } else if (currentMode === 'view') {
+        lines.push(
+          '  pixelRatio: ' + Number(viewPixelRatioInput.value) + ',',
+        );
+        lines.push('  viewBounds: {');
+        lines.push('    x: ' + Number(vbXInput.value) + ',');
+        lines.push('    y: ' + Number(vbYInput.value) + ',');
+        lines.push('    width: ' + Number(vbWInput.value) + ',');
+        lines.push('    height: ' + Number(vbHInput.value) + ',');
+        lines.push('  },');
       }
 
-      async function exportImages() {
-        if (!editor) {
-          setStatus('编辑器尚未初始化', true);
-          log('导出失败：编辑器尚未初始化');
-          return;
+      lines.push('});');
+      return lines.join('\n');
+    }
+
+    function collectExportOptions() {
+      const slideIndices = parseSlideIndices(slideIndicesInput.value);
+      const base = { slideIndices };
+
+      if (currentMode === 'latex') {
+        return {
+          ...base,
+          standalone: standaloneSelect.value === 'true',
+        };
+      }
+
+      const format = formatSelect.value;
+      const options = {
+        ...base,
+        mode: currentMode,
+        format,
+      };
+      if (format === 'jpg') {
+        options.quality = Number(qualityInput.value);
+      }
+
+      if (currentMode === 'size') {
+        options.width = Number(widthInput.value);
+        options.height = Number(heightInput.value);
+        options.minPadding = {
+          horizontal: Number(minPadHInput.value),
+          vertical: Number(minPadVInput.value),
+        };
+      } else if (currentMode === 'contain') {
+        options.pixelRatio = Number(containPixelRatioInput.value);
+        options.padding = {
+          horizontal: Number(paddingHInput.value),
+          vertical: Number(paddingVInput.value),
+        };
+      } else if (currentMode === 'view') {
+        options.pixelRatio = Number(viewPixelRatioInput.value);
+        options.viewBounds = {
+          x: Number(vbXInput.value),
+          y: Number(vbYInput.value),
+          width: Number(vbWInput.value),
+          height: Number(vbHInput.value),
+        };
+      }
+
+      return options;
+    }
+
+    async function importFile(file) {
+      if (!editor) {
+        throw new Error('编辑器尚未初始化');
+      }
+
+      const text = await file.text();
+      const content = parseContent(text);
+      await editor.document.loadContent(content);
+      latestResult = { kind: 'image', items: [] };
+      renderExportResult();
+      setActionButtonsDisabled(false);
+      setStatus('已通过 document.loadContent() 导入文件：' + file.name);
+      log(
+        '导入文件完成，file=' +
+        file.name +
+        '，slides=' +
+        content.slides.length,
+      );
+    }
+
+    async function createEditorInstance() {
+      if (editor && typeof editor.destroy === 'function') {
+        await editor.destroy();
+      }
+
+      container.innerHTML = '';
+      editor = null;
+      latestResult = { kind: 'image', items: [] };
+      renderExportResult();
+      setActionButtonsDisabled(true);
+      setStatus('正在创建编辑器...');
+
+      editor = await AlgeoSdk.create(container, {
+        mode: 'editor',
+        baseUrl: BASE_URL,
+        editor: {
+          auth: { appId: APP_ID },
+          shareId: SHARE_ID,
+        },
+      });
+
+      setActionButtonsDisabled(false);
+      setStatus('编辑器已就绪，可直接导出画板图片');
+      log('编辑器初始化完成，shareId=' + SHARE_ID);
+    }
+
+    async function exportImages() {
+      if (!editor) {
+        setStatus('编辑器尚未初始化', true);
+        log('导出失败：编辑器尚未初始化');
+        return;
+      }
+
+      exportBtn.disabled = true;
+      setStatus('正在导出...');
+
+      try {
+        const slideIndices = parseSlideIndices(slideIndicesInput.value);
+        if (slideIndices !== undefined && slideIndices.length === 0) {
+          throw new Error('画板索引格式无效，请输入正整数并使用英文逗号分隔');
         }
 
-        exportBtn.disabled = true;
-        setStatus('正在导出...');
-
-        try {
-          const slideIndices = parseSlideIndices(slideIndicesInput.value);
-          if (slideIndices !== undefined && slideIndices.length === 0) {
-            throw new Error('画板索引格式无效，请输入正整数并使用英文逗号分隔');
-          }
-
-          if (currentMode === 'latex') {
-            const options = collectExportOptions();
-            const items = await editor.slides.exportLatex(options);
-            latestResult = { kind: 'latex', items };
-            renderExportResult();
-            setActionButtonsDisabled(false);
-            setStatus('导出成功，共返回 ' + items.length + ' 份 LaTeX 源码');
-            log('导出 LaTeX 完成，返回=' + items.length + ' 份');
-            return;
-          }
-
+        if (currentMode === 'latex') {
           const options = collectExportOptions();
-          const images = await editor.slides.exportImage(options);
-          latestResult = { kind: 'image', items: images };
+          const items = await editor.slides.exportLatex(options);
+          latestResult = { kind: 'latex', items };
           renderExportResult();
           setActionButtonsDisabled(false);
-
-          const target =
-            slideIndices && slideIndices.length > 0
-              ? '指定画板 ' + slideIndices.join(', ')
-              : '全部画板';
-          setStatus('导出成功，共返回 ' + images.length + ' 张图片');
-          log('导出完成，目标=' + target + '，返回=' + images.length + ' 张');
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : String(error);
-          setStatus(message, true);
-          log('导出失败：' + message);
-        } finally {
-          exportBtn.disabled = false;
-          downloadAllBtn.disabled = latestResult.items.length === 0;
+          setStatus('导出成功，共返回 ' + items.length + ' 份 LaTeX 源码');
+          log('导出 LaTeX 完成，返回=' + items.length + ' 份');
+          return;
         }
+
+        const options = collectExportOptions();
+        const images = await editor.slides.exportImage(options);
+        latestResult = { kind: 'image', items: images };
+        renderExportResult();
+        setActionButtonsDisabled(false);
+
+        const target =
+          slideIndices && slideIndices.length > 0
+            ? '指定画板 ' + slideIndices.join(', ')
+            : '全部画板';
+        setStatus('导出成功，共返回 ' + images.length + ' 张图片');
+        log('导出完成，目标=' + target + '，返回=' + images.length + ' 张');
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : String(error);
+        setStatus(message, true);
+        log('导出失败：' + message);
+      } finally {
+        exportBtn.disabled = false;
+        downloadAllBtn.disabled = latestResult.items.length === 0;
+      }
+    }
+
+    function downloadLatest() {
+      if (!latestResult.items.length) {
+        setStatus('暂无导出结果可下载', true);
+        return;
       }
 
-      function downloadLatest() {
-        if (!latestResult.items.length) {
-          setStatus('暂无导出结果可下载', true);
-          return;
+      if (latestResult.kind === 'latex') {
+        for (const item of latestResult.items) {
+          downloadText(item.code || '', 'slide-' + item.index + '.tex');
         }
-
-        if (latestResult.kind === 'latex') {
-          for (const item of latestResult.items) {
-            downloadText(item.code || '', 'slide-' + item.index + '.tex');
-          }
-          setStatus(
-            '已触发 ' + latestResult.items.length + ' 个 .tex 文件下载',
-          );
-          log('下载 LaTeX 结果，共 ' + latestResult.items.length + ' 份');
-          return;
-        }
-
-        for (const image of latestResult.items) {
-          const ext = image.format === 'svg' ? 'svg' : image.format;
-          downloadBlob(image.blob, 'slide-' + image.index + '.' + ext);
-        }
-        setStatus('已触发 ' + latestResult.items.length + ' 个文件下载');
-        log('下载最近一次导出结果，共 ' + latestResult.items.length + ' 张');
+        setStatus(
+          '已触发 ' + latestResult.items.length + ' 个 .tex 文件下载',
+        );
+        log('下载 LaTeX 结果，共 ' + latestResult.items.length + ' 份');
+        return;
       }
 
-      modeSwitch.addEventListener('click', (event) => {
-        const btn = event.target.closest('button[data-mode]');
-        if (!btn) {
-          return;
-        }
-        currentMode = btn.getAttribute('data-mode');
-        applyModeVisibility();
+      for (const image of latestResult.items) {
+        const ext = image.format === 'svg' ? 'svg' : image.format;
+        downloadBlob(image.blob, 'slide-' + image.index + '.' + ext);
+      }
+      setStatus('已触发 ' + latestResult.items.length + ' 个文件下载');
+      log('下载最近一次导出结果，共 ' + latestResult.items.length + ' 张');
+    }
+
+    modeSwitch.addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-mode]');
+      if (!btn) {
+        return;
+      }
+      currentMode = btn.getAttribute('data-mode');
+      applyModeVisibility();
+      if (currentView === 'code') {
+        codePanel.textContent = buildExportCode();
+      }
+    });
+
+    viewSwitch.addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-view]');
+      if (!btn) {
+        return;
+      }
+      currentView = btn.getAttribute('data-view');
+      applyViewVisibility();
+    });
+
+    formatSelect.addEventListener('change', applyModeVisibility);
+
+    [
+      slideIndicesInput,
+      formatSelect,
+      qualityInput,
+      viewPixelRatioInput,
+      containPixelRatioInput,
+      widthInput,
+      heightInput,
+      minPadHInput,
+      minPadVInput,
+      vbXInput,
+      vbYInput,
+      vbWInput,
+      vbHInput,
+      paddingHInput,
+      paddingVInput,
+      standaloneSelect,
+    ].forEach((el) => {
+      el.addEventListener('input', () => {
         if (currentView === 'code') {
           codePanel.textContent = buildExportCode();
         }
       });
-
-      viewSwitch.addEventListener('click', (event) => {
-        const btn = event.target.closest('button[data-view]');
-        if (!btn) {
-          return;
+      el.addEventListener('change', () => {
+        if (currentView === 'code') {
+          codePanel.textContent = buildExportCode();
         }
-        currentView = btn.getAttribute('data-view');
-        applyViewVisibility();
       });
+    });
 
-      formatSelect.addEventListener('change', applyModeVisibility);
-
-      [
-        slideIndicesInput,
-        formatSelect,
-        qualityInput,
-        viewPixelRatioInput,
-        containPixelRatioInput,
-        widthInput,
-        heightInput,
-        minPadHInput,
-        minPadVInput,
-        vbXInput,
-        vbYInput,
-        vbWInput,
-        vbHInput,
-        paddingHInput,
-        paddingVInput,
-        standaloneSelect,
-      ].forEach((el) => {
-        el.addEventListener('input', () => {
-          if (currentView === 'code') {
-            codePanel.textContent = buildExportCode();
-          }
-        });
-        el.addEventListener('change', () => {
-          if (currentView === 'code') {
-            codePanel.textContent = buildExportCode();
-          }
-        });
-      });
-
-      reloadBtn.addEventListener('click', () => {
-        createEditorInstance().catch((error) => {
-          const message =
-            error instanceof Error ? error.message : String(error);
-          editor = null;
-          setActionButtonsDisabled(true);
-          setStatus(message, true);
-          log('重建编辑器失败：' + message);
-        });
-      });
-      importBtn.addEventListener('click', () => {
-        fileInput.click();
-      });
-      fileInput.addEventListener('change', (event) => {
-        const file = event.target.files && event.target.files[0];
-        if (!file) {
-          return;
-        }
-
-        importBtn.disabled = true;
-        setStatus('正在导入文件...');
-        importFile(file)
-          .catch((error) => {
-            const message =
-              error instanceof Error ? error.message : String(error);
-            setStatus('导入失败：' + message, true);
-            log('导入文件失败：' + message);
-          })
-          .finally(() => {
-            importBtn.disabled = !editor;
-            fileInput.value = '';
-          });
-      });
-      exportBtn.addEventListener('click', () => {
-        void exportImages();
-      });
-      downloadAllBtn.addEventListener('click', downloadLatest);
-
-      applyModeVisibility();
-      applyViewVisibility();
+    reloadBtn.addEventListener('click', () => {
       createEditorInstance().catch((error) => {
-        const message = error instanceof Error ? error.message : String(error);
+        const message =
+          error instanceof Error ? error.message : String(error);
         editor = null;
         setActionButtonsDisabled(true);
         setStatus(message, true);
-        log('初始化失败：' + message);
+        log('重建编辑器失败：' + message);
       });
-    </script>
-  </body>
+    });
+    importBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+    fileInput.addEventListener('change', (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        return;
+      }
+
+      importBtn.disabled = true;
+      setStatus('正在导入文件...');
+      importFile(file)
+        .catch((error) => {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          setStatus('导入失败：' + message, true);
+          log('导入文件失败：' + message);
+        })
+        .finally(() => {
+          importBtn.disabled = !editor;
+          fileInput.value = '';
+        });
+    });
+    exportBtn.addEventListener('click', () => {
+      void exportImages();
+    });
+    downloadAllBtn.addEventListener('click', downloadLatest);
+
+    applyModeVisibility();
+    applyViewVisibility();
+    createEditorInstance().catch((error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      editor = null;
+      setActionButtonsDisabled(true);
+      setStatus(message, true);
+      log('初始化失败：' + message);
+    });
+  </script>
+</body>
+
 </html>

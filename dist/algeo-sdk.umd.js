@@ -4017,7 +4017,7 @@
     /** SDK 版本号，构建时由 rollup 注入 */
     const VERSION = '2.9.1';
     const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
-    const DEFAULT_PRESENTATION_PATH = '/e';
+    const DEFAULT_PRESENTATION_PATH = '/embed/present';
     const DEFAULT_EDITOR_PATH = '/embed/edit';
     const EMBED_TIMEOUT_MS = 30000;
     let requestIdCounter = 0;
@@ -4094,18 +4094,12 @@
         const baseUrl = normalizeBaseUrl(options.baseUrl ?? DEFAULT_EMBED_BASE);
         const mode = normalizeMode(options.mode);
         const path = getEmbedPath(mode);
-        const authAppId = options.auth?.appId?.trim() ?? '';
+        const appId = options.auth?.appId?.trim() ?? '';
         const initialId = options.initialId?.trim();
-        if (mode === 'editor') {
-            if (!initialId) {
-                return `${baseUrl}${path}/${encodeURIComponent(authAppId)}`;
-            }
-            return `${baseUrl}${path}/${encodeURIComponent(authAppId)}/${encodeURIComponent(initialId)}`;
-        }
         if (!initialId) {
-            return `${baseUrl}${path}`;
+            return `${baseUrl}${path}/${encodeURIComponent(appId)}`;
         }
-        return `${baseUrl}${path}/${encodeURIComponent(initialId)}`;
+        return `${baseUrl}${path}/${encodeURIComponent(appId)}/${encodeURIComponent(initialId)}`;
     }
 
     class EmbeddedTarget {
@@ -4386,6 +4380,7 @@
             this.uiConfig = options.ui ? { ...options.ui } : {};
             await this.init({
                 baseUrl,
+                auth: options.auth,
                 initialId: options.shareId,
             });
             if (Object.keys(this.uiConfig).length > 0) {
@@ -4889,7 +4884,7 @@
     const WHITELIST_CHECK_BASE_URL = 'https://open.dajiaoai.com/console';
     const WHITELIST_CHECK_PATH = '/api/whitelist/check';
     async function checkPresentationWhitelist(options) {
-        const appId = options.appId?.trim() ?? '';
+        const appId = options.auth?.appId?.trim() ?? '';
         const host = window.location.host.trim();
         const url = new URL(`${normalizeBaseUrl(WHITELIST_CHECK_BASE_URL)}${WHITELIST_CHECK_PATH}`);
         url.searchParams.set('appId', appId);

@@ -34,7 +34,7 @@ import { createPresentation } from '@dajiaoai/algeo-sdk';
 
 const container = document.getElementById('algeo-container');
 const presentation = await createPresentation(container, {
-  appId: 'YTVJDQZR',
+  auth: { appId: 'YTVJDQZR' },
   shareId: '33TA3484',
   ui: {
     logo: false,
@@ -65,7 +65,7 @@ presentation.mode
 ```html
 <iframe
   id="algeo-embed"
-  src="https://dajiaoai.com/e/33TA3484"
+  src="https://dajiaoai.com/embed/present/YOUR_APP_ID/33TA3484"
   allow="fullscreen"
   referrerpolicy="origin"
 ></iframe>
@@ -234,7 +234,7 @@ create(container, {
 
 演示模式快捷入口。该函数负责真正创建并初始化 `EmbeddedPresentation`。
 
-创建成功后，SDK 会额外调用 `https://open.dajiaoai.com/console/api/whitelist/check`，使用 `options.appId` 与当前页面 `hostname` 做白名单校验。若未命中白名单，iframe 仍会完成初始化并呈现页面，`createPresentation` 仍会成功返回实例，但后续 `loadShareById`、`loadFile`、`switchSlide`、`getSlideCount`、`repl` 等演示模式 API 会被拒绝，并在控制台输出包含方法名的错误，便于接入方感知并处理。
+创建成功后，SDK 会额外调用 `https://open.dajiaoai.com/console/api/whitelist/check`，使用 `options.auth.appId` 与当前页面 `hostname` 做白名单校验。若未命中白名单，iframe 仍会完成初始化并呈现页面，`createPresentation` 仍会成功返回实例，但后续 `loadShareById`、`loadFile`、`switchSlide`、`getSlideCount`、`repl` 等演示模式 API 会被拒绝，并在控制台输出包含方法名的错误，便于接入方感知并处理。
 
 ```javascript
 create(container, {
@@ -294,13 +294,13 @@ type AlgeoCreateOptions =
 
 | 属性      | 类型                                 | 默认值 | 说明                                                     |
 | --------- | ------------------------------------ | ------ | -------------------------------------------------------- |
-| `appId`   | `string`                             | `''`   | 演示模式白名单校验使用的应用标识，SDK 会用它请求校验接口 |
-| `shareId` | `string`                             | `''`   | 演示模式初始分享 ID，会映射到 `/e/:id`                   |
+| `auth`    | `{ appId: string }`                  | -      | 演示模式鉴权参数，`appId` 用于路由及白名单校验           |
+| `shareId` | `string`                             | `''`   | 演示模式初始分享 ID，会映射到 `/embed/present/:appId/:id` |
 | `ui`      | `Partial<AlgeoPresentationUiConfig>` | -      | 演示模式 UI 配置                                         |
 
 默认路径规则：
 
-- `mode: 'presentation'` -> `/e`，若传 `presentation.shareId` 则生成 `/e/:id`
+- `mode: 'presentation'` -> `/embed/present/:appId`，若传 `presentation.shareId` 则生成 `/embed/present/:appId/:id`
 - `mode: 'editor'` -> `/embed/edit/:appId`，其中 `:appId` 来自 `editor.auth.appId`；若传 `editor.shareId` 则生成 `/embed/edit/:appId/:id`
 
 **示例：**
@@ -309,7 +309,7 @@ type AlgeoCreateOptions =
 const presentation = await create(container, {
   mode: 'presentation',
   presentation: {
-    appId: 'xxxx',
+    auth: { appId: 'xxxx' },
     shareId: '33TA3484',
   },
 });

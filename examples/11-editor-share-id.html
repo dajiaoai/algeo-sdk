@@ -280,7 +280,7 @@
 
           <div class="field">
             <label for="shareIdInput">shareId</label>
-            <input id="shareIdInput" value="33TA3484" placeholder="输入 shareId">
+            <input id="shareIdInput" placeholder="输入 shareId">
           </div>
 
           <div class="button-row">
@@ -313,7 +313,7 @@
   <script src="./assets/js/config.js"></script>
   <script>
     (function () {
-      const { baseUrl, appId } = window.ALGEO_CONFIG;
+      const { baseUrl, appId, shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
       const container = document.getElementById('algeo-container');
       const shareIdInput = document.getElementById('shareIdInput');
       const loadBtn = document.getElementById('loadBtn');
@@ -322,6 +322,7 @@
       const metaPanel = document.getElementById('metaPanel');
       const logPanel = document.getElementById('logPanel');
       const readyText = document.getElementById('readyText');
+      shareIdInput.value = DEFAULT_SHARE_ID;
 
       let editor = null;
       let renderCount = 0;

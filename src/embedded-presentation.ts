@@ -55,6 +55,7 @@ export class EmbeddedPresentation extends EmbeddedTarget<
 
     await this.init({
       baseUrl,
+      auth: options.auth,
       initialId: options.shareId,
     });
 

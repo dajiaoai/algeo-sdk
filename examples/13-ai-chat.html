@@ -496,6 +496,20 @@
               支持每行一个 URL，也可以用英文逗号分隔。设置草稿后仍可在 iframe 的 AI 面板里继续编辑文本和图片。
             </p>
           </div>
+          <div class="field">
+            <label for="draftOpenPanelInput">设置后打开 AI 面板（openPanel）</label>
+            <select id="draftOpenPanelInput">
+              <option value="true" selected>true</option>
+              <option value="false">false</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="draftFocusInput">聚焦输入框（focus）</label>
+            <select id="draftFocusInput">
+              <option value="true" selected>true</option>
+              <option value="false">false</option>
+            </select>
+          </div>
           <div class="button-row">
             <button class="primary" id="setDraftBtn">加载草稿到 AI 面板</button>
             <button class="secondary" id="clearDraftBtn">清空 AI 草稿</button>
@@ -566,6 +580,8 @@
     const abortBtn = document.getElementById('abortBtn');
     const draftTextInput = document.getElementById('draftTextInput');
     const draftImagesInput = document.getElementById('draftImagesInput');
+    const draftOpenPanelInput = document.getElementById('draftOpenPanelInput');
+    const draftFocusInput = document.getElementById('draftFocusInput');
     const setDraftBtn = document.getElementById('setDraftBtn');
     const clearDraftBtn = document.getElementById('clearDraftBtn');
     const status = document.getElementById('status');
@@ -797,12 +813,14 @@
       const instance = await ensureEditor();
       const text = draftTextInput.value;
       const images = parseDraftImageUrls(draftImagesInput.value);
+      const openPanel = draftOpenPanelInput.value === 'true';
+      const focus = draftFocusInput.value === 'true';
 
       await instance.ai.setDraft({
         text: text,
         images: images,
-        openPanel: true,
-        focus: true,
+        openPanel: openPanel,
+        focus: focus,
       });
 
       status.textContent =
@@ -810,12 +828,16 @@
         (text.trim() ? '包含文本' : '无文本') +
         '，图片 ' +
         images.length +
-        ' 张。';
+        ' 张，openPanel = ' +
+        openPanel +
+        '，focus = ' +
+        focus +
+        '。';
       log('editor.ai.setDraft', {
         text: text,
         images: images,
-        openPanel: true,
-        focus: true,
+        openPanel: openPanel,
+        focus: focus,
       });
     }
 

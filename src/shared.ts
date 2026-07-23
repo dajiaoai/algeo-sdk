@@ -25,7 +25,7 @@ export type {
 export { AlgeoError, EMBED_ERROR_CODES };
 
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
-const DEFAULT_PRESENTATION_PATH = '/e';
+const DEFAULT_PRESENTATION_PATH = '/embed/present';
 const DEFAULT_EDITOR_PATH = '/embed/edit';
 
 export const EMBED_TIMEOUT_MS = 30000;
@@ -76,7 +76,7 @@ export interface AlgeoEditorCreateOptions {
 }
 
 export interface AlgeoPresentationCreateOptions {
-  appId?: string;
+  auth?: AlgeoEditorAuthOptions;
   shareId?: string;
   ui?: AlgeoPresentationUiConfig;
 }
@@ -515,22 +515,14 @@ export function buildEmbedSrc(options: EmbedInitOptions): string {
   const baseUrl = normalizeBaseUrl(options.baseUrl ?? DEFAULT_EMBED_BASE);
   const mode = normalizeMode(options.mode);
   const path = getEmbedPath(mode);
-  const authAppId = options.auth?.appId?.trim() ?? '';
+  const appId = options.auth?.appId?.trim() ?? '';
   const initialId = options.initialId?.trim();
 
-  if (mode === 'editor') {
-    if (!initialId) {
-      return `${baseUrl}${path}/${encodeURIComponent(authAppId)}`;
-    }
-
-    return `${baseUrl}${path}/${encodeURIComponent(authAppId)}/${encodeURIComponent(initialId)}`;
-  }
-
   if (!initialId) {
-    return `${baseUrl}${path}`;
+    return `${baseUrl}${path}/${encodeURIComponent(appId)}`;
   }
 
-  return `${baseUrl}${path}/${encodeURIComponent(initialId)}`;
+  return `${baseUrl}${path}/${encodeURIComponent(appId)}/${encodeURIComponent(initialId)}`;
 }
 
 export type KnownEventName =

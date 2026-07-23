@@ -180,7 +180,13 @@
         }
       }
 
-      let sdk = await AlgeoSdk.createPresentation(container, { baseUrl, appId });
+      let sdk = await AlgeoSdk.create(container, {
+        baseUrl,
+        mode: 'presentation',
+        presentation: {
+          auth: { appId },
+        },
+      });
 
       function doLoad(content) {
         sdk.loadFile(content)
