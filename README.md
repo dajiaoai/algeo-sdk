@@ -292,11 +292,20 @@ type AlgeoCreateOptions =
 
 **AlgeoPresentationCreateOptions：**
 
-| 属性      | 类型                                 | 默认值 | 说明                                                     |
-| --------- | ------------------------------------ | ------ | -------------------------------------------------------- |
-| `auth`    | `{ appId: string }`                  | -      | 演示模式鉴权参数，`appId` 用于路由及白名单校验           |
+| 属性      | 类型                                 | 默认值 | 说明                                                      |
+| --------- | ------------------------------------ | ------ | --------------------------------------------------------- |
+| `auth`    | `{ appId: string }`                  | -      | 演示模式鉴权参数，`appId` 用于路由及白名单校验            |
 | `shareId` | `string`                             | `''`   | 演示模式初始分享 ID，会映射到 `/embed/present/:appId/:id` |
-| `ui`      | `Partial<AlgeoPresentationUiConfig>` | -      | 演示模式 UI 配置                                         |
+| `ui`      | `Partial<AlgeoPresentationUiConfig>` | -      | 演示模式 UI 配置                                          |
+
+**AlgeoPresentationUiConfig：**
+
+| 属性            | 类型      | 默认值 | 说明               |
+| --------------- | --------- | ------ | ------------------ |
+| `logo`          | `boolean` | `true` | 是否展示 logo      |
+| `slidePanel`    | `boolean` | `true` | 是否展示画板管理器 |
+| `pencilToolbar` | `boolean` | `true` | 是否展示教具栏     |
+| `zoomControl`   | `boolean` | `true` | 是否展示缩放栏     |
 
 默认路径规则：
 

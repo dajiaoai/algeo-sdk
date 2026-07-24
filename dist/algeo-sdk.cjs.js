@@ -4356,7 +4356,12 @@ class EmbeddedPresentation extends EmbeddedTarget {
         super(container, 'presentation');
         this.currentSlideIndex = 0;
         this.slideCount = 0;
-        this.uiConfig = {};
+        this.uiConfig = {
+            logo: true,
+            slidePanel: true,
+            pencilToolbar: true,
+            zoomControl: true,
+        };
         this.mode = {
             getUiConfig: () => ({ ...this.uiConfig }),
             setUiConfig: async (config) => {
@@ -4373,15 +4378,19 @@ class EmbeddedPresentation extends EmbeddedTarget {
         };
     }
     async initialize(options = {}, baseUrl) {
-        this.uiConfig = options.ui ? { ...options.ui } : {};
+        this.uiConfig = {
+            logo: true,
+            slidePanel: true,
+            pencilToolbar: true,
+            zoomControl: true,
+            ...options.ui,
+        };
         await this.init({
             baseUrl,
             auth: options.auth,
             initialId: options.shareId,
         });
-        if (Object.keys(this.uiConfig).length > 0) {
-            await this.mode.setUiConfig(this.uiConfig);
-        }
+        await this.mode.setUiConfig(this.uiConfig);
     }
     acceptsEventMessage() {
         return false;

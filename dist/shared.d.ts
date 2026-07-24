@@ -29,6 +29,9 @@ export interface AlgeoEditorUiConfig {
 }
 export interface AlgeoPresentationUiConfig {
     logo?: boolean;
+    slidePanel?: boolean;
+    pencilToolbar?: boolean;
+    zoomControl?: boolean;
 }
 export type AlgeoEditorSaveResult = {
     status: 'success';

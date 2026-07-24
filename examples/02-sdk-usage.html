@@ -1,218 +1,774 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>02 演示模式 UI 配置 - Algeo SDK</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>02 SDK 方式 - Algeo SDK</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+      body {
+        min-height: 100vh;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        margin: 0;
+        color: #172033;
+        background:
+          radial-gradient(circle at 10% 0%, #eef4ff 0, transparent 34rem),
+          #f5f7fb;
+      }
 
-    body {
-      font-family: system-ui, sans-serif;
-      margin: 0;
-      padding: 16px;
-    }
+      .page {
+        width: min(1440px, 100%);
+        margin: 0 auto;
+        padding: 28px;
+      }
 
-    h1 {
-      font-size: 1.25rem;
-      margin: 0 0 8px;
-    }
+      .back {
+        display: inline-flex;
+        margin-bottom: 20px;
+        color: #546178;
+        font-size: 14px;
+        text-decoration: none;
+      }
 
-    .desc {
-      color: #666;
-      font-size: 0.875rem;
-      margin-bottom: 12px;
-    }
+      .back:hover {
+        color: #2563eb;
+      }
 
-    .toolbar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+      .hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 24px;
+      }
 
-    input {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      width: 200px;
-    }
+      .eyebrow {
+        margin: 0 0 8px;
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
 
-    .inline-check {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.875rem;
-      color: #333;
-    }
+      h1 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 42px);
+        line-height: 1.12;
+        letter-spacing: -0.035em;
+      }
 
-    .inline-check input {
-      width: auto;
-      padding: 0;
-      border: none;
-    }
+      .desc {
+        max-width: 680px;
+        margin: 12px 0 0;
+        color: #6b7485;
+        font-size: 15px;
+        line-height: 1.7;
+      }
 
-    button {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+      .status {
+        flex: 0 0 auto;
+        min-height: 34px;
+        padding: 8px 12px;
+        border: 1px solid #dde4ef;
+        border-radius: 999px;
+        color: #667085;
+        background: rgb(255 255 255 / 72%);
+        font-size: 13px;
+      }
 
-    button.primary {
-      background: #2563eb;
-      color: white;
-    }
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 350px;
+        gap: 20px;
+        align-items: stretch;
+      }
 
-    button.primary:hover {
-      background: #1d4ed8;
-    }
+      .preview-card,
+      .panel {
+        border: 1px solid #e1e7f0;
+        border-radius: 18px;
+        background: rgb(255 255 255 / 88%);
+        box-shadow: 0 18px 50px rgb(30 50 90 / 8%);
+      }
 
-    button.danger {
-      background: #dc2626;
-      color: white;
-    }
+      .preview-card {
+        min-width: 0;
+        overflow: hidden;
+      }
 
-    button.danger:hover {
-      background: #b91c1c;
-    }
+      .card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 52px;
+        padding: 0 18px;
+        border-bottom: 1px solid #edf0f5;
+      }
 
-    .embed-wrap {
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      overflow: hidden;
-      height: 400px;
-      background: #fafafa;
-    }
+      .card-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 650;
+      }
 
-    .embed-wrap>div {
-      width: 100%;
-      height: 100%;
-    }
+      .window-dots {
+        display: flex;
+        gap: 6px;
+      }
 
-    .log {
-      margin-top: 12px;
-      font-size: 0.75rem;
-      font-family: monospace;
-      max-height: 100px;
-      overflow: auto;
-      background: #f5f5f5;
-      padding: 8px;
-      border-radius: 6px;
-    }
+      .window-dots i {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #d8deea;
+      }
 
-    .log div {
-      margin: 2px 0;
-    }
+      .stage {
+        position: relative;
+        min-height: 650px;
+        padding: 14px;
+        background: #eef1f6;
+      }
 
-    .status {
-      font-size: 0.875rem;
-      color: #666;
-      margin-bottom: 8px;
-    }
+      .empty-state {
+        position: absolute;
+        inset: 14px;
+        display: grid;
+        place-content: center;
+        border: 1px dashed #cfd7e5;
+        border-radius: 12px;
+        color: #7a8497;
+        background:
+          linear-gradient(rgb(255 255 255 / 72%), rgb(255 255 255 / 72%)),
+          repeating-linear-gradient(
+            0deg,
+            transparent 0,
+            transparent 23px,
+            #dfe5ee 24px
+          );
+        text-align: center;
+      }
 
-    a {
-      color: #06c;
-    }
-  </style>
-</head>
+      .empty-state strong {
+        display: block;
+        margin-bottom: 6px;
+        color: #475467;
+        font-size: 16px;
+      }
 
-<body>
-  <a href="index.html">← 返回示例列表</a>
-  <h1>02 演示模式</h1>
-  <p class="desc">使用 create 以演示模式加载分享内容。</p>
-  <div class="status" id="status"></div>
-  <div class="toolbar" id="createToolbar">
-    <label>分享 ID</label>
-    <input type="text" id="shareId" placeholder="输入分享 ID">
-    <label class="inline-check">
-      <input type="checkbox" id="logo" checked>
-      显示 Logo
-    </label>
-    <button class="primary" id="createBtn">创建</button>
-  </div>
-  <div class="toolbar" id="sdkToolbar" style="display: none;">
-    <button class="danger" id="destroyBtn">销毁</button>
-  </div>
-  <div class="embed-wrap" id="embedWrap" style="display: none;">
-    <div id="algeo-container"></div>
-  </div>
-  <div class="log" id="log"></div>
+      .embed-wrap {
+        height: 622px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+      }
 
-  <script src="../dist/algeo-sdk.umd.js"></script>
-  <script src="./assets/js/config.js"></script>
-  <script>
-    const { baseUrl, appId, shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
-    const logEl = document.getElementById('log');
-    const statusEl = document.getElementById('status');
-    const shareIdEl = document.getElementById('shareId');
-    const logoEl = document.getElementById('logo');
-    if (shareIdEl) shareIdEl.value = DEFAULT_SHARE_ID;
-    const container = document.getElementById('algeo-container');
-    const createToolbar = document.getElementById('createToolbar');
-    const sdkToolbar = document.getElementById('sdkToolbar');
-    const embedWrap = document.getElementById('embedWrap');
+      .embed-wrap > div {
+        width: 100%;
+        height: 100%;
+      }
 
-    function log(msg) {
-      const div = document.createElement('div');
-      div.textContent = new Date().toLocaleTimeString() + ' ' + msg;
-      logEl.appendChild(div);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
+      .sidebar {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 16px;
+      }
 
-    function showCreate() {
-      createToolbar.style.display = 'flex';
-      sdkToolbar.style.display = 'none';
-      embedWrap.style.display = 'none';
-      statusEl.textContent = '';
-    }
+      .view-tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        padding: 4px;
+        border: 1px solid #e1e7f0;
+        border-radius: 12px;
+        background: #e9edf4;
+      }
 
-    function showSdk() {
-      createToolbar.style.display = 'none';
-      sdkToolbar.style.display = 'flex';
-      embedWrap.style.display = 'block';
-    }
+      .view-tab {
+        min-height: 34px;
+        color: #667085;
+        background: transparent;
+      }
 
-    let sdk = null;
+      .view-tab.active {
+        color: #175cd3;
+        background: white;
+        box-shadow: 0 2px 7px rgb(30 50 90 / 10%);
+      }
 
-    document.getElementById('createBtn').onclick = async () => {
-      const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
-      const logo = Boolean(logoEl && logoEl.checked);
-      try {
-        sdk = await AlgeoSdk.create(container, {
-          baseUrl,
-          mode: 'presentation',
-          presentation: {
-            auth: { appId },
-            shareId: id,
-            ui: {
-              logo,
-            },
-          },
+      .view-content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .panel h2 {
+        margin: 0 0 4px;
+        font-size: 15px;
+      }
+
+      .panel-copy {
+        margin: 0 0 16px;
+        color: #818a9a;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .field-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #475467;
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      input[type='text'] {
+        width: 100%;
+        height: 42px;
+        padding: 0 12px;
+        border: 1px solid #d8deea;
+        border-radius: 9px;
+        outline: none;
+        color: #172033;
+        background: #fbfcfe;
+      }
+
+      input[type='text']:focus {
+        border-color: #7ba4f8;
+        box-shadow: 0 0 0 3px #e8f0ff;
+      }
+
+      .check-grid,
+      #controlGrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .inline-check {
+        display: flex;
+        min-height: 42px;
+        align-items: center;
+        gap: 9px;
+        padding: 9px 10px;
+        border: 1px solid #e2e7ef;
+        border-radius: 9px;
+        color: #475467;
+        background: #fbfcfe;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .inline-check input {
+        accent-color: #2563eb;
+      }
+
+      .toolbar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      button {
+        min-height: 40px;
+        padding: 8px 12px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 650;
+        cursor: pointer;
+        transition:
+          transform 120ms ease,
+          background 120ms ease,
+          border-color 120ms ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      button.primary {
+        width: 100%;
+        margin-top: 14px;
+        color: white;
+        background: #2563eb;
+      }
+
+      button.primary:hover {
+        background: #1d4ed8;
+      }
+
+      button.danger {
+        grid-column: 1 / -1;
+        color: #b42318;
+        border-color: #f6d1cd;
+        background: #fff5f4;
+      }
+
+      button.secondary {
+        color: #344054;
+        border-color: #e0e5ed;
+        background: #f8fafc;
+      }
+
+      button.ghost {
+        color: #175cd3;
+        border-color: #c7d7fe;
+        background: #eef4ff;
+      }
+
+      .log {
+        height: 150px;
+        padding: 12px;
+        border-radius: 10px;
+        overflow: auto;
+        color: #c8d2e3;
+        background: #172033;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 11px;
+        line-height: 1.55;
+      }
+
+      .log div {
+        padding: 4px 0;
+        border-bottom: 1px solid rgb(255 255 255 / 6%);
+      }
+
+      .code-panel {
+        min-height: 540px;
+      }
+
+      .code-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .copy-button {
+        min-height: 32px;
+        padding: 5px 10px;
+      }
+
+      .code-block {
+        min-height: 440px;
+        margin: 0;
+        padding: 16px;
+        border-radius: 10px;
+        overflow: auto;
+        color: #d7e1f3;
+        background: #101828;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 11px;
+        line-height: 1.7;
+        tab-size: 2;
+        white-space: pre;
+      }
+
+      @media (max-width: 960px) {
+        .page {
+          padding: 20px;
+        }
+
+        .hero {
+          display: block;
+        }
+
+        .status {
+          display: inline-block;
+          margin-top: 16px;
+        }
+
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          grid-row: 1;
+        }
+
+        .stage {
+          min-height: 520px;
+        }
+
+        .embed-wrap {
+          height: 492px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .page {
+          padding: 16px;
+        }
+
+        .check-grid,
+        #controlGrid,
+        .toolbar {
+          grid-template-columns: 1fr;
+        }
+
+        button.danger {
+          grid-column: auto;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="page">
+      <a class="back" href="index.html">← 返回示例列表</a>
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Algeo SDK · Presentation</p>
+          <h1>演示模式 UI 配置</h1>
+          <p class="desc">
+            初始化嵌入式演示，并实时测试 setUiConfig / getUiConfig
+            对画板界面的影响。
+          </p>
+        </div>
+        <div class="status" id="status">等待创建 SDK</div>
+      </header>
+
+      <div class="workspace">
+        <section class="preview-card">
+          <div class="card-head">
+            <h2 class="card-title">演示画布</h2>
+            <span class="window-dots"><i></i><i></i><i></i></span>
+          </div>
+          <div class="stage">
+            <div class="empty-state" id="emptyState">
+              <div>
+                <strong>画布尚未创建</strong>
+                在右侧设置初始化参数后点击“创建演示”
+              </div>
+            </div>
+            <div class="embed-wrap" id="embedWrap" style="display: none">
+              <div id="algeo-container"></div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="sidebar">
+          <nav class="view-tabs" aria-label="侧栏内容">
+            <button class="view-tab active" data-view="config">配置</button>
+            <button class="view-tab" data-view="code">查看代码</button>
+          </nav>
+
+          <div class="view-content" id="configView">
+            <section class="panel" id="createToolbar">
+              <h2>初始化配置</h2>
+              <label class="field-label" for="shareId">分享 ID</label>
+              <input type="text" id="shareId" placeholder="输入分享 ID" />
+              <div class="check-grid">
+                <label class="inline-check">
+                  <input type="checkbox" id="logo" checked />
+                  显示 Logo
+                </label>
+                <label class="inline-check">
+                  <input type="checkbox" id="slidePanel" checked />
+                  画板管理器
+                </label>
+                <label class="inline-check">
+                  <input type="checkbox" id="pencilToolbar" checked />
+                  教具栏
+                </label>
+                <label class="inline-check">
+                  <input type="checkbox" id="zoomControl" checked />
+                  放大缩小栏
+                </label>
+              </div>
+              <button class="primary" id="createBtn">创建演示</button>
+            </section>
+
+            <section class="panel" id="sdkToolbar" style="display: none">
+              <h2>运行时配置</h2>
+              <p class="panel-copy">配置修改会立即同步到当前演示画布。</p>
+              <div class="toolbar">
+                <button class="secondary" id="readConfigBtn">
+                  读取当前配置
+                </button>
+                <button class="secondary" id="showAllBtn">全部显示</button>
+                <button class="secondary" id="hideAllBtn">全部隐藏</button>
+                <button class="danger" id="destroyBtn">销毁演示</button>
+              </div>
+              <div id="controlGrid"></div>
+            </section>
+
+            <section class="panel">
+              <h2>操作日志</h2>
+              <p class="panel-copy">记录 SDK 初始化与 UI 配置调用。</p>
+              <div class="log" id="log"></div>
+            </section>
+          </div>
+
+          <div class="view-content" id="codeView" style="display: none">
+            <section class="panel code-panel">
+              <div class="code-head">
+                <div>
+                  <h2>SDK 调用代码</h2>
+                  <p class="panel-copy">代码会跟随当前 UI 配置实时更新。</p>
+                </div>
+                <button class="secondary copy-button" id="copyCodeBtn">
+                  复制
+                </button>
+              </div>
+              <pre class="code-block"><code id="codePreview"></code></pre>
+            </section>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <script src="../dist/algeo-sdk.umd.js"></script>
+    <script src="./assets/js/config.js"></script>
+    <script>
+      const { baseUrl, appId, shareId: DEFAULT_SHARE_ID } = window.ALGEO_CONFIG;
+      const logEl = document.getElementById('log');
+      const statusEl = document.getElementById('status');
+      const shareIdEl = document.getElementById('shareId');
+      if (shareIdEl) shareIdEl.value = DEFAULT_SHARE_ID;
+      const container = document.getElementById('algeo-container');
+      const createToolbar = document.getElementById('createToolbar');
+      const sdkToolbar = document.getElementById('sdkToolbar');
+      const embedWrap = document.getElementById('embedWrap');
+      const emptyState = document.getElementById('emptyState');
+      const controlGrid = document.getElementById('controlGrid');
+      const configView = document.getElementById('configView');
+      const codeView = document.getElementById('codeView');
+      const codePreview = document.getElementById('codePreview');
+      const copyCodeBtn = document.getElementById('copyCodeBtn');
+      const uiFields = [
+        { key: 'logo', label: 'Logo' },
+        { key: 'slidePanel', label: '画板管理器' },
+        { key: 'pencilToolbar', label: '教具栏' },
+        { key: 'zoomControl', label: '放大缩小栏' },
+      ];
+
+      let currentUiConfig = null;
+
+      function log(msg) {
+        const div = document.createElement('div');
+        div.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+        logEl.appendChild(div);
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      function showCreate() {
+        createToolbar.style.display = 'block';
+        sdkToolbar.style.display = 'none';
+        embedWrap.style.display = 'none';
+        emptyState.style.display = 'grid';
+      }
+
+      function showSdk() {
+        createToolbar.style.display = 'none';
+        sdkToolbar.style.display = 'block';
+        emptyState.style.display = 'none';
+        embedWrap.style.display = 'block';
+      }
+
+      function getInitialUiConfig() {
+        return Object.fromEntries(
+          uiFields.map(({ key }) => [
+            key,
+            document.getElementById(key).checked,
+          ]),
+        );
+      }
+
+      function updateCodePreview() {
+        const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
+        const config = currentUiConfig || getInitialUiConfig();
+        const configLines = uiFields
+          .map(({ key }) => `      ${key}: ${Boolean(config[key])},`)
+          .join('\n');
+        const runtimeCode = sdk
+          ? `
+
+// 运行时更新部分配置
+await presentation.mode.setUiConfig({
+  zoomControl: false,
+});
+
+// 读取当前完整配置
+const uiConfig = presentation.mode.getUiConfig();`
+          : '';
+
+        codePreview.textContent = `import {
+  createPresentation,
+  type EmbeddedPresentation,
+} from '@dajiaoai/algeo-sdk';
+
+const container = document.getElementById('algeo-container')!;
+
+const presentation: EmbeddedPresentation = await createPresentation(
+  container,
+  {
+    auth: { appId: ${JSON.stringify(appId)} },
+    shareId: ${JSON.stringify(id)},
+    ui: {
+${configLines}
+    },
+  },
+);${runtimeCode}`;
+      }
+
+      function updateToggleButtons(config) {
+        currentUiConfig = config;
+        controlGrid.querySelectorAll('button[data-key]').forEach((button) => {
+          const key = button.dataset.key;
+          const visible = Boolean(config[key]);
+          const field = uiFields.find((item) => item.key === key);
+          button.textContent = (visible ? '隐藏' : '显示') + field.label;
+          button.className = visible ? 'ghost' : 'secondary';
         });
-        statusEl.textContent = 'SDK 已初始化，ready: ' + sdk.ready + ', version: ' + (sdk.version || '-');
-        log('演示模式初始化完成，shareId: ' + id);
-        showSdk();
-      } catch (e) {
-        statusEl.textContent = '创建失败: ' + e.message;
-        log('错误: ' + e.message);
+        updateCodePreview();
       }
-    };
 
-    document.getElementById('destroyBtn').onclick = () => {
-      if (sdk) {
-        sdk.destroy();
-        sdk = null;
-        statusEl.textContent = 'SDK 已销毁';
-        log('SDK 已销毁');
-        showCreate();
+      function readUiConfig() {
+        if (!sdk) throw new Error('请先创建 SDK');
+        const config = sdk.mode.getUiConfig();
+        updateToggleButtons(config);
+        log('getUiConfig: ' + JSON.stringify(config));
+        return config;
       }
-    };
-  </script>
-</body>
 
+      async function setUiConfig(config, label) {
+        if (!sdk) throw new Error('请先创建 SDK');
+        await sdk.mode.setUiConfig(config);
+        log('setUiConfig ' + label + ': ' + JSON.stringify(config));
+        readUiConfig();
+      }
+
+      controlGrid.innerHTML = uiFields
+        .map(
+          ({ key, label }) =>
+            `<button class="secondary" data-key="${key}">切换${label}</button>`,
+        )
+        .join('');
+
+      controlGrid.querySelectorAll('button[data-key]').forEach((button) => {
+        button.onclick = async () => {
+          try {
+            const config = currentUiConfig || readUiConfig();
+            const key = button.dataset.key;
+            await setUiConfig({ [key]: !Boolean(config[key]) }, key);
+          } catch (e) {
+            log('切换失败: ' + (e.message || String(e)));
+          }
+        };
+      });
+
+      let sdk = null;
+
+      document.querySelectorAll('.view-tab').forEach((button) => {
+        button.onclick = () => {
+          const showCode = button.dataset.view === 'code';
+          configView.style.display = showCode ? 'none' : 'flex';
+          codeView.style.display = showCode ? 'flex' : 'none';
+          document.querySelectorAll('.view-tab').forEach((tab) => {
+            tab.classList.toggle('active', tab === button);
+          });
+          if (showCode) updateCodePreview();
+        };
+      });
+
+      shareIdEl.addEventListener('input', updateCodePreview);
+      uiFields.forEach(({ key }) => {
+        document
+          .getElementById(key)
+          .addEventListener('change', updateCodePreview);
+      });
+
+      copyCodeBtn.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(codePreview.textContent);
+          copyCodeBtn.textContent = '已复制';
+          setTimeout(() => {
+            copyCodeBtn.textContent = '复制';
+          }, 1200);
+        } catch (e) {
+          log('复制失败: ' + (e.message || String(e)));
+        }
+      };
+
+      updateCodePreview();
+
+      document.getElementById('createBtn').onclick = async () => {
+        const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
+        try {
+          sdk = await AlgeoSdk.create(container, {
+            baseUrl,
+            mode: 'presentation',
+            presentation: {
+              auth: { appId },
+              shareId: id,
+              ui: getInitialUiConfig(),
+            },
+          });
+          statusEl.textContent =
+            'SDK 已初始化，ready: ' +
+            sdk.ready +
+            ', version: ' +
+            (sdk.version || '-');
+          log('演示模式初始化完成，shareId: ' + id);
+          showSdk();
+          readUiConfig();
+        } catch (e) {
+          statusEl.textContent = '创建失败: ' + e.message;
+          log('错误: ' + e.message);
+        }
+      };
+
+      document.getElementById('readConfigBtn').onclick = () => {
+        try {
+          readUiConfig();
+        } catch (e) {
+          log('读取失败: ' + (e.message || String(e)));
+        }
+      };
+
+      document.getElementById('showAllBtn').onclick = () =>
+        setUiConfig(
+          Object.fromEntries(uiFields.map(({ key }) => [key, true])),
+          'showAll',
+        ).catch((e) => log('全部显示失败: ' + (e.message || String(e))));
+
+      document.getElementById('hideAllBtn').onclick = () =>
+        setUiConfig(
+          Object.fromEntries(uiFields.map(({ key }) => [key, false])),
+          'hideAll',
+        ).catch((e) => log('全部隐藏失败: ' + (e.message || String(e))));
+
+      document.getElementById('destroyBtn').onclick = () => {
+        if (sdk) {
+          sdk.destroy();
+          sdk = null;
+          currentUiConfig = null;
+          updateCodePreview();
+          statusEl.textContent = 'SDK 已销毁';
+          log('SDK 已销毁');
+          showCreate();
+        }
+      };
+    </script>
+  </body>
 </html>

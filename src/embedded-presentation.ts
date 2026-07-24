@@ -26,7 +26,12 @@ export class EmbeddedPresentation extends EmbeddedTarget<
   private currentSlideIndex = 0;
   private slideCount = 0;
   private whitelistError?: AlgeoError;
-  private uiConfig: AlgeoPresentationUiConfig = {};
+  private uiConfig: AlgeoPresentationUiConfig = {
+    logo: true,
+    slidePanel: true,
+    pencilToolbar: true,
+    zoomControl: true,
+  };
 
   constructor(container: HTMLElement) {
     super(container, 'presentation');
@@ -51,7 +56,13 @@ export class EmbeddedPresentation extends EmbeddedTarget<
     options: AlgeoPresentationCreateOptions = {},
     baseUrl?: string,
   ): Promise<void> {
-    this.uiConfig = options.ui ? { ...options.ui } : {};
+    this.uiConfig = {
+      logo: true,
+      slidePanel: true,
+      pencilToolbar: true,
+      zoomControl: true,
+      ...options.ui,
+    };
 
     await this.init({
       baseUrl,
@@ -59,9 +70,7 @@ export class EmbeddedPresentation extends EmbeddedTarget<
       initialId: options.shareId,
     });
 
-    if (Object.keys(this.uiConfig).length > 0) {
-      await this.mode.setUiConfig(this.uiConfig);
-    }
+    await this.mode.setUiConfig(this.uiConfig);
   }
 
   protected override acceptsEventMessage(): boolean {
