@@ -497,12 +497,12 @@ const images = await editor.slides.exportImage({
   mode: 'view',
   slideIndices: [1],
   format: 'png',
-  viewBounds: { x: -5, y: -5, width: 10, height: 10 },
+  viewBounds: { x: -5, y: -5, width: 10, height: 10, scale: 50 },
   pixelRatio: 2,
 });
 ```
 
-`viewBounds` 的位置和宽高均为世界坐标。输出尺寸为 `viewBounds × camera.scale × pixelRatio`。
+`viewBounds` 的位置和宽高均为世界坐标，`scale` 为可选的相机缩放比例。省略 `scale` 时使用目标画板文件中的 `camera.scale`。
 
 适合完整包住全部内容且不限定最终宽高时使用 `contain`：
 

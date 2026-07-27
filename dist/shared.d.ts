@@ -174,6 +174,11 @@ export interface ExportViewBounds {
     y: number;
     width: number;
     height: number;
+    /**
+     * 相机缩放比例（每世界坐标单位对应的像素数）。
+     * 省略时使用目标画板文件中的 camera.scale。
+     */
+    scale?: number;
 }
 /** 导出留白，单位为输出像素 px。 */
 export type ExportPadding = number | {
@@ -199,8 +204,9 @@ export interface ExportImageSizeMode extends ExportImageBaseOptions {
     minPadding?: ExportPadding;
 }
 /**
- * 场景二（view）：viewBounds 的位置及宽高均为世界坐标，渲染相机从文件读取
- * 输出像素 = viewBounds 世界尺寸 x camera.scale x pixelRatio。
+ * 场景二（view）：viewBounds 的位置及宽高均为世界坐标。
+ * scale 省略时从文件的 camera.scale 读取。
+ * 输出像素 = viewBounds 世界尺寸 x viewBounds.scale x pixelRatio。
  */
 export interface ExportImageViewMode extends ExportImageBaseOptions {
     mode: 'view';
