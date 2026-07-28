@@ -205,7 +205,7 @@
 
     .tabs {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       padding: 4px;
       background: #edf2f8;
@@ -381,6 +381,9 @@
             <button class="tab" type="button" data-tab="manual">
               手动填写
             </button>
+            <button class="tab" type="button" data-tab="export">
+              导出母版
+            </button>
           </div>
 
           <div class="status" id="status">等待初始化...</div>
@@ -413,6 +416,29 @@
                 清空
               </button>
             </div>
+          </div>
+
+          <div class="panel" id="exportPanel">
+            <p>
+              从当前画板提取背景和对象默认样式，生成可直接用于
+              <code>setMasterTemplate</code> 的完整 JSON。
+            </p>
+            <div class="button-row">
+              <button class="primary" id="exportMasterBtn" type="button">
+                导出当前状态
+              </button>
+              <button class="secondary" id="copyMasterBtn" type="button" disabled>
+                复制 JSON
+              </button>
+              <button class="secondary" id="downloadMasterBtn" type="button" disabled>
+                下载 JSON
+              </button>
+            </div>
+            <label>
+              母版 JSON
+              <textarea id="exportedMasterOutput" spellcheck="false" readonly
+                placeholder="点击“导出当前状态”后显示完整 JSON"></textarea>
+            </label>
           </div>
         </section>
 
@@ -569,6 +595,7 @@
     const tabs = Array.from(document.querySelectorAll('[data-tab]'));
     const systemPanel = document.getElementById('systemPanel');
     const manualPanel = document.getElementById('manualPanel');
+    const exportPanel = document.getElementById('exportPanel');
     const templatesEl = document.getElementById('templates');
     const masterTemplatesLink = document.getElementById(
       'masterTemplatesLink',
@@ -578,6 +605,12 @@
     );
     const applyManualBtn = document.getElementById('applyManualBtn');
     const clearManualBtn = document.getElementById('clearManualBtn');
+    const exportMasterBtn = document.getElementById('exportMasterBtn');
+    const copyMasterBtn = document.getElementById('copyMasterBtn');
+    const downloadMasterBtn = document.getElementById('downloadMasterBtn');
+    const exportedMasterOutput = document.getElementById(
+      'exportedMasterOutput',
+    );
 
     let editor = null;
     let templates = BUILTIN_TEMPLATES;
@@ -615,6 +648,132 @@
       });
       systemPanel.classList.toggle('is-active', tabName === 'system');
       manualPanel.classList.toggle('is-active', tabName === 'manual');
+      exportPanel.classList.toggle('is-active', tabName === 'export');
+    }
+
+    function setExportedMaster(json) {
+      exportedMasterOutput.value = json;
+      const hasContent = Boolean(json);
+      copyMasterBtn.disabled = !hasContent;
+      downloadMasterBtn.disabled = !hasContent;
+    }
+
+    function buildMasterTemplate(styleSheet) {
+      return {
+        backgroundStyle: {
+          background: styleSheet.background || {},
+          grid: styleSheet.grid || {},
+          xaxis: styleSheet.xaxis || {},
+          yaxis: styleSheet.yaxis || {},
+        },
+        defaultStyle: {
+          types: styleSheet.types || [],
+          typeLabels: styleSheet.typeLabels || [],
+          textType: styleSheet.textType || {},
+          sliderType: styleSheet.sliderType || {},
+          buttonType: styleSheet.buttonType || {},
+        },
+        previewPngUrl: '',
+        metadata: {
+          exportedAt: new Date().toISOString(),
+          version: '1',
+        },
+      };
+    }
+
+    async function exportCurrentMaster() {
+      if (!editor) {
+        setStatus('编辑器尚未初始化', 'error');
+        return;
+      }
+
+      exportMasterBtn.disabled = true;
+      copyMasterBtn.disabled = true;
+      downloadMasterBtn.disabled = true;
+      setStatus('正在读取当前画板状态...');
+
+      try {
+        const content = await editor.document.getContent();
+        const slideIndex = editor.slides.getCurrentIndex();
+        const slide = content.slides[slideIndex];
+        if (!slide || !slide.styleSheet) {
+          throw new Error('当前画板不包含可导出的样式数据');
+        }
+
+        const json = JSON.stringify(
+          buildMasterTemplate(slide.styleSheet),
+          null,
+          2,
+        );
+        setExportedMaster(json);
+        setStatus(
+          '已导出当前画板（第 ' + (slideIndex + 1) + ' 页）的母版 JSON',
+          'success',
+        );
+        log(
+          '已导出母版，shareId=' +
+          currentShareId +
+          '，画板=' +
+          (slideIndex + 1),
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : String(error);
+        setExportedMaster('');
+        setStatus('导出母版失败：' + message, 'error');
+        log('导出母版失败：' + message);
+      } finally {
+        exportMasterBtn.disabled = false;
+      }
+    }
+
+    async function copyExportedMaster() {
+      const json = exportedMasterOutput.value;
+      if (!json) return;
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(json);
+        } else {
+          exportedMasterOutput.focus();
+          exportedMasterOutput.select();
+          if (!document.execCommand('copy')) {
+            throw new Error('浏览器未允许复制');
+          }
+          exportedMasterOutput.setSelectionRange(0, 0);
+        }
+        setStatus('母版 JSON 已复制到剪贴板', 'success');
+        log('已复制导出的母版 JSON');
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : String(error);
+        setStatus('复制失败：' + message, 'error');
+      }
+    }
+
+    function downloadExportedMaster() {
+      const json = exportedMasterOutput.value;
+      if (!json) return;
+
+      const safeShareId =
+        currentShareId.replace(/[^a-zA-Z0-9_-]+/g, '-') || 'current';
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-');
+      const blob = new Blob([json], {
+        type: 'application/json;charset=utf-8',
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download =
+        'master-template-' + safeShareId + '-' + timestamp + '.json';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      setStatus('母版 JSON 已开始下载', 'success');
+      log('已下载导出的母版 JSON');
     }
 
     function renderTemplates() {
@@ -655,6 +814,7 @@
       container.innerHTML = '';
       editor = null;
       activeTemplateIndex = -1;
+      setExportedMaster('');
       renderTemplates();
       setStatus('正在创建编辑器...');
 
@@ -761,6 +921,16 @@
       manualTemplateInput.value = '';
       setStatus('已清空手动母版输入');
     });
+
+    exportMasterBtn.addEventListener('click', () => {
+      void exportCurrentMaster();
+    });
+
+    copyMasterBtn.addEventListener('click', () => {
+      void copyExportedMaster();
+    });
+
+    downloadMasterBtn.addEventListener('click', downloadExportedMaster);
 
     renderTemplates();
     createEditorInstance(DEFAULT_SHARE_ID).catch((error) => {
