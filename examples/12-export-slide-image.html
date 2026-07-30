@@ -104,6 +104,46 @@
       background: #fbfdff;
     }
 
+    .export-guide {
+      display: grid;
+      gap: 10px;
+      margin: 14px 16px 16px;
+      padding: 14px 16px;
+      border: 1px solid rgba(17, 104, 234, 0.24);
+      border-left: 4px solid var(--primary);
+      border-radius: 12px;
+      background: linear-gradient(135deg,
+          rgba(17, 104, 234, 0.11),
+          rgba(17, 104, 234, 0.035));
+      color: #334155;
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .export-guide-title {
+      color: #0f4fa8;
+      font-size: 0.9375rem;
+      font-weight: 700;
+    }
+
+    .export-guide strong {
+      color: #172033;
+    }
+
+    .export-guide code {
+      padding: 2px 7px;
+      border: 1px solid rgba(17, 104, 234, 0.2);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      color: #0b5dcc;
+      font-size: 0.8125rem;
+      font-weight: 700;
+    }
+
+    .export-guide p {
+      margin: 0;
+    }
+
     .sidebar {
       display: grid;
       gap: 16px;
@@ -211,8 +251,7 @@
       color: var(--danger);
     }
 
-    .logs,
-    .panel {
+    .logs {
       padding: 14px;
       border-radius: 14px;
       font:
@@ -229,14 +268,6 @@
       max-height: 260px;
       background: #101828;
       color: #e5e7eb;
-    }
-
-    .panel {
-      min-height: 120px;
-      max-height: 220px;
-      background: #f8fafc;
-      border: 1px solid var(--line);
-      color: #1f2937;
     }
 
     .preview-grid {
@@ -436,8 +467,7 @@
         height: 420px;
       }
 
-      .logs,
-      .panel {
+      .logs {
         max-height: none;
       }
     }
@@ -472,9 +502,27 @@
           </div>
         </div>
         <div id="algeo-container"></div>
+        <div class="export-guide" role="note" aria-label="导出模式选择建议">
+          <div class="export-guide-title">导出模式选择建议</div>
+          <p>
+            <strong>函数图形：</strong>推荐使用 <code>view</code>
+            模式，通过 <code>viewBounds</code>
+            明确指定坐标范围，确保导出的函数视野、坐标轴和网格符合预期。
+          </p>
+          <p>
+            <strong>几何图形：</strong>推荐使用 <code>contain</code>
+            模式，根据可见图元自动计算包围盒并将图形居中；图形位置或大小变化后，通常无需重新调整导出范围。
+          </p>
+        </div>
       </section>
 
       <div class="sidebar">
+        <section class="card section hidden" id="exportResultSection">
+          <h2>导出结果</h2>
+          <div class="status" id="status">等待初始化...</div>
+          <div class="preview-grid hidden" id="previewGrid"></div>
+        </section>
+
         <section class="card section">
           <h2>
             导出方式
@@ -597,13 +645,6 @@
         </section>
 
         <section class="card section">
-          <h2>导出结果</h2>
-          <div class="status" id="status">等待初始化...</div>
-          <div class="panel" id="resultPanel">尚未导出</div>
-          <div class="preview-grid hidden" id="previewGrid"></div>
-        </section>
-
-        <section class="card section">
           <h2>日志</h2>
           <div class="logs" id="logs">等待操作...</div>
         </section>
@@ -621,9 +662,11 @@
     } = window.ALGEO_CONFIG;
 
     const container = document.getElementById('algeo-container');
+    const exportResultSectionEl = document.getElementById(
+      'exportResultSection',
+    );
     const statusEl = document.getElementById('status');
     const logsEl = document.getElementById('logs');
-    const resultPanelEl = document.getElementById('resultPanel');
     const previewGridEl = document.getElementById('previewGrid');
     const exportBtn = document.getElementById('exportBtn');
     const importBtn = document.getElementById('importBtn');
@@ -793,48 +836,19 @@
     }
 
     function renderExportResult() {
-      if (!latestResult.items.length) {
+      const hasResult = latestResult.items.length > 0;
+      exportResultSectionEl.classList.toggle('hidden', !hasResult);
+
+      if (!hasResult) {
         clearImagePreviews();
-        resultPanelEl.textContent = '尚未导出';
         return;
       }
 
       if (latestResult.kind === 'latex') {
         clearImagePreviews();
-        const summary = latestResult.items
-          .map((item) => {
-            return JSON.stringify(
-              {
-                index: item.index,
-                codeLength: item.code ? item.code.length : 0,
-                preview: item.code ? item.code.slice(0, 120) : '',
-              },
-              null,
-              2,
-            );
-          })
-          .join('\n\n');
-        resultPanelEl.textContent = summary;
         return;
       }
 
-      const summary = latestResult.items
-        .map((image) => {
-          return JSON.stringify(
-            {
-              index: image.index,
-              format: image.format,
-              width: image.width,
-              height: image.height,
-              size: image.blob.size,
-              type: image.blob.type,
-            },
-            null,
-            2,
-          );
-        })
-        .join('\n\n');
-      resultPanelEl.textContent = summary;
       renderImagePreviews(latestResult.items);
     }
 
