@@ -340,16 +340,11 @@
         logPanel.textContent = lines.join('\n') + '\n\n' + logPanel.textContent;
       }
 
-      function updateMeta(appId, shareId) {
-        const iframe = container.querySelector('iframe');
+      function updateMeta() {
         metaPanel.textContent = [
-          'baseUrl: ' + baseUrl,
           'mode: editor',
           'renderCount: ' + renderCount,
-          'appId: ' + appId,
-          'shareId: ' + (shareId || '(empty)'),
-          'expected path: ' + (shareId ? '/embed/edit/' + appId + '/' + shareId : '/embed/edit/' + appId),
-          'iframe src: ' + (iframe ? iframe.src : '(not created)'),
+          'path: /embed/edit/:appId/:shareId',
         ].join('\n');
       }
 
@@ -390,7 +385,7 @@
           editor.on('ready', function (event) {
             readyText.textContent = 'ready';
             setStatus('编辑器 ready，已完成 shareId 初始化', false);
-            updateMeta(appId, shareId);
+            updateMeta();
             log('ready', event);
           });
 
@@ -400,10 +395,10 @@
             });
           });
 
-          updateMeta(appId, shareId);
+          updateMeta();
           setStatus(
             shareId
-              ? '已请求加载 shareId: ' + shareId
+              ? '已请求加载配置的分享文件'
               : '未传 shareId，已创建空白编辑模式',
             false,
           );
@@ -412,7 +407,6 @@
             readyText.textContent = 'shareId 无效，回退中...';
             setStatus('shareId 不存在，正在回退到空白编辑模式...', false);
             log('shareId 加载失败，回退为空白编辑模式', {
-              shareId: shareId,
               message: error && error.message ? error.message : String(error),
             });
             return await mountEditor('', true);
@@ -423,7 +417,7 @@
           log('create 失败', {
             message: error && error.message ? error.message : String(error),
           });
-          updateMeta(appId, shareId);
+          updateMeta();
         } finally {
           loadBtn.disabled = false;
           clearBtn.disabled = false;

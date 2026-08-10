@@ -187,6 +187,7 @@
         mode: 'presentation',
         presentation: {
           auth: { appId },
+          shareId: DEFAULT_SHARE_ID,
         },
       });
 
@@ -216,7 +217,7 @@
           return;
         }
         sdk.loadShareById(id)
-          .then(() => log('加载成功: ' + id))
+          .then(() => log('加载成功'))
           .catch((e) => log('加载失败: ' + e.message, true));
       };
 

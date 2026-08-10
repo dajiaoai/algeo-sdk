@@ -669,8 +669,8 @@
       });
 
       currentShareId = shareId;
-      setStatus('演示实例已就绪，当前 shareId：' + shareId, 'success');
-      log('演示实例初始化完成，shareId=' + shareId);
+      setStatus('演示实例已就绪', 'success');
+      log('演示实例初始化完成');
     }
 
     async function applyTemplateContent(templateContent, label) {
@@ -696,7 +696,7 @@
       try {
         await presentation.mode.setMasterTemplate(templateContent);
         setStatus('母版已应用到所有画板：' + label, 'success');
-        log('已应用母版：' + label + '，shareId=' + currentShareId);
+        log('已应用母版：' + label);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : String(error);

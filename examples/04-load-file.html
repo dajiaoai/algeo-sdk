@@ -155,7 +155,7 @@
   <script src="./assets/js/config.js"></script>
   <script>
     (async function () {
-      const { baseUrl, appId } = window.ALGEO_CONFIG;
+      const { baseUrl, appId, shareId } = window.ALGEO_CONFIG;
       const logEl = document.getElementById('log');
       const jsonInput = document.getElementById('jsonInput');
       const fileInput = document.getElementById('fileInput');
@@ -185,6 +185,7 @@
         mode: 'presentation',
         presentation: {
           auth: { appId },
+          shareId,
         },
       });
 

@@ -240,9 +240,8 @@
         <div class="embed-header">
           <div>
             <strong>Embedded Editor</strong>
-            <span id="config-info"></span>
           </div>
-          <button class="secondary" id="recreateBtn">重建编辑器</button>
+          <button class="secondary" id="recreateBtn">初始化空白画板</button>
         </div>
         <div id="algeo-container"></div>
       </section>
@@ -276,12 +275,8 @@
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script src="./assets/js/config.js"></script>
   <script>
-    const { baseUrl, appId } = window.ALGEO_CONFIG;
+    const { baseUrl, appId, shareId } = window.ALGEO_CONFIG;
     const container = document.getElementById('algeo-container');
-    const configInfo = document.getElementById('config-info');
-    if (configInfo) {
-      configInfo.textContent = `baseUrl = ${baseUrl} · appId = ${appId}`;
-    }
     const status = document.getElementById('status');
     const logs = document.getElementById('logs');
     const snapshot = document.getElementById('snapshot');
@@ -562,7 +557,7 @@
       return content;
     }
 
-    async function createEditor() {
+    async function createEditor(loadConfiguredShare = true) {
       if (editor) {
         await editor.destroy();
         editor = null;
@@ -571,23 +566,27 @@
       container.innerHTML = '';
       setStatus('正在创建 editor...');
       snapshot.value = '';
-      log('createEditor', { baseUrl, appId });
+      log('createEditor', { baseUrl });
 
       editor = await AlgeoSdk.create(container, {
         mode: 'editor',
         baseUrl,
         editor: {
           auth: { appId },
+          ...(loadConfiguredShare ? { shareId } : {}),
         },
       });
 
-      setStatus('editor 已就绪\nversion: ' + (editor.version || '-'));
+      setStatus(
+        (loadConfiguredShare ? '配置文件已加载' : '空白画板已初始化') +
+        '\nversion: ' + (editor.version || '-'),
+      );
       log('ready', { version: editor.version || '-' });
     }
 
     recreateBtn.addEventListener('click', () => {
-      createEditor().catch((error) => {
-        setStatus('重建失败\n' + (error.message || String(error)));
+      createEditor(false).catch((error) => {
+        setStatus('初始化空白画板失败\n' + (error.message || String(error)));
         log('createEditor failed', { message: error.message || String(error) });
       });
     });

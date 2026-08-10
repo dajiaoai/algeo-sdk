@@ -710,12 +710,7 @@
           '已导出当前画板（第 ' + (slideIndex + 1) + ' 页）的母版 JSON',
           'success',
         );
-        log(
-          '已导出母版，shareId=' +
-          currentShareId +
-          '，画板=' +
-          (slideIndex + 1),
-        );
+        log('已导出母版，画板=' + (slideIndex + 1));
       } catch (error) {
         const message =
           error instanceof Error ? error.message : String(error);
@@ -831,8 +826,8 @@
       });
 
       currentShareId = shareId;
-      setStatus('编辑器已就绪，当前 shareId：' + shareId, 'success');
-      log('编辑器初始化完成，shareId=' + shareId);
+      setStatus('编辑器已就绪', 'success');
+      log('编辑器初始化完成');
     }
 
     async function applyTemplateContent(templateContent, label) {
@@ -858,7 +853,7 @@
       try {
         await editor.mode.setMasterTemplate(templateContent);
         setStatus('母版已应用到所有画板：' + label, 'success');
-        log('已应用母版：' + label + '，shareId=' + currentShareId);
+        log('已应用母版：' + label);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : String(error);

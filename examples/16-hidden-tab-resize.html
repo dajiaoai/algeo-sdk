@@ -216,18 +216,9 @@
     }
 
     function updatePanel(extra) {
-      const iframeA = document
-        .getElementById('editor-a')
-        .querySelector('iframe');
-      const iframeB = document
-        .getElementById('editor-b')
-        .querySelector('iframe');
       const wrapB = document.getElementById('wrap-b');
       panel.textContent = [
         'A mode: presentation   B mode: editor',
-        'appId: ' + appId + '   shareId: ' + shareId,
-        'A iframe src: ' + (iframeA ? iframeA.src : '(not created)'),
-        'B iframe src: ' + (iframeB ? iframeB.src : '(not created)'),
         'B 容器尺寸: ' +
         wrapB.clientWidth +
         ' x ' +
@@ -310,7 +301,7 @@
         // 演示模式需加载分享内容后画布才有可视内容
         presentation
           .loadShareById(shareId)
-          .then(() => log(label + ' loadShareById 成功', { shareId }))
+          .then(() => log(label + ' loadShareById 成功'))
           .catch((e) =>
             log(label + ' loadShareById 失败', {
               message: e.message || String(e),

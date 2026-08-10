@@ -313,9 +313,8 @@
         <div class="embed-header">
           <div>
             <strong>Embedded Editor</strong>
-            <span id="config-info"></span>
           </div>
-          <button class="secondary" id="recreateBtn">重建编辑器</button>
+          <button class="secondary" id="recreateBtn">初始化空白画板</button>
         </div>
         <div id="algeo-container"></div>
       </section>
@@ -433,11 +432,7 @@
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script src="./assets/js/config.js"></script>
   <script>
-    const { baseUrl, appId } = window.ALGEO_CONFIG;
-    const configInfo = document.getElementById('config-info');
-    if (configInfo) {
-      configInfo.textContent = `baseUrl = ${baseUrl} · appId = ${appId}`;
-    }
+    const { baseUrl, appId, shareId } = window.ALGEO_CONFIG;
 
     const container = document.getElementById('algeo-container');
     const recreateBtn = document.getElementById('recreateBtn');
@@ -552,7 +547,7 @@
       }
     }
 
-    async function createEditorInstance() {
+    async function createEditorInstance(loadConfiguredShare = true) {
       if (editor) {
         await editor.destroy();
         editor = null;
@@ -566,6 +561,7 @@
         baseUrl,
         editor: {
           auth: { appId },
+          ...(loadConfiguredShare ? { shareId } : {}),
           ui: {
             navbar: true,
             slidePanel: true,
@@ -584,11 +580,11 @@
       log('capture initialContent', {
         slides: content.slides.length,
       });
-      await refreshState('初始化完成');
+      await refreshState(loadConfiguredShare ? '配置文件加载完成' : '空白画板初始化完成');
     }
 
     recreateBtn.addEventListener('click', () => {
-      createEditorInstance().catch(() => { });
+      createEditorInstance(false).catch(() => { });
     });
 
     prevBtn.addEventListener('click', () => {

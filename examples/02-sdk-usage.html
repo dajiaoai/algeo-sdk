@@ -618,12 +618,13 @@ const uiConfig = presentation.mode.getUiConfig();`
 } from '@dajiaoai/algeo-sdk';
 
 const container = document.getElementById('algeo-container')!;
+const { appId, shareId } = window.ALGEO_CONFIG;
 
 const presentation: EmbeddedPresentation = await createPresentation(
   container,
   {
-    auth: { appId: ${JSON.stringify(appId)} },
-    shareId: ${JSON.stringify(id)},
+    auth: { appId },
+    shareId,
     ui: {
 ${configLines}
     },
@@ -729,7 +730,7 @@ ${configLines}
             sdk.ready +
             ', version: ' +
             (sdk.version || '-');
-          log('演示模式初始化完成，shareId: ' + id);
+          log('演示模式初始化完成');
           showSdk();
           readUiConfig();
         } catch (e) {

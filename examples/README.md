@@ -53,5 +53,6 @@ npx serve examples
 
 ## 测试说明
 
-- 在示例首页配置真实的分享 ID；各示例会统一读取 `config.js` 中的配置
+- 在示例首页配置真实的分享 ID；各示例会统一读取 `config.js` 中的配置，并在首次创建 iframe 时加载该分享文件
+- 每个示例右下角会低调显示当前使用的 `baseUrl`，方便确认联调环境；完整配置仍可在示例首页修改
 - 依赖 `../dist/algeo-sdk.umd.js`，需先执行 `npm run build`
