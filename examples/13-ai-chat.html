@@ -426,11 +426,10 @@
         <div class="embed-header">
           <div>
             <strong>Embedded Editor with AI Chat</strong>
-            <span id="config-info"></span>
           </div>
           <div class="button-row">
             <button class="secondary" id="loadFileBtn">加载大角文件</button>
-            <button class="secondary" id="recreateBtn">重建编辑器</button>
+            <button class="secondary" id="recreateBtn">初始化空白画板</button>
           </div>
         </div>
         <div id="algeo-container"></div>
@@ -568,8 +567,7 @@
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script src="./assets/js/config.js"></script>
   <script>
-    const { baseUrl, appId } = window.ALGEO_CONFIG;
-    const configInfo = document.getElementById('config-info');
+    const { baseUrl, appId, shareId } = window.ALGEO_CONFIG;
     const container = document.getElementById('algeo-container');
     const baseUrlInput = document.getElementById('baseUrlInput');
     const apiKeyInput = document.getElementById('apiKeyInput');
@@ -592,10 +590,6 @@
     const contentCount = document.getElementById('contentCount');
     const tabButtons = Array.from(document.querySelectorAll('.tab-button'));
     const tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
-
-    if (configInfo) {
-      configInfo.textContent = `baseUrl = ${baseUrl} · appId = ${appId}`;
-    }
 
     const EMBEDDED_AI_RUN_PATH = '/api/v1/embedded/ai/run';
     const SETTINGS_STORAGE_KEY = 'algeo-sdk-example-13-ai-settings';
@@ -986,16 +980,17 @@
       container.innerHTML = '';
     }
 
-    async function createEditorInstance() {
+    async function createEditorInstance(loadConfiguredShare = true) {
       await destroyEditor();
       resetState();
       status.textContent = '正在创建编辑器...';
-      log('createEditor.start', { baseUrl: baseUrl, appId: appId });
+      log('createEditor.start', { baseUrl: baseUrl });
       editor = await AlgeoSdk.create(container, {
         mode: 'editor',
         baseUrl: baseUrl,
         editor: {
           auth: { appId: appId },
+          ...(loadConfiguredShare ? { shareId: shareId } : {}),
           ui: {
             navbar: true,
             slidePanel: true,
@@ -1008,14 +1003,16 @@
         },
       });
       attachListeners(editor);
-      status.textContent = '编辑器已创建。请在 iframe 的 AI 面板里提交问题。';
+      status.textContent = loadConfiguredShare
+        ? '配置文件已加载。请在 iframe 的 AI 面板里提交问题。'
+        : '空白画板已初始化。请在 iframe 的 AI 面板里提交问题。';
       log('createEditor.done', { version: editor.version });
       return editor;
     }
 
     recreateBtn.addEventListener('click', function () {
-      void createEditorInstance().catch(function (error) {
-        status.textContent = '重建失败：' + error.message;
+      void createEditorInstance(false).catch(function (error) {
+        status.textContent = '初始化空白画板失败：' + error.message;
         log('createEditor.error', { message: error.message });
       });
     });

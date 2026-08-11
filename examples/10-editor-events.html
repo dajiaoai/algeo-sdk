@@ -318,9 +318,8 @@
         <div class="embed-header">
           <div>
             <strong>Embedded Editor</strong>
-            <span id="config-info"></span>
           </div>
-          <button class="secondary" id="recreateBtn">重建编辑器</button>
+          <button class="secondary" id="recreateBtn">初始化空白画板</button>
         </div>
         <div id="algeo-container"></div>
       </section>
@@ -410,11 +409,7 @@
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script src="./assets/js/config.js"></script>
   <script>
-    const { baseUrl, appId } = window.ALGEO_CONFIG;
-    const configInfo = document.getElementById('config-info');
-    if (configInfo) {
-      configInfo.textContent = `baseUrl = ${baseUrl} · appId = ${appId}`;
-    }
+    const { baseUrl, appId, shareId } = window.ALGEO_CONFIG;
 
     const demoContent = {
       messages: [],
@@ -640,20 +635,23 @@
       container.innerHTML = '';
     }
 
-    async function createEditorInstance() {
+    async function createEditorInstance(loadConfiguredShare = true) {
       await destroyEditor();
       resetEventState();
       status.textContent = '正在创建编辑器...';
-      log('createEditor.start', { baseUrl: baseUrl, appId: appId });
+      log('createEditor.start', { baseUrl: baseUrl });
       editor = await AlgeoSdk.create(container, {
         mode: 'editor',
         baseUrl: baseUrl,
         editor: {
-          auth: { appId: appId }
+          auth: { appId: appId },
+          ...(loadConfiguredShare ? { shareId: shareId } : {})
         }
       });
       attachListeners(editor);
-      status.textContent = '编辑器已创建，等待用户操作...';
+      status.textContent = loadConfiguredShare
+        ? '配置文件已加载，等待用户操作...'
+        : '空白画板已初始化，等待用户操作...';
       log('createEditor.done', { version: editor.version });
       return editor;
     }
@@ -666,7 +664,7 @@
     }
 
     recreateBtn.addEventListener('click', function () {
-      void createEditorInstance();
+      void createEditorInstance(false);
     });
 
     loadDemoBtn.addEventListener('click', function () {

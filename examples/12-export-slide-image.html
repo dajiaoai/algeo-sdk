@@ -497,7 +497,7 @@
           </div>
           <div class="embed-actions">
             <button class="secondary" id="importBtn">导入文件</button>
-            <button class="secondary" id="reloadBtn">重建编辑器</button>
+            <button class="secondary" id="reloadBtn">初始化空白画板</button>
             <input type="file" id="fileInput" accept=".json,.algeo,application/json" />
           </div>
         </div>
@@ -1033,7 +1033,7 @@
       );
     }
 
-    async function createEditorInstance() {
+    async function createEditorInstance(loadConfiguredShare = true) {
       if (editor && typeof editor.destroy === 'function') {
         await editor.destroy();
       }
@@ -1050,13 +1050,17 @@
         baseUrl: BASE_URL,
         editor: {
           auth: { appId: APP_ID },
-          shareId: SHARE_ID,
+          ...(loadConfiguredShare ? { shareId: SHARE_ID } : {}),
         },
       });
 
       setActionButtonsDisabled(false);
-      setStatus('编辑器已就绪，可直接导出画板图片');
-      log('编辑器初始化完成，shareId=' + SHARE_ID);
+      setStatus(
+        loadConfiguredShare
+          ? '配置文件已加载，可直接导出画板图片'
+          : '空白画板已初始化，可开始编辑或导入文件',
+      );
+      log('编辑器初始化完成');
     }
 
     async function exportImages() {
@@ -1189,13 +1193,13 @@
     });
 
     reloadBtn.addEventListener('click', () => {
-      createEditorInstance().catch((error) => {
+      createEditorInstance(false).catch((error) => {
         const message =
           error instanceof Error ? error.message : String(error);
         editor = null;
         setActionButtonsDisabled(true);
         setStatus(message, true);
-        log('重建编辑器失败：' + message);
+        log('初始化空白画板失败：' + message);
       });
     });
     importBtn.addEventListener('click', () => {
