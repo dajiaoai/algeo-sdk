@@ -164,6 +164,38 @@
       border: 1px solid var(--line);
     }
 
+    .tabs {
+      display: flex;
+      gap: 6px;
+      padding: 4px;
+      border-radius: 14px;
+      background: rgba(15, 118, 110, 0.08);
+    }
+
+    .tab {
+      flex: 1;
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .tab[aria-selected="true"] {
+      background: var(--panel-strong);
+      color: var(--accent-strong);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .tab-panel {
+      display: grid;
+      gap: 12px;
+    }
+
+    .tab-panel[hidden] {
+      display: none;
+    }
+
     .metrics {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -278,9 +310,7 @@
     <div class="hero">
       <a href="index.html">← 返回示例列表</a>
       <h1>10 Editor Events</h1>
-      <p>这个示例专门验证编辑模式下的宿主事件监听。先点击“加载演示内容”，然后在 iframe 里新增图形、切换画板，再点击内嵌导航栏中的保存按钮，即可观察
-        <code>contentChange</code>、<code>slideChange</code>、<code>save</code> 三类事件返回的最新 payload。
-      </p>
+      <p>这个页面演示外部网页如何及时知道编辑器里发生了什么。你在编辑器中修改内容、切换画板或点击保存时，右侧会记录对应事件的触发次数和最近一次事件数据。</p>
     </div>
 
     <div class="layout">
@@ -297,16 +327,39 @@
 
       <div class="sidebar">
         <section class="card section">
-          <h2>操作建议</h2>
-          <p>推荐按这个顺序验证：先加载演示内容，再在 iframe 内手动画点或拖拽对象，随后切换画板，最后触发保存。事件计数和最近一次 payload 会同步更新。</p>
-          <div class="button-row">
-            <button class="primary" id="loadDemoBtn">加载演示内容</button>
-            <button class="secondary" id="getContentBtn">读取当前内容</button>
+          <div class="tabs" role="tablist" aria-label="事件说明与操作建议">
+            <button class="tab" id="eventsTab" role="tab" aria-selected="true" aria-controls="eventsPanel">三个事件</button>
+            <button class="tab" id="guideTab" role="tab" aria-selected="false" aria-controls="guidePanel">操作建议</button>
           </div>
-          <div class="status" id="status">等待初始化...</div>
-          <div class="hint">提示：这个示例通过宿主侧 <code>editor.on('save')</code> mock 保存流程；只有请求阶段返回
-            <code>{ status: 'success' }</code> 后，才会收到
-            <code>save</code> 事件。
+          <div class="tab-panel" id="eventsPanel" role="tabpanel" aria-labelledby="eventsTab">
+            <h2>三个事件分别表示什么？</h2>
+            <div class="payload-grid">
+              <div class="payload-card">
+                <h3><code>contentChange</code>：内容发生变化</h3>
+                <p>当你新增、删除、移动或修改画板中的对象时触发。外部网页可以通过它拿到最新内容，例如实时同步编辑结果或提示“有未保存的修改”。</p>
+              </div>
+              <div class="payload-card">
+                <h3><code>slideChange</code>：当前画板发生切换</h3>
+                <p>当你从一个画板切换到另一个画板时触发。它表示当前正在查看或编辑的画板变了，不代表画板内容本身被修改。</p>
+              </div>
+              <div class="payload-card">
+                <h3><code>save</code>：保存成功</h3>
+                <p>当你点击编辑器中的保存按钮，并且宿主完成保存请求后触发。外部网页可以据此确认最新内容已经保存成功。</p>
+              </div>
+            </div>
+          </div>
+          <div class="tab-panel" id="guidePanel" role="tabpanel" aria-labelledby="guideTab" hidden>
+            <h2>操作建议</h2>
+            <p>先加载演示内容，再在左侧编辑器中修改对象、切换画板，最后点击编辑器导航栏中的保存按钮。每完成一步，都可以在下方看到相应事件的计数和数据变化。</p>
+            <div class="button-row">
+              <button class="primary" id="loadDemoBtn">加载演示内容</button>
+              <button class="primary" id="getContentBtn">读取当前内容</button>
+            </div>
+            <div class="status" id="status">等待初始化...</div>
+            <div class="hint">提示：这个示例通过宿主侧 <code>editor.on('save')</code> mock 保存流程；只有请求阶段返回
+              <code>{ status: 'success' }</code> 后，才会收到
+              <code>save</code> 事件。
+            </div>
           </div>
         </section>
 
@@ -437,6 +490,10 @@
     const recreateBtn = document.getElementById('recreateBtn');
     const loadDemoBtn = document.getElementById('loadDemoBtn');
     const getContentBtn = document.getElementById('getContentBtn');
+    const eventsTab = document.getElementById('eventsTab');
+    const guideTab = document.getElementById('guideTab');
+    const eventsPanel = document.getElementById('eventsPanel');
+    const guidePanel = document.getElementById('guidePanel');
     const status = document.getElementById('status');
     const logs = document.getElementById('logs');
     const contentCount = document.getElementById('contentCount');
@@ -453,6 +510,23 @@
       slideChange: 0,
       save: 0
     };
+
+    function selectTab(selectedTab, selectedPanel) {
+      [eventsTab, guideTab].forEach(function (tab) {
+        tab.setAttribute('aria-selected', String(tab === selectedTab));
+      });
+      [eventsPanel, guidePanel].forEach(function (panel) {
+        panel.hidden = panel !== selectedPanel;
+      });
+    }
+
+    eventsTab.addEventListener('click', function () {
+      selectTab(eventsTab, eventsPanel);
+    });
+
+    guideTab.addEventListener('click', function () {
+      selectTab(guideTab, guidePanel);
+    });
 
     function formatJson(value) {
       return JSON.stringify(value, null, 2);
