@@ -597,8 +597,15 @@ const items = await editor.slides.exportLatex({
 interface ExportedLatex {
   index: number; // 1-based 画板索引
   code: string;
+  assets: Array<{ path: string; blob: Blob; mediaType: string }>;
+  blob: Blob; // 有图片时为 ZIP，否则为 TeX
+  fileName: string;
+  format: 'tex' | 'zip';
 }
 ```
+
+`blob` 可直接下载；当画板包含图片时，ZIP 内同时包含 `slide-N.tex` 和
+TikZ 通过相对路径引用的 `images/*` 文件。
 
 #### `editor.history`
 

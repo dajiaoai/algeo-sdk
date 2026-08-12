@@ -395,6 +395,12 @@ export interface ExportLatexOptions {
 export interface ExportedLatex {
   index: number;
   code: string;
+  /** TikZ 通过 path 引用的图片资源；调用方应保持相对目录结构落盘。 */
+  assets: Array<{ path: string; blob: Blob; mediaType: string }>;
+  /** 可直接下载的导出文件；包含图片时为 ZIP，否则为 TeX。 */
+  blob: Blob;
+  fileName: string;
+  format: 'tex' | 'zip';
 }
 
 export interface ExportLatexResult {

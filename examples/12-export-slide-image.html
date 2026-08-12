@@ -1121,10 +1121,19 @@
 
       if (latestResult.kind === 'latex') {
         for (const item of latestResult.items) {
-          downloadText(item.code || '', 'slide-' + item.index + '.tex');
+          if (item.blob instanceof Blob) {
+            downloadBlob(
+              item.blob,
+              item.fileName ||
+                ('slide-' + item.index + (item.format === 'zip' ? '.zip' : '.tex')),
+            );
+          } else {
+            // 兼容尚未返回打包 Blob 的旧版内嵌页面。
+            downloadText(item.code || '', 'slide-' + item.index + '.tex');
+          }
         }
         setStatus(
-          '已触发 ' + latestResult.items.length + ' 个 .tex 文件下载',
+          '已触发 ' + latestResult.items.length + ' 个 LaTeX 文件下载',
         );
         log('下载 LaTeX 结果，共 ' + latestResult.items.length + ' 份');
         return;
