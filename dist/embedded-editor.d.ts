@@ -1,6 +1,8 @@
 import { EmbeddedTarget } from './embedded-target';
 import { type AiApi, type AiCancelEvent, type AlgeoEditorCreateOptions, type ContentChangeEvent, type DocumentApi, type EmbedRequestMessage, type EmbeddedEditorEventListenerMap, type EmbeddedEditorEventMap, type EmbeddedEditorEventName, type HistoryApi, type ModeApi, type SaveEvent, type SlidesApi } from './shared';
 export declare class EmbeddedEditor extends EmbeddedTarget<EmbeddedEditorEventMap, EmbeddedEditorEventName, EmbeddedEditorEventListenerMap> {
+    private resourceLibrary?;
+    private readonly resourceLibraryRequests;
     readonly document: DocumentApi;
     readonly slides: SlidesApi;
     readonly history: HistoryApi;
@@ -21,6 +23,10 @@ export declare class EmbeddedEditor extends EmbeddedTarget<EmbeddedEditorEventMa
     } | AiCancelEvent): void;
     protected handleRequestMessage(message: EmbedRequestMessage, sourceWindow: Window): boolean;
     destroy(): Promise<void>;
+    private handleResourceLibraryQuery;
+    private validateResourceLibraryQuery;
+    private validateResourceLibraryResult;
+    private isHttpUrl;
     private loadContent;
     private switchTo;
     private addSlide;

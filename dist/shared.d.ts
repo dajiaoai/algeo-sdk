@@ -44,6 +44,42 @@ export interface AlgeoEditorCreateOptions {
     shareId?: string;
     initialContent?: FileContentLatest;
     ui?: AlgeoEditorUiConfig;
+    /** 接入方提供的只读图片资源库。 */
+    resourceLibrary?: ResourceLibraryProvider;
+}
+export interface ResourceLibraryQuery {
+    /** 页码，从 1 开始。 */
+    page: number;
+    /** 每页数量，最大 100。 */
+    pageSize: number;
+    keyword?: string;
+    mediaTypes?: string[];
+}
+export interface ResourceLibraryQueryContext {
+    signal: AbortSignal;
+}
+export interface ResourceLibraryProvider {
+    query(params: ResourceLibraryQuery, context: ResourceLibraryQueryContext): Promise<ResourceLibraryResult>;
+}
+export interface ResourceLibraryItem {
+    id: string;
+    name: string;
+    mediaType: string;
+    url: string;
+    thumbnailUrl?: string;
+    width?: number;
+    height?: number;
+    size?: number;
+}
+export interface ResourceLibraryPageInfo {
+    page: number;
+    pageSize: number;
+    hasNext: boolean;
+    total?: number;
+}
+export interface ResourceLibraryResult {
+    items: ResourceLibraryItem[];
+    pageInfo: ResourceLibraryPageInfo;
 }
 export interface AlgeoPresentationCreateOptions {
     auth?: AlgeoEditorAuthOptions;
@@ -119,6 +155,15 @@ export interface AiRequestMessage {
     type: 'aiRequest';
     requestId: string;
     payload: AiRunPayloadV1;
+}
+export interface ResourceLibraryQueryMessage {
+    type: 'resourceLibraryQuery';
+    requestId: string;
+    params: ResourceLibraryQuery;
+}
+export interface ResourceLibraryCancelMessage {
+    type: 'resourceLibraryCancel';
+    requestId: string;
 }
 export interface EmbeddedEditorEventMap {
     ready: ReadyEvent;
@@ -321,9 +366,10 @@ export declare function generateRequestId(): string;
 export declare function isResponseMessage(msg: unknown): msg is EmbedResponseMessage;
 export declare function isReadyMessage(msg: unknown): msg is EmbedReadyMessage;
 export type EmbedEventMessage = ContentChangeEvent | SlideChangeEvent | SaveSuccessEvent | AiCancelEvent;
-export type EmbedRequestMessage = SaveRequestMessage | AiRequestMessage;
+export type EmbedRequestMessage = SaveRequestMessage | AiRequestMessage | ResourceLibraryQueryMessage | ResourceLibraryCancelMessage;
 export declare function isSaveRequestMessage(msg: unknown): msg is SaveRequestMessage;
 export declare function isAiRequestMessage(msg: unknown): msg is AiRequestMessage;
+export declare function isResourceLibraryRequestMessage(msg: unknown): msg is ResourceLibraryQueryMessage | ResourceLibraryCancelMessage;
 export declare function isEmbedEventMessage(msg: unknown): msg is EmbedEventMessage;
 export declare function normalizeBaseUrl(baseUrl: string): string;
 export declare function normalizeMode(mode?: AlgeoEmbedMode): AlgeoEmbedMode;

@@ -4054,6 +4054,21 @@
             typeof msg.payload === 'object' &&
             msg.payload !== null);
     }
+    function isResourceLibraryRequestMessage(msg) {
+        if (typeof msg !== 'object' || msg === null) {
+            return false;
+        }
+        const value = msg;
+        if (typeof value.requestId !== 'string') {
+            return false;
+        }
+        if (value.type === 'resourceLibraryCancel') {
+            return true;
+        }
+        return (value.type === 'resourceLibraryQuery' &&
+            typeof value.params === 'object' &&
+            value.params !== null);
+    }
     function isEmbedEventMessage(msg) {
         if (typeof msg !== 'object' || msg == null || !('type' in msg)) {
             return false;
@@ -4260,7 +4275,9 @@
                         pending.reject(new AlgeoError(err?.message ?? '未知错误', err?.code ?? EMBED_ERROR_CODES.UNKNOWN_ERROR, err?.details));
                         return;
                     }
-                    if ((isSaveRequestMessage(data) || isAiRequestMessage(data)) &&
+                    if ((isSaveRequestMessage(data) ||
+                        isAiRequestMessage(data) ||
+                        isResourceLibraryRequestMessage(data)) &&
                         this.handleRequestMessage(data, iframe.contentWindow)) {
                         return;
                     }
@@ -4449,6 +4466,7 @@
     class EmbeddedEditor extends EmbeddedTarget {
         constructor(container) {
             super(container, 'editor');
+            this.resourceLibraryRequests = new Map();
             this.currentSlideIndex = 0;
             this.slideCount = 0;
             this.historyCount = 0;
@@ -4553,6 +4571,7 @@
                 throw new AlgeoError('编辑模式需要提供 auth.appId。', EMBED_ERROR_CODES.MISSING_APP_ID);
             }
             this.uiConfig = options.ui ? { ...options.ui } : {};
+            this.resourceLibrary = options.resourceLibrary;
             await this.init({
                 baseUrl,
                 auth: options.auth,
@@ -4593,6 +4612,15 @@
             this.currentSlideIndex = Math.min(this.currentSlideIndex, Math.max(this.slideCount - 1, 0));
         }
         handleRequestMessage(message, sourceWindow) {
+            if (message.type === 'resourceLibraryCancel') {
+                this.resourceLibraryRequests.get(message.requestId)?.abort();
+                this.resourceLibraryRequests.delete(message.requestId);
+                return true;
+            }
+            if (message.type === 'resourceLibraryQuery') {
+                void this.handleResourceLibraryQuery(message, sourceWindow);
+                return true;
+            }
             if (message.type === 'save') {
                 void this.handleSaveRequest(message, sourceWindow);
                 return true;
@@ -4604,8 +4632,115 @@
             return false;
         }
         async destroy() {
+            this.resourceLibraryRequests.forEach((controller) => controller.abort());
+            this.resourceLibraryRequests.clear();
             this.cancelActiveAi('destroyed', true);
             await super.destroy();
+        }
+        async handleResourceLibraryQuery(message, sourceWindow) {
+            const controller = new AbortController();
+            this.resourceLibraryRequests.set(message.requestId, controller);
+            const respond = (payload) => {
+                if (!controller.signal.aborted) {
+                    sourceWindow.postMessage(payload, '*');
+                }
+            };
+            try {
+                if (!this.resourceLibrary) {
+                    throw new AlgeoError('宿主未配置 resourceLibrary.query', EMBED_ERROR_CODES.BAD_REQUEST);
+                }
+                this.validateResourceLibraryQuery(message.params);
+                const result = await this.resourceLibrary.query(message.params, {
+                    signal: controller.signal,
+                });
+                if (controller.signal.aborted)
+                    return;
+                this.validateResourceLibraryResult(result, message.params);
+                respond({
+                    type: 'response',
+                    requestId: message.requestId,
+                    success: true,
+                    result,
+                });
+            }
+            catch (error) {
+                if (controller.signal.aborted)
+                    return;
+                respond({
+                    type: 'response',
+                    requestId: message.requestId,
+                    success: false,
+                    error: {
+                        code: error instanceof AlgeoError
+                            ? error.code
+                            : EMBED_ERROR_CODES.UNKNOWN_ERROR,
+                        message: error instanceof Error ? error.message : String(error),
+                    },
+                });
+            }
+            finally {
+                if (this.resourceLibraryRequests.get(message.requestId) === controller) {
+                    this.resourceLibraryRequests.delete(message.requestId);
+                }
+            }
+        }
+        validateResourceLibraryQuery(params) {
+            if (!Number.isInteger(params.page) ||
+                params.page < 1 ||
+                !Number.isInteger(params.pageSize) ||
+                params.pageSize < 1 ||
+                params.pageSize > 100 ||
+                (params.keyword !== undefined && typeof params.keyword !== 'string') ||
+                (params.mediaTypes !== undefined &&
+                    (!Array.isArray(params.mediaTypes) ||
+                        params.mediaTypes.some((value) => typeof value !== 'string')))) {
+                throw new AlgeoError('资源库查询参数无效', EMBED_ERROR_CODES.BAD_REQUEST);
+            }
+        }
+        validateResourceLibraryResult(result, params) {
+            const invalid = () => {
+                throw new AlgeoError('资源数据格式无效', EMBED_ERROR_CODES.BAD_REQUEST);
+            };
+            if (!result || !Array.isArray(result.items) || !result.pageInfo)
+                invalid();
+            const pageInfo = result.pageInfo;
+            if (pageInfo.page !== params.page ||
+                pageInfo.pageSize !== params.pageSize ||
+                typeof pageInfo.hasNext !== 'boolean' ||
+                (pageInfo.total !== undefined &&
+                    (!Number.isInteger(pageInfo.total) || pageInfo.total < 0)))
+                invalid();
+            const ids = new Set();
+            for (const item of result.items) {
+                if (!item ||
+                    typeof item.id !== 'string' ||
+                    !item.id.trim() ||
+                    ids.has(item.id) ||
+                    typeof item.name !== 'string' ||
+                    !item.name.trim() ||
+                    typeof item.mediaType !== 'string' ||
+                    !item.mediaType.startsWith('image/') ||
+                    !this.isHttpUrl(item.url) ||
+                    (item.thumbnailUrl !== undefined && !this.isHttpUrl(item.thumbnailUrl)))
+                    invalid();
+                ids.add(item.id);
+                for (const value of [item.width, item.height, item.size]) {
+                    if (value !== undefined && (!Number.isInteger(value) || value <= 0)) {
+                        invalid();
+                    }
+                }
+            }
+        }
+        isHttpUrl(value) {
+            if (typeof value !== 'string')
+                return false;
+            try {
+                const url = new URL(value);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            }
+            catch {
+                return false;
+            }
         }
         async loadContent(content, source) {
             await this.post('loadContent', { content });

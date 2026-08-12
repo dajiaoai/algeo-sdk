@@ -46,6 +46,7 @@ npx serve examples
 | 14-master-template.html              | 编辑模式 | 通过 `setMasterTemplate` 应用母版                               |
 | 15-presentation-master-template.html | 演示模式 | 通过 `setMasterTemplate` 应用母版                               |
 | 16-hidden-tab-resize.html            | 演示 + 编辑 | 切换可见时调用 `resize()` 重绘画布 |
+| 17-resource-library.html             | 编辑模式 | 接入自有图片资源库，并切换查看可视化结果与协议数据结构 |
 
 ## 全屏支持
 

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>17 自有资源库 - Algeo SDK</title>
+    <style>
+      * { box-sizing: border-box; }
+      :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, "Segoe UI", sans-serif; color: #172033; background: #f4f6fa; }
+      body { margin: 0; min-height: 100vh; }
+      button, input, select { font: inherit; }
+      button { cursor: pointer; }
+      .page { display: flex; width: min(1600px, 100%); height: 100vh; height: 100dvh; margin: auto; padding: 22px; overflow: hidden; flex-direction: column; }
+      .top { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 18px; }
+      .back { display: inline-block; margin-bottom: 12px; color: #667085; font-size: 13px; text-decoration: none; }
+      .eyebrow { margin: 0 0 5px; color: #087f67; font-size: 12px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+      h1 { margin: 0; font-size: clamp(26px, 3.2vw, 38px); letter-spacing: -.035em; }
+      .intro { margin: 8px 0 0; color: #667085; font-size: 14px; }
+      .status { padding: 8px 12px; border: 1px solid #d9e2df; border-radius: 999px; color: #47635d; background: #f7fffc; font-size: 12px; white-space: nowrap; }
+      .workspace { display: grid; min-height: 0; flex: 1; grid-template-columns: minmax(0, 1.7fr) minmax(360px, .8fr); gap: 16px; }
+      .card { min-width: 0; overflow: hidden; border: 1px solid #dde3ec; border-radius: 16px; background: #fff; box-shadow: 0 16px 50px rgb(36 50 75 / 8%); }
+      .editor-card { display: flex; flex-direction: column; }
+      .card-head { display: flex; min-height: 51px; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #edf0f4; }
+      .title { margin: 0; font-size: 14px; }
+      .hint { color: #98a2b3; font-size: 11px; }
+      #editor { min-height: 0; flex: 1; background: #eef1f5; }
+      .side { display: flex; min-height: 0; flex-direction: column; }
+      .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 5px; border-bottom: 1px solid #e8ecf2; background: #f5f7fa; }
+      .tab { min-height: 35px; border: 0; border-radius: 8px; color: #667085; background: transparent; font-size: 12px; font-weight: 700; }
+      .tab.active { color: #087f67; background: white; box-shadow: 0 1px 5px rgb(20 40 70 / 12%); }
+      .pane { min-height: 0; flex: 1; overflow: auto; padding: 15px; }
+      .toolbar { display: grid; grid-template-columns: 1fr 92px auto; gap: 8px; margin-bottom: 13px; }
+      input, select { min-width: 0; height: 38px; padding: 0 10px; border: 1px solid #d7dde7; border-radius: 8px; color: #344054; background: white; outline: none; }
+      input:focus, select:focus { border-color: #43a992; box-shadow: 0 0 0 3px #e2f6f1; }
+      .query { padding: 0 13px; border: 0; border-radius: 8px; color: white; background: #079474; font-size: 12px; font-weight: 700; }
+      .query:hover { background: #087f67; }
+      .meta { display: flex; justify-content: space-between; margin: 0 0 12px; color: #7b8494; font-size: 11px; }
+      .assets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .asset { overflow: hidden; border: 1px solid #e2e7ee; border-radius: 11px; background: #fbfcfd; }
+      .asset img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: #edf0f4; }
+      .asset-copy { padding: 9px; }
+      .asset-name { overflow: hidden; margin: 0 0 4px; font-size: 12px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+      .asset-id { overflow: hidden; color: #98a2b3; font: 10px/1.4 ui-monospace, Consolas, monospace; text-overflow: ellipsis; white-space: nowrap; }
+      .data-section + .data-section { margin-top: 16px; }
+      .data-title { display: flex; align-items: center; justify-content: space-between; margin: 0 0 8px; color: #475467; font-size: 12px; }
+      .data-title span { color: #98a2b3; font: 10px/1.4 ui-monospace, Consolas, monospace; }
+      pre { min-height: 150px; max-height: 330px; margin: 0; padding: 15px; overflow: auto; border-radius: 11px; color: #d7e0ee; background: #101828; font: 11px/1.65 ui-monospace, Consolas, monospace; white-space: pre-wrap; word-break: break-word; }
+      .log { margin-top: 13px; padding-top: 12px; border-top: 1px solid #edf0f4; }
+      .log-title { margin: 0 0 7px; font-size: 11px; font-weight: 750; color: #667085; text-transform: uppercase; letter-spacing: .08em; }
+      #events { max-height: 98px; overflow: auto; color: #667085; font: 10px/1.55 ui-monospace, Consolas, monospace; }
+      #events div { padding: 3px 0; border-bottom: 1px dashed #edf0f4; }
+      .empty { grid-column: 1/-1; padding: 52px 20px; color: #98a2b3; text-align: center; }
+      @media (max-width: 950px) { .page { height: auto; min-height: 100vh; overflow: visible; } .workspace { grid-template-columns: 1fr; } .editor-card { height: 620px; } .side { min-height: 600px; } }
+      @media (max-width: 520px) { .page { padding: 14px; } .top { display: block; } .status { display: inline-block; margin-top: 12px; } .toolbar { grid-template-columns: 1fr 80px; } .query { grid-column: 1/-1; height: 38px; } }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <a class="back" href="index.html">← 返回示例列表</a>
+      <header class="top">
+        <div>
+          <p class="eyebrow">Algeo SDK · Resource Library</p>
+          <h1>宿主资源库接入</h1>
+          <p class="intro">宿主可接入自己的资源库，实现在几何画板内自由加载图片等资源。</p>
+        </div>
+        <div class="status" id="status">正在初始化编辑器…</div>
+      </header>
+
+      <div class="workspace">
+        <section class="card editor-card">
+          <div class="card-head"><h2 class="title">内嵌画板</h2><span class="hint">在画板资源库中操作可触发右侧查询日志</span></div>
+          <div id="editor"></div>
+        </section>
+
+        <aside class="card side">
+          <nav class="tabs" aria-label="资源库视图">
+            <button class="tab active" data-pane="visual">可视化</button>
+            <button class="tab" data-pane="data">数据结构</button>
+          </nav>
+          <section class="pane" id="visualPane">
+            <div class="toolbar">
+              <input id="keyword" type="search" placeholder="按文件名搜索" />
+              <select id="pageSize" aria-label="每页数量"><option>4</option><option selected>6</option><option>10</option></select>
+              <button class="query" id="queryBtn">模拟查询</button>
+            </div>
+            <p class="meta"><span id="summary">尚未查询</span><span>mediaTypes: image/*</span></p>
+            <div class="assets" id="assets"></div>
+            <div class="log"><p class="log-title">Provider 调用日志</p><div id="events"></div></div>
+          </section>
+          <section class="pane" id="dataPane" hidden>
+            <div class="data-section">
+              <h2 class="data-title">查询参数 <span>ResourceLibraryQuery</span></h2>
+              <pre id="queryJson"></pre>
+            </div>
+            <div class="data-section">
+              <h2 class="data-title">返回结构 <span>ResourceLibraryResult</span></h2>
+              <pre id="resultJson"></pre>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <script src="../dist/algeo-sdk.umd.js"></script>
+    <script src="./assets/js/config.js"></script>
+    <script>
+      const ALL_ITEMS = [
+        ['geometry-01', '蓝色几何积木.jpg', 'photo-1635070041078-e363dbe005cb'],
+        ['geometry-02', '圆与空间结构.jpg', 'photo-1509228468518-180dd4864904'],
+        ['geometry-03', '数学公式草稿.jpg', 'photo-1455390582262-044cdead277a'],
+        ['geometry-04', '教学用三角板.jpg', 'photo-1596495578065-6e0763fa1178'],
+        ['geometry-05', '坐标与曲线.jpg', 'photo-1509869175650-a1d97972541a'],
+        ['geometry-06', '立体模型参考.jpg', 'photo-1535378620166-273708d44e4c'],
+        ['geometry-07', '课堂黑板.jpg', 'photo-1594608661623-aa0bd3a69799'],
+        ['geometry-08', '彩色多边形.jpg', 'photo-1550859492-d5da9d8e45f3'],
+        ['geometry-09', '建筑几何线条.jpg', 'photo-1487958449943-2429e8be8625'],
+        ['geometry-10', '纸面计算过程.jpg', 'photo-1453738773917-9c3eff1db985'],
+      ].map(([id, name, photo], index) => ({
+        id, name, mediaType: 'image/jpeg',
+        url: `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=1200&q=85`,
+        thumbnailUrl: `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=480&q=75`,
+        width: 1200, height: 800, size: 180000 + index * 13721,
+      }));
+
+      const state = { params: null, result: null, source: null, queriedAt: null };
+      const events = document.getElementById('events');
+      function log(message) {
+        const line = document.createElement('div');
+        line.textContent = `${new Date().toLocaleTimeString()}  ${message}`;
+        events.prepend(line);
+      }
+
+      const resourceLibrary = {
+        async query(params, { signal }) {
+          log(`query(page=${params.page}, pageSize=${params.pageSize}, keyword=${JSON.stringify(params.keyword || '')})`);
+          await new Promise((resolve, reject) => {
+            const timer = setTimeout(resolve, 280);
+            signal.addEventListener('abort', () => {
+              clearTimeout(timer);
+              reject(new DOMException('查询已取消', 'AbortError'));
+            }, { once: true });
+          });
+          const keyword = (params.keyword || '').trim().toLowerCase();
+          const matched = ALL_ITEMS.filter((item) => !keyword || item.name.toLowerCase().includes(keyword));
+          const start = (params.page - 1) * params.pageSize;
+          const result = {
+            items: matched.slice(start, start + params.pageSize),
+            pageInfo: { page: params.page, pageSize: params.pageSize, hasNext: start + params.pageSize < matched.length, total: matched.length },
+          };
+          state.params = params; state.result = result; state.queriedAt = new Date().toISOString();
+          render('SDK / 测试台');
+          return result;
+        },
+      };
+
+      function render(source) {
+        state.source = source;
+        const result = state.result;
+        document.getElementById('queryJson').textContent = state.params
+          ? JSON.stringify(state.params, null, 2)
+          : '// 尚未发起查询';
+        document.getElementById('resultJson').textContent = state.result
+          ? JSON.stringify(state.result, null, 2)
+          : '// 尚未收到查询结果';
+        const assets = document.getElementById('assets');
+        if (!result) { assets.innerHTML = '<div class="empty">点击“模拟查询”，或在左侧画板打开资源库</div>'; return; }
+        document.getElementById('summary').textContent = `第 ${result.pageInfo.page} 页 · ${result.items.length} 条 / 共 ${result.pageInfo.total} 条`;
+        assets.innerHTML = result.items.length ? result.items.map((item) => `
+          <article class="asset">
+            <img src="${item.thumbnailUrl || item.url}" alt="${item.name}" loading="lazy" />
+            <div class="asset-copy"><p class="asset-name" title="${item.name}">${item.name}</p><div class="asset-id">${item.id} · ${item.width}×${item.height}</div></div>
+          </article>`).join('') : '<div class="empty">没有匹配的图片</div>';
+      }
+
+      document.getElementById('queryBtn').onclick = async () => {
+        const controller = new AbortController();
+        try {
+          await resourceLibrary.query({ page: 1, pageSize: Number(document.getElementById('pageSize').value), keyword: document.getElementById('keyword').value.trim() || undefined, mediaTypes: ['image/*'] }, { signal: controller.signal });
+        } catch (error) { log(`error: ${error.message}`); }
+      };
+      document.getElementById('keyword').addEventListener('keydown', (event) => { if (event.key === 'Enter') document.getElementById('queryBtn').click(); });
+      document.querySelectorAll('.tab').forEach((tab) => tab.onclick = () => {
+        const data = tab.dataset.pane === 'data';
+        document.getElementById('visualPane').hidden = data;
+        document.getElementById('dataPane').hidden = !data;
+        document.querySelectorAll('.tab').forEach((item) => item.classList.toggle('active', item === tab));
+      });
+
+      render('初始化');
+      (async () => {
+        const { baseUrl, appId, shareId } = window.ALGEO_CONFIG;
+        try {
+          const editor = await AlgeoSdk.create(document.getElementById('editor'), {
+            baseUrl,
+            mode: 'editor',
+            editor: { auth: { appId }, shareId, resourceLibrary },
+          });
+          window.editor = editor;
+          document.getElementById('status').textContent = `SDK 已就绪 · ${editor.version || 'unknown version'}`;
+          log('editor ready，resourceLibrary provider 已注册');
+        } catch (error) {
+          document.getElementById('status').textContent = `初始化失败：${error.message}`;
+          log(`editor error: ${error.message}`);
+        }
+      })();
+    </script>
+  </body>
+</html>

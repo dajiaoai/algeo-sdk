@@ -192,6 +192,38 @@ const editor = await create(document.getElementById('editor-root'), {
 });
 ```
 
+### 接入自有资源库
+
+编辑模式支持由宿主提供只读图片资源库。图片仍由接入方存储和鉴权，SDK 只在内嵌页需要数据时调用 `query`：
+
+```typescript
+const editor = await createEditor(document.getElementById('editor-root'), {
+  auth: { appId: 'xxxx' },
+  resourceLibrary: {
+    query: async (params, { signal }) => {
+      const response = await fetch(
+        `/api/material/list?page=${params.page}&pageSize=${params.pageSize}`,
+        { signal },
+      );
+      if (!response.ok) throw new Error('资源库请求失败');
+
+      const data = await response.json();
+      return {
+        items: data.items,
+        pageInfo: {
+          page: params.page,
+          pageSize: params.pageSize,
+          hasNext: data.hasNext,
+          total: data.total,
+        },
+      };
+    },
+  },
+});
+```
+
+`query` 返回的资源必须具有非空且不重复的 `id`、非空 `name`、`image/*` MIME 类型和完整 HTTP(S) URL。`width`、`height`、`size` 如提供，必须是正整数。搜索条件变化、面板关闭或 SDK 销毁时，请求可能通过 `signal` 被取消。
+
 ## API
 
 ### 常量

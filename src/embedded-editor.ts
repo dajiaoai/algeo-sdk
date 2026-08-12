@@ -8,6 +8,9 @@ import {
   type AiRequestEvent,
   type AiRunPayloadV1,
   type AiStreamEventV1,
+  type ResourceLibraryProvider,
+  type ResourceLibraryQuery,
+  type ResourceLibraryResult,
   type AlgeoEditorCreateOptions,
   type AlgeoEditorSaveResult,
   type AlgeoEditorUiConfig,
@@ -42,6 +45,8 @@ export class EmbeddedEditor extends EmbeddedTarget<
   EmbeddedEditorEventName,
   EmbeddedEditorEventListenerMap
 > {
+  private resourceLibrary?: ResourceLibraryProvider;
+  private readonly resourceLibraryRequests = new Map<string, AbortController>();
   readonly document: DocumentApi;
   readonly slides: SlidesApi;
   readonly history: HistoryApi;
@@ -185,6 +190,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
     }
 
     this.uiConfig = options.ui ? { ...options.ui } : {};
+    this.resourceLibrary = options.resourceLibrary;
 
     await this.init({
       baseUrl,
@@ -249,6 +255,17 @@ export class EmbeddedEditor extends EmbeddedTarget<
     message: EmbedRequestMessage,
     sourceWindow: Window,
   ): boolean {
+    if (message.type === 'resourceLibraryCancel') {
+      this.resourceLibraryRequests.get(message.requestId)?.abort();
+      this.resourceLibraryRequests.delete(message.requestId);
+      return true;
+    }
+
+    if (message.type === 'resourceLibraryQuery') {
+      void this.handleResourceLibraryQuery(message, sourceWindow);
+      return true;
+    }
+
     if (message.type === 'save') {
       void this.handleSaveRequest(message, sourceWindow);
       return true;
@@ -263,8 +280,140 @@ export class EmbeddedEditor extends EmbeddedTarget<
   }
 
   override async destroy(): Promise<void> {
+    this.resourceLibraryRequests.forEach((controller) => controller.abort());
+    this.resourceLibraryRequests.clear();
     this.cancelActiveAi('destroyed', true);
     await super.destroy();
+  }
+
+  private async handleResourceLibraryQuery(
+    message: {
+      type: 'resourceLibraryQuery';
+      requestId: string;
+      params: ResourceLibraryQuery;
+    },
+    sourceWindow: Window,
+  ): Promise<void> {
+    const controller = new AbortController();
+    this.resourceLibraryRequests.set(message.requestId, controller);
+
+    const respond = (payload: Record<string, unknown>) => {
+      if (!controller.signal.aborted) {
+        sourceWindow.postMessage(payload, '*');
+      }
+    };
+
+    try {
+      if (!this.resourceLibrary) {
+        throw new AlgeoError(
+          '宿主未配置 resourceLibrary.query',
+          EMBED_ERROR_CODES.BAD_REQUEST,
+        );
+      }
+
+      this.validateResourceLibraryQuery(message.params);
+      const result = await this.resourceLibrary.query(message.params, {
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      this.validateResourceLibraryResult(result, message.params);
+      respond({
+        type: 'response',
+        requestId: message.requestId,
+        success: true,
+        result,
+      });
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      respond({
+        type: 'response',
+        requestId: message.requestId,
+        success: false,
+        error: {
+          code:
+            error instanceof AlgeoError
+              ? error.code
+              : EMBED_ERROR_CODES.UNKNOWN_ERROR,
+          message: error instanceof Error ? error.message : String(error),
+        },
+      });
+    } finally {
+      if (this.resourceLibraryRequests.get(message.requestId) === controller) {
+        this.resourceLibraryRequests.delete(message.requestId);
+      }
+    }
+  }
+
+  private validateResourceLibraryQuery(params: ResourceLibraryQuery): void {
+    if (
+      !Number.isInteger(params.page) ||
+      params.page < 1 ||
+      !Number.isInteger(params.pageSize) ||
+      params.pageSize < 1 ||
+      params.pageSize > 100 ||
+      (params.keyword !== undefined && typeof params.keyword !== 'string') ||
+      (params.mediaTypes !== undefined &&
+        (!Array.isArray(params.mediaTypes) ||
+          params.mediaTypes.some((value) => typeof value !== 'string')))
+    ) {
+      throw new AlgeoError(
+        '资源库查询参数无效',
+        EMBED_ERROR_CODES.BAD_REQUEST,
+      );
+    }
+  }
+
+  private validateResourceLibraryResult(
+    result: ResourceLibraryResult,
+    params: ResourceLibraryQuery,
+  ): void {
+    const invalid = () => {
+      throw new AlgeoError(
+        '资源数据格式无效',
+        EMBED_ERROR_CODES.BAD_REQUEST,
+      );
+    };
+    if (!result || !Array.isArray(result.items) || !result.pageInfo) invalid();
+    const pageInfo = result.pageInfo;
+    if (
+      pageInfo.page !== params.page ||
+      pageInfo.pageSize !== params.pageSize ||
+      typeof pageInfo.hasNext !== 'boolean' ||
+      (pageInfo.total !== undefined &&
+        (!Number.isInteger(pageInfo.total) || pageInfo.total < 0))
+    ) invalid();
+
+    const ids = new Set<string>();
+    for (const item of result.items) {
+      if (
+        !item ||
+        typeof item.id !== 'string' ||
+        !item.id.trim() ||
+        ids.has(item.id) ||
+        typeof item.name !== 'string' ||
+        !item.name.trim() ||
+        typeof item.mediaType !== 'string' ||
+        !item.mediaType.startsWith('image/') ||
+        !this.isHttpUrl(item.url) ||
+        (item.thumbnailUrl !== undefined && !this.isHttpUrl(item.thumbnailUrl))
+      ) invalid();
+      ids.add(item.id);
+      for (const value of [item.width, item.height, item.size]) {
+        if (value !== undefined && (!Number.isInteger(value) || value <= 0)) {
+          invalid();
+        }
+      }
+    }
+  }
+
+  private isHttpUrl(value: unknown): value is string {
+    if (typeof value !== 'string') return false;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
   }
 
   private async loadContent(
