@@ -198,6 +198,10 @@ export class EmbeddedEditor extends EmbeddedTarget<
       initialId: options.shareId,
     });
 
+    await this.post('setResourceLibraryAvailability', {
+      available: Boolean(this.resourceLibrary),
+    });
+
     if (Object.keys(this.uiConfig).length > 0) {
       await this.mode.setUiConfig(this.uiConfig);
     }
