@@ -3863,6 +3863,12 @@ var AlgeoError = class extends Error {
     this.name = "AlgeoError";
   }
 };
+objectType({
+  text: stringType().optional(),
+  images: arrayType(stringType().trim().min(1)).optional(),
+  openPanel: booleanType().optional(),
+  focus: booleanType().optional()
+}).passthrough();
 var openAiChatMessageV1Schema = objectType({
   role: stringType(),
   content: unionType([
@@ -3876,9 +3882,23 @@ var openAiChatMessageV1Schema = objectType({
   name: stringType().optional()
 }).passthrough();
 objectType({
-  model_id: stringType(),
-  messages: arrayType(unionType([openAiChatMessageV1Schema, recordType(unknownType())])),
-  extra_openai_params: recordType(unknownType()).optional()
+  model: stringType().trim().min(1),
+  input: unionType([
+    stringType(),
+    arrayType(unionType([openAiChatMessageV1Schema, recordType(unknownType())]))
+  ]).optional(),
+  previous_response_id: stringType().trim().min(1).optional(),
+  instructions: stringType().optional(),
+  temperature: numberType().min(0).max(2).optional(),
+  max_output_tokens: numberType().int().positive().optional(),
+  metadata: recordType(unknownType()).optional()
+}).passthrough().superRefine((value, ctx) => {
+  if (!("input" in value) && !("previous_response_id" in value)) {
+    ctx.addIssue({
+      code: ZodIssueCode.custom,
+      message: "input or previous_response_id is required."
+    });
+  }
 });
 objectType({
   id: stringType(),
@@ -4009,7 +4029,7 @@ function convertToLatest(content) {
 }
 
 /** SDK 版本号，构建时由 rollup 注入 */
-const VERSION = '2.10.0';
+const VERSION = '2.11.0';
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
 const DEFAULT_PRESENTATION_PATH = '/embed/present';
 const DEFAULT_EDITOR_PATH = '/embed/edit';
