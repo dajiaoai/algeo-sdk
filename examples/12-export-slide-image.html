@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>12 导出画板图片 - Algeo SDK</title>
+  <title>12 导出画板图片（2D画板）- Algeo SDK</title>
   <style>
     * {
       box-sizing: border-box;
@@ -270,6 +270,72 @@
       color: #e5e7eb;
     }
 
+    .log-empty {
+      color: #98a2b3;
+    }
+
+    .log-entry {
+      display: grid;
+      grid-template-columns: auto auto minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .log-entry:first-child {
+      padding-top: 0;
+    }
+
+    .log-entry:last-child {
+      border-bottom: 0;
+    }
+
+    .log-time {
+      color: #98a2b3;
+      white-space: nowrap;
+    }
+
+    .log-badge {
+      min-width: 52px;
+      padding: 1px 6px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-size: 10px;
+      line-height: 1.5;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .log-message {
+      min-width: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .log-entry.status .log-badge,
+    .log-entry.status .log-message {
+      color: #84adff;
+    }
+
+    .log-entry.sdk .log-badge,
+    .log-entry.sdk .log-message {
+      color: #75e0a7;
+    }
+
+    .log-entry.error {
+      margin: 2px -7px;
+      padding: 7px;
+      border: 1px solid rgba(253, 162, 155, 0.24);
+      border-radius: 8px;
+      background: rgba(180, 35, 24, 0.14);
+    }
+
+    .log-entry.error .log-badge,
+    .log-entry.error .log-message {
+      color: #fda29b;
+    }
+
     .preview-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -479,7 +545,7 @@
     <a href="index.html">← 返回示例列表</a>
 
     <section class="hero">
-      <h1>12 导出画板图片</h1>
+      <h1>12 导出画板图片（2D画板）</h1>
       <p>
         这个示例使用公共配置中的分享文件创建编辑器，演示
         <code>editor.slides.exportImage()</code> 的三种导出方式（<code>size</code>
@@ -646,7 +712,7 @@
 
         <section class="card section">
           <h2>日志</h2>
-          <div class="logs" id="logs">等待操作...</div>
+          <div class="logs" id="logs"><span class="log-empty">等待操作...</span></div>
         </section>
       </div>
     </div>
@@ -713,10 +779,12 @@
     let currentView = 'form';
     let latestResult = { kind: 'image', items: [] };
     let previewUrls = [];
+    let hasLogs = false;
 
     function setStatus(message, isError = false) {
       statusEl.textContent = message;
       statusEl.classList.toggle('error', isError);
+      appendLog('status', message);
     }
 
     function setActionButtonsDisabled(disabled) {
@@ -725,10 +793,39 @@
       downloadAllBtn.disabled = disabled || latestResult.items.length === 0;
     }
 
-    function log(message) {
+    function appendLog(type, message) {
       const ts = new Date().toLocaleTimeString();
-      logsEl.textContent =
-        '[' + ts + '] ' + message + '\n' + logsEl.textContent;
+      if (!hasLogs) {
+        logsEl.replaceChildren();
+        hasLogs = true;
+      }
+
+      const entry = document.createElement('div');
+      entry.className = 'log-entry ' + type;
+
+      const time = document.createElement('span');
+      time.className = 'log-time';
+      time.textContent = ts;
+
+      const badge = document.createElement('span');
+      badge.className = 'log-badge';
+      badge.textContent =
+        type === 'sdk' ? 'SDK' : type === 'error' ? '异常' : 'STATUS';
+
+      const content = document.createElement('span');
+      content.className = 'log-message';
+      content.textContent = message;
+
+      entry.append(time, badge, content);
+      logsEl.prepend(entry);
+    }
+
+    function logSdk(message) {
+      appendLog('sdk', message);
+    }
+
+    function logError(message) {
+      appendLog('error', message);
     }
 
     function parseSlideIndices(value) {
@@ -1025,7 +1122,7 @@
       renderExportResult();
       setActionButtonsDisabled(false);
       setStatus('已通过 document.loadContent() 导入文件：' + file.name);
-      log(
+      logSdk(
         '导入文件完成，file=' +
         file.name +
         '，slides=' +
@@ -1060,13 +1157,13 @@
           ? '配置文件已加载，可直接导出画板图片'
           : '空白画板已初始化，可开始编辑或导入文件',
       );
-      log('编辑器初始化完成');
+      logSdk('编辑器初始化完成');
     }
 
     async function exportImages() {
       if (!editor) {
         setStatus('编辑器尚未初始化', true);
-        log('导出失败：编辑器尚未初始化');
+        logError('导出失败：编辑器尚未初始化');
         return;
       }
 
@@ -1086,7 +1183,7 @@
           renderExportResult();
           setActionButtonsDisabled(false);
           setStatus('导出成功，共返回 ' + items.length + ' 份 LaTeX 源码');
-          log('导出 LaTeX 完成，返回=' + items.length + ' 份');
+          logSdk('导出 LaTeX 完成，返回=' + items.length + ' 份');
           return;
         }
 
@@ -1101,12 +1198,12 @@
             ? '指定画板 ' + slideIndices.join(', ')
             : '全部画板';
         setStatus('导出成功，共返回 ' + images.length + ' 张图片');
-        log('导出完成，目标=' + target + '，返回=' + images.length + ' 张');
+        logSdk('导出完成，目标=' + target + '，返回=' + images.length + ' 张');
       } catch (error) {
         const message =
           error instanceof Error ? error.message : String(error);
         setStatus(message, true);
-        log('导出失败：' + message);
+        logError('导出失败：' + message);
       } finally {
         exportBtn.disabled = false;
         downloadAllBtn.disabled = latestResult.items.length === 0;
@@ -1135,7 +1232,6 @@
         setStatus(
           '已触发 ' + latestResult.items.length + ' 个 LaTeX 文件下载',
         );
-        log('下载 LaTeX 结果，共 ' + latestResult.items.length + ' 份');
         return;
       }
 
@@ -1144,7 +1240,6 @@
         downloadBlob(image.blob, 'slide-' + image.index + '.' + ext);
       }
       setStatus('已触发 ' + latestResult.items.length + ' 个文件下载');
-      log('下载最近一次导出结果，共 ' + latestResult.items.length + ' 张');
     }
 
     modeSwitch.addEventListener('click', (event) => {
@@ -1208,7 +1303,7 @@
         editor = null;
         setActionButtonsDisabled(true);
         setStatus(message, true);
-        log('初始化空白画板失败：' + message);
+        logError('初始化空白画板失败：' + message);
       });
     });
     importBtn.addEventListener('click', () => {
@@ -1227,7 +1322,7 @@
           const message =
             error instanceof Error ? error.message : String(error);
           setStatus('导入失败：' + message, true);
-          log('导入文件失败：' + message);
+          logError('导入文件失败：' + message);
         })
         .finally(() => {
           importBtn.disabled = !editor;
@@ -1246,7 +1341,7 @@
       editor = null;
       setActionButtonsDisabled(true);
       setStatus(message, true);
-      log('初始化失败：' + message);
+      logError('初始化失败：' + message);
     });
   </script>
 </body>
