@@ -556,35 +556,98 @@
 
     .developer-group {
       position: fixed;
-      right: 14px;
-      bottom: 34px;
+      right: 22px;
+      bottom: 28px;
       z-index: 20;
-      width: 196px;
-      padding: 16px;
+      width: 230px;
+      padding: 18px;
+      overflow: hidden;
       text-align: center;
-      background: rgba(255, 255, 255, 0.96);
-      border: 1px solid rgba(18, 103, 233, 0.2);
-      border-radius: 16px;
-      box-shadow: 0 20px 52px rgba(24, 32, 47, 0.22);
-      backdrop-filter: blur(14px);
+      background:
+        radial-gradient(circle at 110% -10%, rgba(18, 103, 233, 0.16), transparent 42%),
+        rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(18, 103, 233, 0.18);
+      border-radius: 20px;
+      box-shadow:
+        0 24px 60px rgba(24, 32, 47, 0.2),
+        0 6px 18px rgba(18, 103, 233, 0.1);
+      backdrop-filter: blur(18px) saturate(1.2);
       animation: developer-group-enter 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+    }
+
+    .developer-group__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 5px;
+      color: var(--brand);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .developer-group__eyebrow::before {
+      width: 6px;
+      height: 6px;
+      background: #22b783;
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(34, 183, 131, 0.12);
+      content: '';
     }
 
     .developer-group__title {
       display: block;
-      margin: 0 20px 12px;
-      font-size: 16px;
+      margin: 0 20px 4px;
+      font-size: 18px;
       font-weight: 800;
       color: var(--ink);
     }
 
+    .developer-group__reward {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .developer-group__reward strong {
+      color: var(--brand-strong);
+      font-weight: 800;
+    }
+
+    .developer-group__qr-wrap {
+      width: fit-content;
+      margin: 0 auto;
+      padding: 7px;
+      background: #fff;
+      border: 1px solid rgba(18, 103, 233, 0.14);
+      border-radius: 14px;
+      box-shadow: 0 8px 22px rgba(24, 32, 47, 0.08);
+    }
+
     .developer-group__qr {
       display: block;
-      width: 164px;
-      height: 164px;
-      object-fit: cover;
-      background: #fff;
-      border-radius: 10px;
+      width: 174px;
+      height: 174px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .developer-group__hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .developer-group__hint svg {
+      width: 14px;
+      height: 14px;
+      color: var(--brand);
     }
 
     .developer-group__close {
@@ -597,12 +660,18 @@
       padding: 0;
       place-items: center;
       color: var(--muted);
-      font-size: 20px;
+      font-size: 19px;
       line-height: 1;
-      background: #fff;
-      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.7);
+      border: 0;
       border-radius: 50%;
       cursor: pointer;
+      transition: color 0.18s ease, background 0.18s ease;
+    }
+
+    .developer-group__close:hover {
+      color: var(--ink);
+      background: rgba(18, 103, 233, 0.08);
     }
 
     .developer-group.is-closing {
@@ -738,13 +807,22 @@
       .developer-group {
         right: 8px;
         bottom: 24px;
-        width: 166px;
-        padding: 13px;
+        width: 184px;
+        padding: 14px;
       }
 
       .developer-group__qr {
-        width: 138px;
-        height: 138px;
+        width: 142px;
+        height: 142px;
+      }
+
+      .developer-group__title {
+        font-size: 16px;
+      }
+
+      .developer-group__reward {
+        margin-bottom: 10px;
+        font-size: 12px;
       }
     }
 
@@ -1045,10 +1123,21 @@
   </main>
   <aside class="developer-group" id="developerGroup" aria-label="开发者交流群二维码">
     <button class="developer-group__close" id="developerGroupClose" type="button" aria-label="关闭开发者交流群二维码">&times;</button>
-    <strong class="developer-group__title">开发者交流群</strong>
-    <img class="developer-group__qr"
-      src="https://dl.easeplay.vip/algeo/685b4c2009d5753784ebe7df/841edf50-screenshot-20260525-175003.png"
-      alt="开发者交流群二维码" />
+    <span class="developer-group__eyebrow">OPEN-DINO</span>
+    <strong class="developer-group__title">开发者交流</strong>
+    <p class="developer-group__reward">加入社群，<strong>每月领取点数</strong></p>
+    <div class="developer-group__qr-wrap">
+      <img class="developer-group__qr"
+        src="https://dl.easeplay.vip/algeo/685b4c2009d5753784ebe7df/3adfd830-ef1af4b4-f714-447f-8010-ee698f6104c3.jpg"
+        alt="Open-Dino 开发者交流群二维码" width="174" height="174" />
+    </div>
+    <p class="developer-group__hint">
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M3.5 4.5h13v10h-7l-3.5 2v-2H3.5v-10Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+        <path d="M7 8h6M7 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+      </svg>
+      微信扫码加入交流社群
+    </p>
   </aside>
   <script src="./assets/js/config.js"></script>
   <script>
