@@ -349,7 +349,8 @@
       <p>
         这个示例允许选择演示模式或编辑模式并按 shareId
         创建实例。右侧内置公开的母版并可直接应用，也可以切换到手动输入母版
-        JSON 字符串后应用。
+        JSON 字符串后应用。通过 <code>?mode=editor</code> 可使用编辑模式，默认使用
+        <code>presentation</code> 演示模式。
       </p>
     </section>
 
@@ -438,11 +439,13 @@
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script src="./assets/js/config.js"></script>
   <script>
-    const {
-      baseUrl: BASE_URL,
-      appId: APP_ID,
-      shareId: DEFAULT_SHARE_ID,
-    } = window.ALGEO_CONFIG;
+    const { baseUrl: BASE_URL, appId: APP_ID } = window.ALGEO_CONFIG;
+    const DEFAULT_SHARE_ID = '0VP4B7WN';
+    const REQUESTED_MODE = new URLSearchParams(window.location.search).get(
+      'mode',
+    );
+    const INITIAL_MODE =
+      REQUESTED_MODE === 'editor' ? 'editor' : 'presentation';
     const TEMPLATE_SOURCES = [
       {
         name: '黑白试题风格',
@@ -476,11 +479,10 @@
     const clearManualBtn = document.getElementById('clearManualBtn');
 
     let instance = null;
-    let currentMode = 'presentation';
+    let currentMode = INITIAL_MODE;
     let templates = [];
     let activeTemplateIndex = -1;
-    let currentShareId = DEFAULT_SHARE_ID;
-
+    modeSelect.value = INITIAL_MODE;
     shareIdInput.value = DEFAULT_SHARE_ID;
     masterTemplatesLink.href =
       BASE_URL.replace(/\/$/, '') + '/master-templates';
@@ -599,7 +601,6 @@
       instance = await AlgeoSdk.create(container, options);
 
       currentMode = mode;
-      currentShareId = shareId;
       setStatus(modeName + '已就绪', 'success');
       log(modeName + '初始化完成，shareId：' + shareId);
     }
