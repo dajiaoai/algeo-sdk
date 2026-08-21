@@ -443,132 +443,14 @@
       appId: APP_ID,
       shareId: DEFAULT_SHARE_ID,
     } = window.ALGEO_CONFIG;
-    const BUILTIN_TEMPLATES = [
+    const TEMPLATE_SOURCES = [
       {
         name: '黑白试题风格',
-        content: `{
-  "backgroundStyle": {
-    "background": {
-      "color": "#ffffff"
-    },
-    "grid": {},
-    "xaxis": {},
-    "yaxis": {}
-  },
-  "defaultStyle": {
-    "types": [
-      [
-        "Point",
-        {
-          "pointSize": 1,
-          "color": "#000000"
-        }
-      ],
-      [
-        "Segment",
-        {
-          "color": "#000000",
-          "lineOpacity": 100
-        }
-      ],
-      [
-        "Line",
-        {
-          "color": "#000000",
-          "lineOpacity": 100
-        }
-      ],
-      [
-        "Ray",
-        {
-          "lineOpacity": 100,
-          "color": "#000000"
-        }
-      ],
-      [
-        "Circle",
-        {
-          "color": "#000000",
-          "lineOpacity": 100
-        }
-      ],
-      [
-        "Ellipse",
-        {
-          "lineOpacity": 100,
-          "color": "#000000"
-        }
-      ],
-      [
-        "Arc",
-        {
-          "lineOpacity": 100,
-          "color": "#000000"
-        }
-      ],
-      [
-        "Angle",
-        {
-          "color": "#000000",
-          "regionOpacity": 0,
-          "angleSize": 10
-        }
-      ],
-      [
-        "Polygon",
-        {
-          "color": "#ffffff",
-          "lineWidth": 2,
-          "lineDash": "solid",
-          "lineOpacity": 100,
-          "regionOpacity": 1
-        }
-      ],
-      [
-        "Curve",
-        {
-          "lineOpacity": 100,
-          "color": "#000000"
-        }
-      ]
-    ],
-    "typeLabels": [],
-    "textType": {},
-    "sliderType": {},
-    "buttonType": {}
-  },
-  "previewPngUrl": "https://dl.easeplay.vip/algeo/68550f5b84833f05f53dbe10/7962c70d-master_preview_20260617_122743.png",
-  "metadata": {
-    "exportedAt": "2026-06-17T04:27:43.779Z",
-    "version": "1"
-  }
-}`,
+        url: 'https://luhuidev.oss-cn-beijing.aliyuncs.com/dino/260821-%E9%BB%91%E7%99%BD%E8%AF%95%E9%A2%98%E9%A3%8E%E6%A0%BC.json',
       },
       {
         name: '网格作图',
-        content: `{
-  "backgroundStyle": {
-    "background": {},
-    "grid": {
-      "show": true,
-      "capturingMode": "grid",
-      "distanceMode": "auto",
-      "locking": false
-    },
-    "xaxis": {},
-    "yaxis": {}
-  },
-  "defaultStyle": {
-    "types": [],
-    "typeLabels": [],
-    "textType": {}
-  },
-  "previewPngUrl": "https://dl.easeplay.vip/algeo/68550f5b84833f05f53dbe10/3f25eaba-master_preview_20260318_145746.png",
-  "metadata": {
-    "exportedAt": "2026-03-18T06:57:46.623Z",
-    "version": "1"
-  }
-}`,
+        url: 'https://luhuidev.oss-cn-beijing.aliyuncs.com/dino/260821-%E7%BD%91%E6%A0%BC%E4%BD%9C%E5%9B%BE.json',
       },
     ];
 
@@ -595,7 +477,7 @@
 
     let instance = null;
     let currentMode = 'presentation';
-    let templates = BUILTIN_TEMPLATES;
+    let templates = [];
     let activeTemplateIndex = -1;
     let currentShareId = DEFAULT_SHARE_ID;
 
@@ -660,6 +542,26 @@
           );
         })
         .join('');
+    }
+
+    async function loadTemplates() {
+      setStatus('正在加载示例母版...');
+
+      templates = await Promise.all(
+        TEMPLATE_SOURCES.map(async ({ name, url }) => {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(name + '加载失败（HTTP ' + response.status + '）');
+          }
+
+          const content = await response.text();
+          JSON.parse(content);
+          return { name, content };
+        }),
+      );
+
+      renderTemplates();
+      log('示例母版加载完成：' + templates.map(({ name }) => name).join('、'));
     }
 
     function updateModeDescription(mode) {
@@ -805,7 +707,10 @@
 
     renderTemplates();
     updateModeDescription(modeSelect.value);
-    createInstance(modeSelect.value, DEFAULT_SHARE_ID).catch((error) => {
+    Promise.all([
+      loadTemplates(),
+      createInstance(modeSelect.value, DEFAULT_SHARE_ID),
+    ]).catch((error) => {
       const message = error instanceof Error ? error.message : String(error);
       setStatus(message, 'error');
       log('初始化失败：' + message);
