@@ -94,7 +94,7 @@
 
     .load-form {
       display: grid;
-      grid-template-columns: minmax(180px, 1fr) auto;
+      grid-template-columns: minmax(120px, 0.65fr) minmax(180px, 1fr) auto;
       gap: 10px;
       align-items: end;
     }
@@ -109,6 +109,7 @@
     }
 
     input,
+    select,
     textarea {
       width: 100%;
       padding: 10px 12px;
@@ -130,6 +131,7 @@
     }
 
     input:focus,
+    select:focus,
     textarea:focus {
       border-color: rgba(17, 104, 234, 0.5);
       box-shadow: 0 0 0 3px rgba(17, 104, 234, 0.1);
@@ -345,8 +347,8 @@
     <section class="hero">
       <h1>15 应用母版风格</h1>
       <p>
-        这个示例允许按 shareId
-        创建演示实例，右侧内置公开的母版并可直接应用，也可以切换到手动输入母版
+        这个示例允许选择演示模式或编辑模式并按 shareId
+        创建实例。右侧内置公开的母版并可直接应用，也可以切换到手动输入母版
         JSON 字符串后应用。
       </p>
     </section>
@@ -355,17 +357,25 @@
       <section class="card embed">
         <div class="embed-header">
           <div>
-            <strong>Embedded Presentation</strong>
+            <strong id="instanceTitle">Embedded Presentation</strong>
             <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.84rem">
               当前示例调用
-              <code>presentation.mode.setMasterTemplate(templateContent)</code>
+              <code id="apiCall">presentation.mode.setMasterTemplate(templateContent)</code>
             </p>
           </div>
           <form class="load-form" id="shareForm">
             <label>
+              加载模式
+              <select id="modeSelect">
+                <option value="presentation">演示模式</option>
+                <option value="editor">编辑模式</option>
+              </select>
+            </label>
+            <label>
+              shareId
               <input id="shareIdInput" type="text" autocomplete="off" />
             </label>
-            <button class="primary" type="submit">加载 shareId</button>
+            <button class="primary" type="submit">加载实例</button>
           </form>
         </div>
         <div id="algeo-container"></div>
@@ -399,7 +409,7 @@
             <p>
               粘贴接口返回的
               <code>content</code>
-              字符串内容，点击后应用到演示内容的全部画板。
+              字符串内容，点击后应用到当前实例的全部画板。
             </p>
             <label>
               母版 JSON
@@ -566,7 +576,10 @@
     const statusEl = document.getElementById('status');
     const logsEl = document.getElementById('logs');
     const shareForm = document.getElementById('shareForm');
+    const modeSelect = document.getElementById('modeSelect');
     const shareIdInput = document.getElementById('shareIdInput');
+    const instanceTitle = document.getElementById('instanceTitle');
+    const apiCall = document.getElementById('apiCall');
     const tabs = Array.from(document.querySelectorAll('[data-tab]'));
     const systemPanel = document.getElementById('systemPanel');
     const manualPanel = document.getElementById('manualPanel');
@@ -580,7 +593,8 @@
     const applyManualBtn = document.getElementById('applyManualBtn');
     const clearManualBtn = document.getElementById('clearManualBtn');
 
-    let presentation = null;
+    let instance = null;
+    let currentMode = 'presentation';
     let templates = BUILTIN_TEMPLATES;
     let activeTemplateIndex = -1;
     let currentShareId = DEFAULT_SHARE_ID;
@@ -648,34 +662,49 @@
         .join('');
     }
 
-    async function createPresentationInstance(shareId) {
-      if (presentation && typeof presentation.destroy === 'function') {
-        await presentation.destroy();
+    function updateModeDescription(mode) {
+      const isEditor = mode === 'editor';
+      instanceTitle.textContent = isEditor
+        ? 'Embedded Editor'
+        : 'Embedded Presentation';
+      apiCall.textContent = isEditor
+        ? 'editor.mode.setMasterTemplate(templateContent)'
+        : 'presentation.mode.setMasterTemplate(templateContent)';
+    }
+
+    async function createInstance(mode, shareId) {
+      if (instance && typeof instance.destroy === 'function') {
+        await instance.destroy();
       }
 
       container.innerHTML = '';
-      presentation = null;
+      instance = null;
       activeTemplateIndex = -1;
       renderTemplates();
-      setStatus('正在创建演示实例...');
+      updateModeDescription(mode);
+      const modeName = mode === 'editor' ? '编辑器' : '演示实例';
+      setStatus('正在创建' + modeName + '...');
 
-      presentation = await AlgeoSdk.create(container, {
-        mode: 'presentation',
+      const options = {
+        mode,
         baseUrl: BASE_URL,
-        presentation: {
-          auth: { appId: APP_ID },
-          shareId,
-        },
-      });
+      };
+      options[mode] = {
+        auth: { appId: APP_ID },
+        shareId,
+        ...(mode === 'editor' ? { ui: { navbar: false } } : {}),
+      };
+      instance = await AlgeoSdk.create(container, options);
 
+      currentMode = mode;
       currentShareId = shareId;
-      setStatus('演示实例已就绪', 'success');
-      log('演示实例初始化完成');
+      setStatus(modeName + '已就绪', 'success');
+      log(modeName + '初始化完成，shareId：' + shareId);
     }
 
     async function applyTemplateContent(templateContent, label) {
-      if (!presentation) {
-        setStatus('演示实例尚未初始化', 'error');
+      if (!instance) {
+        setStatus('实例尚未初始化', 'error');
         return;
       }
 
@@ -694,9 +723,14 @@
       setStatus('正在应用母版：' + label);
 
       try {
-        await presentation.mode.setMasterTemplate(templateContent);
+        await instance.mode.setMasterTemplate(templateContent);
         setStatus('母版已应用到所有画板：' + label, 'success');
-        log('已应用母版：' + label);
+        log(
+          '已在' +
+          (currentMode === 'editor' ? '编辑模式' : '演示模式') +
+          '应用母版：' +
+          label,
+        );
       } catch (error) {
         const message =
           error instanceof Error ? error.message : String(error);
@@ -726,16 +760,17 @@
 
     shareForm.addEventListener('submit', (event) => {
       event.preventDefault();
+      const mode = modeSelect.value;
       const shareId = shareIdInput.value.trim();
       if (!shareId) {
         setStatus('请输入 shareId', 'error');
         return;
       }
 
-      createPresentationInstance(shareId).catch((error) => {
+      createInstance(mode, shareId).catch((error) => {
         const message =
           error instanceof Error ? error.message : String(error);
-        presentation = null;
+        instance = null;
         setStatus('加载 shareId 失败：' + message, 'error');
         log('加载 shareId 失败：' + message);
       });
@@ -760,8 +795,17 @@
       setStatus('已清空手动母版输入');
     });
 
+    modeSelect.addEventListener('change', () => {
+      setStatus(
+        '已选择' +
+        (modeSelect.value === 'editor' ? '编辑模式' : '演示模式') +
+        '，点击“加载实例”后生效',
+      );
+    });
+
     renderTemplates();
-    createPresentationInstance(DEFAULT_SHARE_ID).catch((error) => {
+    updateModeDescription(modeSelect.value);
+    createInstance(modeSelect.value, DEFAULT_SHARE_ID).catch((error) => {
       const message = error instanceof Error ? error.message : String(error);
       setStatus(message, 'error');
       log('初始化失败：' + message);
