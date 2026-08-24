@@ -38,6 +38,7 @@ import {
   type SlideIndexResult,
   type SlidesApi,
   type SwitchSlideResult,
+  validateFontConfig,
 } from './shared';
 
 export class EmbeddedEditor extends EmbeddedTarget<
@@ -192,11 +193,19 @@ export class EmbeddedEditor extends EmbeddedTarget<
     this.uiConfig = options.ui ? { ...options.ui } : {};
     this.resourceLibrary = options.resourceLibrary;
 
+    if (options.fonts) {
+      validateFontConfig(options.fonts);
+    }
+
     await this.init({
       baseUrl,
       auth: options.auth,
       initialId: options.shareId,
     });
+
+    if (options.fonts) {
+      await this.post('setFontConfig', { config: options.fonts });
+    }
 
     await this.post('setResourceLibraryAvailability', {
       available: Boolean(this.resourceLibrary),
@@ -360,10 +369,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
         (!Array.isArray(params.mediaTypes) ||
           params.mediaTypes.some((value) => typeof value !== 'string')))
     ) {
-      throw new AlgeoError(
-        '资源库查询参数无效',
-        EMBED_ERROR_CODES.BAD_REQUEST,
-      );
+      throw new AlgeoError('资源库查询参数无效', EMBED_ERROR_CODES.BAD_REQUEST);
     }
   }
 
@@ -372,10 +378,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
     params: ResourceLibraryQuery,
   ): void {
     const invalid = () => {
-      throw new AlgeoError(
-        '资源数据格式无效',
-        EMBED_ERROR_CODES.BAD_REQUEST,
-      );
+      throw new AlgeoError('资源数据格式无效', EMBED_ERROR_CODES.BAD_REQUEST);
     };
     if (!result || !Array.isArray(result.items) || !result.pageInfo) invalid();
     const pageInfo = result.pageInfo;
@@ -385,7 +388,8 @@ export class EmbeddedEditor extends EmbeddedTarget<
       typeof pageInfo.hasNext !== 'boolean' ||
       (pageInfo.total !== undefined &&
         (!Number.isInteger(pageInfo.total) || pageInfo.total < 0))
-    ) invalid();
+    )
+      invalid();
 
     const ids = new Set<string>();
     for (const item of result.items) {
@@ -400,7 +404,8 @@ export class EmbeddedEditor extends EmbeddedTarget<
         !item.mediaType.startsWith('image/') ||
         !this.isHttpUrl(item.url) ||
         (item.thumbnailUrl !== undefined && !this.isHttpUrl(item.thumbnailUrl))
-      ) invalid();
+      )
+        invalid();
       ids.add(item.id);
       for (const value of [item.width, item.height, item.size]) {
         if (value !== undefined && (!Number.isInteger(value) || value <= 0)) {

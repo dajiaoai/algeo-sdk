@@ -315,6 +315,7 @@ type AlgeoCreateOptions =
 | `shareId`        | `string`                       | `''`   | 编辑模式初始分享 ID，会映射到 `/embed/edit/:appId/:id` |
 | `initialContent` | `FileContentLatest`            | -      | 初始化后自动注入的文件内容                             |
 | `ui`             | `Partial<AlgeoEditorUiConfig>` | -      | 编辑器 UI 开关配置                                     |
+| `fonts`          | `AlgeoFontConfig`              | -      | 字体资源、字体选择器列表及默认字体配置                 |
 
 **AlgeoEditorUiConfig：**
 
@@ -335,6 +336,7 @@ type AlgeoCreateOptions =
 | `auth`    | `{ appId: string }`                  | -      | 演示模式鉴权参数，`appId` 用于路由及白名单校验            |
 | `shareId` | `string`                             | `''`   | 演示模式初始分享 ID，会映射到 `/embed/present/:appId/:id` |
 | `ui`      | `Partial<AlgeoPresentationUiConfig>` | -      | 演示模式 UI 配置                                          |
+| `fonts`   | `AlgeoFontConfig`                    | -      | 字体资源及默认字体配置                                    |
 
 **AlgeoPresentationUiConfig：**
 
@@ -344,6 +346,58 @@ type AlgeoCreateOptions =
 | `slidePanel`    | `boolean` | `true` | 是否展示画板管理器 |
 | `pencilToolbar` | `boolean` | `true` | 是否展示教具栏     |
 | `zoomControl`   | `boolean` | `true` | 是否展示缩放栏     |
+
+**AlgeoFontConfig：**
+
+编辑和演示模式使用同一套字体协议。SDK 在 iframe ready 后、其他初始化操作前发送字体配置。通常使用 URL 加载字体；字体 URL 无法满足跨域要求时，可以传入 base64。
+
+```typescript
+interface AlgeoFontConfig {
+  resources?: AlgeoFontResource[];
+  catalog?: AlgeoFontOption[];
+  defaultFont?: string;
+}
+
+interface AlgeoFontResource {
+  key: string;
+  source:
+    | { type: 'url'; url: string; format?: AlgeoFontFormat }
+    | {
+        type: 'base64';
+        data: string;
+        mimeType?: string;
+        format?: AlgeoFontFormat;
+      };
+}
+
+interface AlgeoFontOption {
+  key: string;
+  name: string;
+  type?: 'custom' | 'system';
+}
+```
+
+`key` 同时作为 FontFace family、CSS `font-family` 和文档字体标识。字重、字号、斜体等属于文档排版内容，不在字体配置中传递。
+
+```javascript
+const fonts = {
+  resources: [
+    {
+      key: 'brand-sans',
+      source: {
+        type: 'url',
+        url: 'https://cdn.example.com/brand-sans.woff2',
+        format: 'woff2',
+      },
+    },
+  ],
+  catalog: [
+    { key: 'brand-sans', name: '品牌字体' },
+    { key: 'sans-serif', name: '系统非衬线字体', type: 'system' },
+  ],
+  defaultFont: 'brand-sans',
+};
+```
 
 默认路径规则：
 

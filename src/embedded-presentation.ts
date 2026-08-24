@@ -13,6 +13,7 @@ import {
   type PresentationModeApi,
   type ReplResult,
   type SwitchSlideResult,
+  validateFontConfig,
 } from './shared';
 
 export class EmbeddedPresentation extends EmbeddedTarget<
@@ -64,11 +65,19 @@ export class EmbeddedPresentation extends EmbeddedTarget<
       ...options.ui,
     };
 
+    if (options.fonts) {
+      validateFontConfig(options.fonts);
+    }
+
     await this.init({
       baseUrl,
       auth: options.auth,
       initialId: options.shareId,
     });
+
+    if (options.fonts) {
+      await this.post('setFontConfig', { config: options.fonts });
+    }
 
     await this.mode.setUiConfig(this.uiConfig);
   }

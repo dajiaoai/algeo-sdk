@@ -33,6 +33,39 @@ export interface AlgeoPresentationUiConfig {
     pencilToolbar?: boolean;
     zoomControl?: boolean;
 }
+export type AlgeoFontFormat = 'woff2' | 'woff' | 'truetype' | 'opentype';
+export type AlgeoFontSource = {
+    type: 'url';
+    url: string;
+    format?: AlgeoFontFormat;
+} | {
+    type: 'base64';
+    /** 支持纯 base64 字符串或完整的 data URL。 */
+    data: string;
+    mimeType?: string;
+    format?: AlgeoFontFormat;
+};
+export interface AlgeoFontResource {
+    /** 字体标识，同时作为 FontFace family、CSS font-family 和文档字体标识。 */
+    key: string;
+    source: AlgeoFontSource;
+}
+export interface AlgeoFontOption {
+    /** 对应自定义字体资源的 key，或系统 font-family。 */
+    key: string;
+    /** 字体选择器中的展示名称。 */
+    name: string;
+    /** 默认 custom；system 类型不要求存在对应字体资源。 */
+    type?: 'custom' | 'system';
+}
+export interface AlgeoFontConfig {
+    /** 需要在内嵌页面中加载并注册的字体文件。 */
+    resources?: AlgeoFontResource[];
+    /** 编辑器字体选择器中展示的字体及顺序。 */
+    catalog?: AlgeoFontOption[];
+    /** 新建文本使用的默认字体 key。 */
+    defaultFont?: string;
+}
 export type AlgeoEditorSaveResult = {
     status: 'success';
 } | {
@@ -44,6 +77,8 @@ export interface AlgeoEditorCreateOptions {
     shareId?: string;
     initialContent?: FileContentLatest;
     ui?: AlgeoEditorUiConfig;
+    /** 字体资源、字体选择器列表及默认字体配置。 */
+    fonts?: AlgeoFontConfig;
     /** 接入方提供的只读图片资源库。 */
     resourceLibrary?: ResourceLibraryProvider;
 }
@@ -85,6 +120,8 @@ export interface AlgeoPresentationCreateOptions {
     auth?: AlgeoEditorAuthOptions;
     shareId?: string;
     ui?: AlgeoPresentationUiConfig;
+    /** 字体资源及默认字体配置。 */
+    fonts?: AlgeoFontConfig;
 }
 export type AlgeoCreateOptions = {
     baseUrl?: string;
@@ -373,6 +410,7 @@ export interface PresentationModeApi {
     setMasterTemplate(template: string): Promise<SetMasterTemplateResult>;
 }
 export declare function generateRequestId(): string;
+export declare function validateFontConfig(config: AlgeoFontConfig): void;
 export declare function isResponseMessage(msg: unknown): msg is EmbedResponseMessage;
 export declare function isReadyMessage(msg: unknown): msg is EmbedReadyMessage;
 export type EmbedEventMessage = ContentChangeEvent | SlideChangeEvent | SaveSuccessEvent | AiCancelEvent;

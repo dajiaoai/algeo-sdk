@@ -4015,7 +4015,7 @@
     }
 
     /** SDK 版本号，构建时由 rollup 注入 */
-    const VERSION = '2.11.0';
+    const VERSION = '2.12.0';
     const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
     const DEFAULT_PRESENTATION_PATH = '/embed/present';
     const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4023,6 +4023,31 @@
     let requestIdCounter = 0;
     function generateRequestId() {
         return `req-${Date.now()}-${++requestIdCounter}`;
+    }
+    function validateFontConfig(config) {
+        const resourceKeys = new Set();
+        for (const resource of config.resources ?? []) {
+            const key = resource.key.trim();
+            if (!key) {
+                throw new AlgeoError('fonts.resources[].key 不能为空。', EMBED_ERROR_CODES.BAD_REQUEST);
+            }
+            resourceKeys.add(key);
+        }
+        const catalogKeys = new Set();
+        for (const option of config.catalog ?? []) {
+            const key = option.key.trim();
+            if (!key || !option.name.trim()) {
+                throw new AlgeoError('fonts.catalog[] 的 key 和 name 不能为空。', EMBED_ERROR_CODES.BAD_REQUEST);
+            }
+            if ((option.type ?? 'custom') === 'custom' && !resourceKeys.has(key)) {
+                throw new AlgeoError(`自定义字体 ${key} 未提供对应的字体资源。`, EMBED_ERROR_CODES.BAD_REQUEST);
+            }
+            catalogKeys.add(key);
+        }
+        const defaultFont = config.defaultFont?.trim();
+        if (defaultFont && config.catalog && !catalogKeys.has(defaultFont)) {
+            throw new AlgeoError(`默认字体 ${defaultFont} 不在 fonts.catalog 中。`, EMBED_ERROR_CODES.BAD_REQUEST);
+        }
     }
     function isResponseMessage(msg) {
         return (typeof msg === 'object' &&
@@ -4406,11 +4431,17 @@
                 zoomControl: true,
                 ...options.ui,
             };
+            if (options.fonts) {
+                validateFontConfig(options.fonts);
+            }
             await this.init({
                 baseUrl,
                 auth: options.auth,
                 initialId: options.shareId,
             });
+            if (options.fonts) {
+                await this.post('setFontConfig', { config: options.fonts });
+            }
             await this.mode.setUiConfig(this.uiConfig);
         }
         acceptsEventMessage() {
@@ -4572,11 +4603,17 @@
             }
             this.uiConfig = options.ui ? { ...options.ui } : {};
             this.resourceLibrary = options.resourceLibrary;
+            if (options.fonts) {
+                validateFontConfig(options.fonts);
+            }
             await this.init({
                 baseUrl,
                 auth: options.auth,
                 initialId: options.shareId,
             });
+            if (options.fonts) {
+                await this.post('setFontConfig', { config: options.fonts });
+            }
             await this.post('setResourceLibraryAvailability', {
                 available: Boolean(this.resourceLibrary),
             });

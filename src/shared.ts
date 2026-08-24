@@ -62,6 +62,46 @@ export interface AlgeoPresentationUiConfig {
   zoomControl?: boolean;
 }
 
+export type AlgeoFontFormat = 'woff2' | 'woff' | 'truetype' | 'opentype';
+
+export type AlgeoFontSource =
+  | {
+      type: 'url';
+      url: string;
+      format?: AlgeoFontFormat;
+    }
+  | {
+      type: 'base64';
+      /** 支持纯 base64 字符串或完整的 data URL。 */
+      data: string;
+      mimeType?: string;
+      format?: AlgeoFontFormat;
+    };
+
+export interface AlgeoFontResource {
+  /** 字体标识，同时作为 FontFace family、CSS font-family 和文档字体标识。 */
+  key: string;
+  source: AlgeoFontSource;
+}
+
+export interface AlgeoFontOption {
+  /** 对应自定义字体资源的 key，或系统 font-family。 */
+  key: string;
+  /** 字体选择器中的展示名称。 */
+  name: string;
+  /** 默认 custom；system 类型不要求存在对应字体资源。 */
+  type?: 'custom' | 'system';
+}
+
+export interface AlgeoFontConfig {
+  /** 需要在内嵌页面中加载并注册的字体文件。 */
+  resources?: AlgeoFontResource[];
+  /** 编辑器字体选择器中展示的字体及顺序。 */
+  catalog?: AlgeoFontOption[];
+  /** 新建文本使用的默认字体 key。 */
+  defaultFont?: string;
+}
+
 export type AlgeoEditorSaveResult =
   | {
       status: 'success';
@@ -76,6 +116,8 @@ export interface AlgeoEditorCreateOptions {
   shareId?: string;
   initialContent?: FileContentLatest;
   ui?: AlgeoEditorUiConfig;
+  /** 字体资源、字体选择器列表及默认字体配置。 */
+  fonts?: AlgeoFontConfig;
   /** 接入方提供的只读图片资源库。 */
   resourceLibrary?: ResourceLibraryProvider;
 }
@@ -127,6 +169,8 @@ export interface AlgeoPresentationCreateOptions {
   auth?: AlgeoEditorAuthOptions;
   shareId?: string;
   ui?: AlgeoPresentationUiConfig;
+  /** 字体资源及默认字体配置。 */
+  fonts?: AlgeoFontConfig;
 }
 
 export type AlgeoCreateOptions =
@@ -476,6 +520,47 @@ let requestIdCounter = 0;
 
 export function generateRequestId(): string {
   return `req-${Date.now()}-${++requestIdCounter}`;
+}
+
+export function validateFontConfig(config: AlgeoFontConfig): void {
+  const resourceKeys = new Set<string>();
+
+  for (const resource of config.resources ?? []) {
+    const key = resource.key.trim();
+    if (!key) {
+      throw new AlgeoError(
+        'fonts.resources[].key 不能为空。',
+        EMBED_ERROR_CODES.BAD_REQUEST,
+      );
+    }
+    resourceKeys.add(key);
+  }
+
+  const catalogKeys = new Set<string>();
+  for (const option of config.catalog ?? []) {
+    const key = option.key.trim();
+    if (!key || !option.name.trim()) {
+      throw new AlgeoError(
+        'fonts.catalog[] 的 key 和 name 不能为空。',
+        EMBED_ERROR_CODES.BAD_REQUEST,
+      );
+    }
+    if ((option.type ?? 'custom') === 'custom' && !resourceKeys.has(key)) {
+      throw new AlgeoError(
+        `自定义字体 ${key} 未提供对应的字体资源。`,
+        EMBED_ERROR_CODES.BAD_REQUEST,
+      );
+    }
+    catalogKeys.add(key);
+  }
+
+  const defaultFont = config.defaultFont?.trim();
+  if (defaultFont && config.catalog && !catalogKeys.has(defaultFont)) {
+    throw new AlgeoError(
+      `默认字体 ${defaultFont} 不在 fonts.catalog 中。`,
+      EMBED_ERROR_CODES.BAD_REQUEST,
+    );
+  }
 }
 
 export function isResponseMessage(msg: unknown): msg is EmbedResponseMessage {
