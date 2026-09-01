@@ -262,6 +262,19 @@ export interface ExportViewBounds {
      */
     scale?: number;
 }
+/**
+ * 3D 画板的导出相机覆盖项。未提供的字段沿用画板当前 camera3d。
+ */
+export interface ExportViewCamera3D {
+    offset?: [number, number, number];
+    pitch?: number;
+    yaw?: number;
+    scale?: number;
+    /** 3D 导出视野的世界坐标宽度。 */
+    width: number;
+    /** 3D 导出视野的世界坐标高度。 */
+    height: number;
+}
 /** 导出留白，单位为输出像素 px。 */
 export type ExportPadding = number | {
     horizontal?: number;
@@ -292,7 +305,10 @@ export interface ExportImageSizeMode extends ExportImageBaseOptions {
  */
 export interface ExportImageViewMode extends ExportImageBaseOptions {
     mode: 'view';
-    viewBounds: ExportViewBounds;
+    /** 2D 画板的世界坐标视野。 */
+    viewBounds?: ExportViewBounds;
+    /** 3D 画板的相机视野。 */
+    viewCamera3d?: ExportViewCamera3D;
     pixelRatio?: number;
 }
 /**
