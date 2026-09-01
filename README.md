@@ -582,7 +582,7 @@ interface FileContent {
 
 所有模式均读取文件中的 `camera.scale`；文件未提供时默认为 `50`。`slideIndices` 使用从 `1` 开始的画板索引，省略时导出全部画板。
 
-适合精确导出一个世界坐标视野时使用 `view`：
+适合精确指定导出视野时使用 `view`。2D 画板传 `viewBounds`：
 
 ```ts
 const images = await editor.slides.exportImage({
@@ -595,6 +595,27 @@ const images = await editor.slides.exportImage({
 ```
 
 `viewBounds` 的位置和宽高均为世界坐标，`scale` 为可选的相机缩放比例。省略 `scale` 时使用目标画板文件中的 `camera.scale`。
+
+3D 画板传同级的 `viewCamera3d`。其中 `width`、`height` 必填；`width`、`height` 为世界坐标视野范围。`offset`、`yaw`、`pitch`、`scale` 可选且省略时沿用文件相机；投影方式与斜投影参数始终沿用画板文件。
+
+```ts
+const images = await editor.slides.exportImage({
+  mode: 'view',
+  slideIndices: [2],
+  format: 'png',
+  viewCamera3d: {
+    offset: [0, 0, 0],
+    yaw: Math.PI / 4,
+    pitch: Math.PI / 6,
+    scale: 0.2,
+    width: 12,
+    height: 8,
+  },
+  pixelRatio: 2,
+});
+```
+
+一个 `view` 请求可以同时传 `viewBounds` 与 `viewCamera3d`，用于批量导出混合 2D/3D 画板；每张画板自动读取适用字段。2D 画板未提供 `viewBounds`、或 3D 画板未提供 `viewCamera3d` 时会报错。3D 仅支持 PNG、JPG；对 3D 画板请求 SVG 会报错。
 
 适合完整包住全部内容且不限定最终宽高时使用 `contain`：
 

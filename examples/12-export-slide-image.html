@@ -79,6 +79,12 @@
       overflow: hidden;
     }
 
+    .editor-column {
+      display: grid;
+      min-width: 0;
+      gap: 16px;
+    }
+
     .embed-header {
       display: flex;
       justify-content: space-between;
@@ -172,11 +178,33 @@
       gap: 10px;
     }
 
-    .field-grid label {
+    .field-grid label,
+    .mode-fields>label,
+    .field-group label {
       display: grid;
       gap: 6px;
       font-size: 0.875rem;
       font-weight: 600;
+    }
+
+    .required-mark {
+      margin-right: 2px;
+      color: var(--danger);
+    }
+
+    .field-group {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .field-group-title {
+      color: var(--text);
+      font-size: 0.82rem;
+      font-weight: 700;
     }
 
     input,
@@ -556,31 +584,38 @@
     </section>
 
     <div class="layout">
-      <section class="card embed">
-        <div class="embed-header">
-          <div>
-            <strong>Embedded Editor</strong>
+      <div class="editor-column">
+        <section class="card embed">
+          <div class="embed-header">
+            <div>
+              <strong>Embedded Editor</strong>
+            </div>
+            <div class="embed-actions">
+              <button class="secondary" id="importBtn">导入文件</button>
+              <button class="secondary" id="reloadBtn">初始化空白画板</button>
+              <input type="file" id="fileInput" accept=".json,.algeo,application/json" />
+            </div>
           </div>
-          <div class="embed-actions">
-            <button class="secondary" id="importBtn">导入文件</button>
-            <button class="secondary" id="reloadBtn">初始化空白画板</button>
-            <input type="file" id="fileInput" accept=".json,.algeo,application/json" />
+          <div id="algeo-container"></div>
+          <div class="export-guide" role="note" aria-label="导出模式选择建议">
+            <div class="export-guide-title">导出模式选择建议</div>
+            <p>
+              <strong>函数图形：</strong>推荐使用 <code>view</code>
+              模式，通过 <code>viewBounds</code>
+              明确指定坐标范围，确保导出的函数视野、坐标轴和网格符合预期。
+            </p>
+            <p>
+              <strong>几何图形：</strong>推荐使用 <code>contain</code>
+              模式，根据可见图元自动计算包围盒并将图形居中；图形位置或大小变化后，通常无需重新调整导出范围。
+            </p>
           </div>
-        </div>
-        <div id="algeo-container"></div>
-        <div class="export-guide" role="note" aria-label="导出模式选择建议">
-          <div class="export-guide-title">导出模式选择建议</div>
-          <p>
-            <strong>函数图形：</strong>推荐使用 <code>view</code>
-            模式，通过 <code>viewBounds</code>
-            明确指定坐标范围，确保导出的函数视野、坐标轴和网格符合预期。
-          </p>
-          <p>
-            <strong>几何图形：</strong>推荐使用 <code>contain</code>
-            模式，根据可见图元自动计算包围盒并将图形居中；图形位置或大小变化后，通常无需重新调整导出范围。
-          </p>
-        </div>
-      </section>
+        </section>
+
+        <section class="card section">
+          <h2>日志</h2>
+          <div class="logs" id="logs"><span class="log-empty">等待操作...</span></div>
+        </section>
+      </div>
 
       <div class="sidebar">
         <section class="card section hidden" id="exportResultSection">
@@ -593,8 +628,7 @@
           <h2>
             导出方式
             <span class="info-icon" tabindex="0" role="note" aria-label="导出方式说明">i<span
-                class="info-tip"><strong>view</strong>：需要精确导出某个世界坐标视野时使用；输出尺寸由 viewBounds ×
-                viewBounds.scale × pixelRatio 计算，scale 留空时使用文件 camera.scale。<br /><strong>contain</strong>：需要完整包住全部内容且不限定最终宽高时使用；输出尺寸由内容包围盒
+                class="info-tip"><strong>view</strong>：2D 画板使用 viewBounds 指定世界坐标视野；3D 画板使用 viewCamera3d 指定相机与世界坐标视野。<br /><strong>contain</strong>：需要完整包住全部内容且不限定最终宽高时使用；输出尺寸由内容包围盒
                 × 文件 camera.scale × pixelRatio，再加四周绝对 px padding
                 计算。<br /><strong>size</strong>：需要固定最终输出宽高时使用；扣除四周 minPadding
                 后，根据内容可视包围盒自动计算
@@ -621,6 +655,7 @@
                 <input id="slideIndicesInput" placeholder="例如：1,3" />
               </label>
             </div>
+            <div class="hint"><span class="required-mark" aria-hidden="true">*</span>必填项</div>
 
             <div class="field-grid" id="commonImageFields" style="margin-top: 10px">
               <label>格式
@@ -636,10 +671,10 @@
             </div>
 
             <div class="mode-fields" data-for="size">
-              <label>输出框宽度像素
+              <label><span><span class="required-mark" aria-hidden="true">*</span>输出框宽度像素</span>
                 <input id="widthInput" type="number" min="1" step="1" value="1200" />
               </label>
-              <label>输出框高度像素
+              <label><span><span class="required-mark" aria-hidden="true">*</span>输出框高度像素</span>
                 <input id="heightInput" type="number" min="1" step="1" value="900" />
               </label>
               <label>最小留白·水平（每侧像素）
@@ -654,21 +689,44 @@
               <label>pixelRatio（缩放比例，可选）
                 <input id="viewPixelRatioInput" type="number" min="0.1" step="0.1" value="1" />
               </label>
-              <label>视野 X（世界坐标）
-                <input id="vbXInput" type="number" step="1" value="-5" />
-              </label>
-              <label>视野 Y（世界坐标）
-                <input id="vbYInput" type="number" step="1" value="-5" />
-              </label>
-              <label>视野宽度（世界坐标）
-                <input id="vbWInput" type="number" min="1" step="1" value="10" />
-              </label>
-              <label>视野高度（世界坐标）
-                <input id="vbHInput" type="number" min="1" step="1" value="10" />
-              </label>
-              <label>相机 scale（可选，留空读取画板文件）
-                <input id="vbScaleInput" type="number" min="0.1" step="0.1" placeholder="camera.scale" />
-              </label>
+              <div class="segmented" id="viewDimensionSwitch" style="grid-column: 1 / -1">
+                <button data-dimension="2d" class="active">2D 画板</button>
+                <button data-dimension="3d">3D 画板</button>
+              </div>
+              <div class="field-grid" data-view-dimension="2d" style="grid-column: 1 / -1">
+                <label><span><span class="required-mark" aria-hidden="true">*</span>视野 X（世界坐标）</span>
+                  <input id="vbXInput" type="number" step="1" value="-5" />
+                </label>
+                <label><span><span class="required-mark" aria-hidden="true">*</span>视野 Y（世界坐标）</span>
+                  <input id="vbYInput" type="number" step="1" value="-5" />
+                </label>
+                <label><span><span class="required-mark" aria-hidden="true">*</span>视野宽度（世界坐标）</span>
+                  <input id="vbWInput" type="number" min="1" step="1" value="10" />
+                </label>
+                <label><span><span class="required-mark" aria-hidden="true">*</span>视野高度（世界坐标）</span>
+                  <input id="vbHInput" type="number" min="1" step="1" value="10" />
+                </label>
+                <label>相机 scale（可选，留空读取画板文件）
+                  <input id="vbScaleInput" type="number" min="0.1" step="0.1" placeholder="camera.scale" />
+                </label>
+              </div>
+              <div class="field-grid hidden" data-view-dimension="3d" style="grid-column: 1 / -1">
+                <div class="field-group">
+                  <div class="field-group-title">必填视野</div>
+                  <label><span><span class="required-mark" aria-hidden="true">*</span>视野宽度（世界坐标）</span><input id="vc3dWidthInput" type="number" min="0.0001" step="0.1" value="12" /></label>
+                  <label><span><span class="required-mark" aria-hidden="true">*</span>视野高度（世界坐标）</span><input id="vc3dHeightInput" type="number" min="0.0001" step="0.1" value="8" /></label>
+                </div>
+                <div class="field-group">
+                  <div class="field-group-title">可选相机覆盖（留空读取画板文件）</div>
+                  <label>相机 offset X（世界坐标）<input id="vc3dOffsetXInput" type="number" step="0.1" placeholder="camera3d.offset[0]" /></label>
+                  <label>相机 offset Y（世界坐标）<input id="vc3dOffsetYInput" type="number" step="0.1" placeholder="camera3d.offset[1]" /></label>
+                  <label>相机 offset Z（世界坐标）<input id="vc3dOffsetZInput" type="number" step="0.1" placeholder="camera3d.offset[2]" /></label>
+                  <label>yaw（弧度）<input id="vc3dYawInput" type="number" step="0.01" placeholder="camera3d.yaw" /></label>
+                  <label>pitch（弧度）<input id="vc3dPitchInput" type="number" step="0.01" placeholder="camera3d.pitch" /></label>
+                  <label>scale<input id="vc3dScaleInput" type="number" min="0.0001" step="0.01" placeholder="camera3d.scale" /></label>
+                </div>
+                <div class="hint" style="grid-column: 1 / -1">3D 仅支持 PNG、JPG；投影方式及斜投影参数沿用画板文件。</div>
+              </div>
             </div>
 
             <div class="mode-fields hidden" data-for="contain">
@@ -710,10 +768,6 @@
           </div>
         </section>
 
-        <section class="card section">
-          <h2>日志</h2>
-          <div class="logs" id="logs"><span class="log-empty">等待操作...</span></div>
-        </section>
       </div>
     </div>
   </div>
@@ -742,6 +796,7 @@
 
     const modeSwitch = document.getElementById('modeSwitch');
     const viewSwitch = document.getElementById('viewSwitch');
+    const viewDimensionSwitch = document.getElementById('viewDimensionSwitch');
     const formView = document.getElementById('formView');
     const codeView = document.getElementById('codeView');
     const codePanel = document.getElementById('codePanel');
@@ -768,6 +823,14 @@
     const vbWInput = document.getElementById('vbWInput');
     const vbHInput = document.getElementById('vbHInput');
     const vbScaleInput = document.getElementById('vbScaleInput');
+    const vc3dOffsetXInput = document.getElementById('vc3dOffsetXInput');
+    const vc3dOffsetYInput = document.getElementById('vc3dOffsetYInput');
+    const vc3dOffsetZInput = document.getElementById('vc3dOffsetZInput');
+    const vc3dYawInput = document.getElementById('vc3dYawInput');
+    const vc3dPitchInput = document.getElementById('vc3dPitchInput');
+    const vc3dScaleInput = document.getElementById('vc3dScaleInput');
+    const vc3dWidthInput = document.getElementById('vc3dWidthInput');
+    const vc3dHeightInput = document.getElementById('vc3dHeightInput');
 
     const paddingHInput = document.getElementById('paddingHInput');
     const paddingVInput = document.getElementById('paddingVInput');
@@ -777,6 +840,7 @@
     let editor = null;
     let currentMode = 'view';
     let currentView = 'form';
+    let currentViewDimension = '2d';
     let latestResult = { kind: 'image', items: [] };
     let previewUrls = [];
     let hasLogs = false;
@@ -968,6 +1032,21 @@
           btn.getAttribute('data-mode') === currentMode,
         );
       });
+      applyViewDimensionVisibility();
+    }
+
+    function applyViewDimensionVisibility() {
+      const isViewMode = currentMode === 'view';
+      viewDimensionSwitch.classList.toggle('hidden', !isViewMode);
+      document.querySelectorAll('[data-view-dimension]').forEach((el) => {
+        el.classList.toggle(
+          'hidden',
+          !isViewMode || el.getAttribute('data-view-dimension') !== currentViewDimension,
+        );
+      });
+      document.querySelectorAll('#viewDimensionSwitch button').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-dimension') === currentViewDimension);
+      });
     }
 
     function applyViewVisibility() {
@@ -1045,15 +1124,27 @@
         lines.push(
           '  pixelRatio: ' + Number(viewPixelRatioInput.value) + ',',
         );
-        lines.push('  viewBounds: {');
-        lines.push('    x: ' + Number(vbXInput.value) + ',');
-        lines.push('    y: ' + Number(vbYInput.value) + ',');
-        lines.push('    width: ' + Number(vbWInput.value) + ',');
-        lines.push('    height: ' + Number(vbHInput.value) + ',');
-        if (vbScaleInput.value !== '') {
-          lines.push('    scale: ' + Number(vbScaleInput.value) + ',');
+        if (currentViewDimension === '2d') {
+          lines.push('  viewBounds: {');
+          lines.push('    x: ' + Number(vbXInput.value) + ',');
+          lines.push('    y: ' + Number(vbYInput.value) + ',');
+          lines.push('    width: ' + Number(vbWInput.value) + ',');
+          lines.push('    height: ' + Number(vbHInput.value) + ',');
+          if (vbScaleInput.value !== '') lines.push('    scale: ' + Number(vbScaleInput.value) + ',');
+          lines.push('  },');
+        } else {
+          lines.push('  viewCamera3d: {');
+          const offsetValues = [vc3dOffsetXInput.value, vc3dOffsetYInput.value, vc3dOffsetZInput.value];
+          if (offsetValues.some((value) => value !== '')) {
+            lines.push('    offset: [' + offsetValues.map(Number).join(', ') + '],');
+          }
+          if (vc3dYawInput.value !== '') lines.push('    yaw: ' + Number(vc3dYawInput.value) + ',');
+          if (vc3dPitchInput.value !== '') lines.push('    pitch: ' + Number(vc3dPitchInput.value) + ',');
+          lines.push('    width: ' + Number(vc3dWidthInput.value) + ',');
+          lines.push('    height: ' + Number(vc3dHeightInput.value) + ',');
+          if (vc3dScaleInput.value !== '') lines.push('    scale: ' + Number(vc3dScaleInput.value) + ',');
+          lines.push('  },');
         }
-        lines.push('  },');
       }
 
       lines.push('});');
@@ -1096,14 +1187,27 @@
         };
       } else if (currentMode === 'view') {
         options.pixelRatio = Number(viewPixelRatioInput.value);
-        options.viewBounds = {
-          x: Number(vbXInput.value),
-          y: Number(vbYInput.value),
-          width: Number(vbWInput.value),
-          height: Number(vbHInput.value),
-        };
-        if (vbScaleInput.value !== '') {
-          options.viewBounds.scale = Number(vbScaleInput.value);
+        if (currentViewDimension === '2d') {
+          options.viewBounds = {
+            x: Number(vbXInput.value),
+            y: Number(vbYInput.value),
+            width: Number(vbWInput.value),
+            height: Number(vbHInput.value),
+          };
+          if (vbScaleInput.value !== '') options.viewBounds.scale = Number(vbScaleInput.value);
+        } else {
+          const offsetValues = [vc3dOffsetXInput.value, vc3dOffsetYInput.value, vc3dOffsetZInput.value];
+          if (offsetValues.some((value) => value !== '') && offsetValues.some((value) => value === '')) {
+            throw new Error('3D 相机 offset 如需覆盖，请同时填写 X、Y、Z');
+          }
+          options.viewCamera3d = {
+            width: Number(vc3dWidthInput.value),
+            height: Number(vc3dHeightInput.value),
+          };
+          if (offsetValues.every((value) => value !== '')) options.viewCamera3d.offset = offsetValues.map(Number);
+          if (vc3dYawInput.value !== '') options.viewCamera3d.yaw = Number(vc3dYawInput.value);
+          if (vc3dPitchInput.value !== '') options.viewCamera3d.pitch = Number(vc3dPitchInput.value);
+          if (vc3dScaleInput.value !== '') options.viewCamera3d.scale = Number(vc3dScaleInput.value);
         }
       }
 
@@ -1254,6 +1358,14 @@
       }
     });
 
+    viewDimensionSwitch.addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-dimension]');
+      if (!btn) return;
+      currentViewDimension = btn.getAttribute('data-dimension');
+      applyViewDimensionVisibility();
+      if (currentView === 'code') codePanel.textContent = buildExportCode();
+    });
+
     viewSwitch.addEventListener('click', (event) => {
       const btn = event.target.closest('button[data-view]');
       if (!btn) {
@@ -1280,6 +1392,14 @@
       vbWInput,
       vbHInput,
       vbScaleInput,
+      vc3dOffsetXInput,
+      vc3dOffsetYInput,
+      vc3dOffsetZInput,
+      vc3dYawInput,
+      vc3dPitchInput,
+      vc3dScaleInput,
+      vc3dWidthInput,
+      vc3dHeightInput,
       paddingHInput,
       paddingVInput,
       standaloneSelect,

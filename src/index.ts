@@ -37,6 +37,7 @@ export type {
   ExportImageViewMode,
   ExportImageContainMode,
   ExportViewBounds,
+  ExportViewCamera3D,
   ExportPadding,
   ExportSlideImageOptions,
   ExportedSlideImage,
