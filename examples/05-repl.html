@@ -14,6 +14,10 @@
       font-family: system-ui, sans-serif;
       margin: 0;
       padding: 16px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     h1 {
@@ -70,13 +74,39 @@
       font-size: 0.875rem;
     }
 
+    .command-input {
+      flex: 1;
+      min-width: 200px;
+      min-height: 76px;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.875rem;
+      resize: vertical;
+    }
+
+    .repl-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 40%);
+      gap: 12px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .canvas-panel,
+    .log-panel {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
     .embed-wrap {
       border: 1px solid #e0e0e0;
       border-radius: 8px;
       overflow: hidden;
-      height: 320px;
       background: #fafafa;
-      margin-top: 12px;
+      height: 100%;
     }
 
     .embed-wrap>div {
@@ -85,7 +115,6 @@
     }
 
     .output {
-      margin-top: 12px;
       font-size: 0.8125rem;
       font-family: monospace;
       white-space: pre-wrap;
@@ -93,7 +122,8 @@
       color: #d4d4d4;
       padding: 12px;
       border-radius: 6px;
-      max-height: 200px;
+      flex: 1;
+      min-height: 0;
       overflow: auto;
     }
 
@@ -133,6 +163,26 @@
       color: #888;
       margin-top: 4px;
     }
+
+    @media (max-width: 800px) {
+      body {
+        height: auto;
+        min-height: 100vh;
+        overflow: auto;
+      }
+
+      .repl-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .embed-wrap {
+        height: 320px;
+      }
+
+      .output {
+        min-height: 200px;
+      }
+    }
   </style>
 </head>
 
@@ -141,26 +191,32 @@
   <h1>05 REPL</h1>
   <p class="desc">通过 sdk.repl(command) 执行 REPL 指令，获取面向 AI 的文档/文本内容。常用指令：help、list、list_slides、eval 等。</p>
 
-  <div class="toolbar" style="margin-bottom: 8px;">
-    <input type="text" id="shareIdInput" placeholder="输入分享 ID" style="max-width: 200px;">
-    <button class="primary" id="loadBtn">加载</button>
-  </div>
+  <div class="repl-layout">
+    <section class="canvas-panel">
+      <div class="embed-wrap">
+        <div id="algeo-container"></div>
+      </div>
+    </section>
 
-  <div class="toolbar">
-    <input type="text" id="commandInput" placeholder="输入 REPL 指令，如 help 或 list" value="help">
-    <button class="primary" id="runBtn">执行</button>
-    <button class="secondary" id="helpBtn">help</button>
-    <button class="secondary" id="listBtn">list</button>
-    <button class="secondary" id="listSlidesBtn">list_slides</button>
-  </div>
+    <section class="log-panel">
+      <div class="toolbar" style="margin-bottom: 8px;">
+        <input type="text" id="shareIdInput" placeholder="输入分享 ID" style="max-width: 200px;">
+        <button class="primary" id="loadBtn">加载</button>
+      </div>
 
-  <div class="embed-wrap">
-    <div id="algeo-container"></div>
-  </div>
+      <div class="toolbar">
+        <textarea class="command-input" id="commandInput" placeholder="每行输入一条 REPL 指令，如 help 或 list">help</textarea>
+        <button class="primary" id="runBtn">执行</button>
+        <button class="secondary" id="helpBtn">help</button>
+        <button class="secondary" id="listBtn">list</button>
+        <button class="secondary" id="listSlidesBtn">list_slides</button>
+      </div>
 
-  <div class="output empty" id="output">执行 REPL 指令后，输出将显示在此处（面向 AI 的文档/文本格式）</div>
-  <p class="hint">提示：需先加载内容（如通过 loadShareById 或 loadFile），list 等指令才有数据可查。</p>
-  <div class="log" id="log"></div>
+      <div class="output empty" id="output">执行 REPL 指令后，输出将显示在此处（面向 AI 的文档/文本格式）</div>
+      <p class="hint">提示：每行会分别执行一次；Enter 换行，Ctrl+Enter 发送。需先加载内容（如通过 loadShareById 或 loadFile），list 等指令才有数据可查。</p>
+      <div class="log" id="log"></div>
+    </section>
+  </div>
 
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script src="./assets/js/config.js"></script>
@@ -191,23 +247,29 @@
         },
       });
 
-      function runRepl(command) {
-        const cmd = (command || commandInput.value || '').trim();
-        if (!cmd) {
+      async function runRepl(command) {
+        const commands = (command === undefined ? commandInput.value : command)
+          .split(/\r?\n/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+        if (!commands.length) {
           log('请输入 REPL 指令', true);
           return;
         }
-        sdk.repl(cmd)
-          .then(({ output }) => {
-            outputEl.textContent = output || '(无输出)';
-            outputEl.classList.remove('empty');
-            log('repl 执行成功');
-          })
-          .catch((e) => {
-            outputEl.textContent = '错误: ' + (e.message || String(e));
-            outputEl.classList.remove('empty');
-            log('repl 失败: ' + e.message, true);
-          });
+        const results = [];
+        for (const cmd of commands) {
+          try {
+            const { output } = await sdk.repl(cmd);
+            results.push(`> ${cmd}\n${output || '(无输出)'}`);
+            log(`repl 执行成功: ${cmd}`);
+          } catch (e) {
+            const message = e.message || String(e);
+            results.push(`> ${cmd}\n错误: ${message}`);
+            log(`repl 失败: ${cmd} - ${message}`, true);
+          }
+        }
+        outputEl.textContent = results.join('\n\n');
+        outputEl.classList.remove('empty');
       }
 
       document.getElementById('loadBtn').onclick = () => {
@@ -227,7 +289,10 @@
       document.getElementById('listSlidesBtn').onclick = () => runRepl('list_slides');
 
       commandInput.onkeydown = (e) => {
-        if (e.key === 'Enter') runRepl();
+        if (e.key === 'Enter' && e.ctrlKey) {
+          e.preventDefault();
+          runRepl();
+        }
       };
     })();
   </script>
