@@ -341,11 +341,26 @@ export type ExportImageFormat = 'png' | 'jpg' | 'svg';
 /**
  * 导出的逻辑视野区域（世界坐标）。
  */
+/**
+ * 旧版 2D 导出视野（世界坐标）。使用时会调用兼容的 exportSlideImage 实现。
+ * @deprecated 请改用 ExportViewBound（left/top/right/bottom）。
+ */
 export interface ExportViewBounds {
   x: number;
   y: number;
   width: number;
   height: number;
+  scale?: number;
+}
+
+/**
+ * 2D 导出视野的四条世界坐标边界。
+ */
+export interface ExportViewBound {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
   /**
    * 相机缩放比例（每世界坐标单位对应的像素数）。
    * 省略时使用目标画板文件中的 camera.scale。
@@ -391,13 +406,18 @@ export interface ExportImageSizeMode extends ExportImageBaseOptions {
 }
 
 /**
- * 场景二（view）：viewBounds 的位置及宽高均为世界坐标。
+ * 场景二（view）：viewBound 的四条边界均为世界坐标。
  * scale 省略时从文件的 camera.scale 读取。
- * 输出像素 = viewBounds 世界尺寸 x viewBounds.scale x pixelRatio。
+ * 输出像素 = (right - left, bottom - top) x viewBound.scale x pixelRatio。
  */
 export interface ExportImageViewMode extends ExportImageBaseOptions {
   mode: 'view';
-  /** 2D 画板的世界坐标视野。 */
+  /** 2D 画板的世界坐标视野；使用新宿主导出实现。 */
+  viewBound?: ExportViewBound;
+  /**
+   * 2D 画板的旧版世界坐标视野；使用兼容的旧宿主导出实现。
+   * @deprecated 请改用 viewBound。
+   */
   viewBounds?: ExportViewBounds;
   /** 3D 画板的相机视野。 */
   viewCamera3d?: ExportViewCamera3D;
@@ -498,7 +518,7 @@ export interface SlidesApi {
    * 导出画板图片。支持三种 mode：
    * - size：目标输出宽高、minPadding 与图形包围盒
    *   自动计算 pixelRatio，使图形完整 contain 在可用区域。
-   * - view：指定视野 viewBounds 与 pixelRatio
+   * - view：指定视野 viewBound 与 pixelRatio
    * - contain：由 pixelRatio 与绝对 px padding 自动计算最终宽高。
    *
    * 旧的扁平 ExportSlideImageOptions 已废弃，实现层不再接受；请改用上述三模式 ExportImageOptions。

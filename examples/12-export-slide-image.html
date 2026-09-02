@@ -601,7 +601,7 @@
             <div class="export-guide-title">导出模式选择建议</div>
             <p>
               <strong>函数图形：</strong>推荐使用 <code>view</code>
-              模式，通过 <code>viewBounds</code>
+              模式，通过 <code>viewBound</code>
               明确指定坐标范围，确保导出的函数视野、坐标轴和网格符合预期。
             </p>
             <p>
@@ -622,13 +622,14 @@
           <h2>导出结果</h2>
           <div class="status" id="status">等待初始化...</div>
           <div class="preview-grid hidden" id="previewGrid"></div>
+          <pre class="code-panel hidden" id="responsePanel" aria-label="导出响应内容"></pre>
         </section>
 
         <section class="card section">
           <h2>
             导出方式
             <span class="info-icon" tabindex="0" role="note" aria-label="导出方式说明">i<span
-                class="info-tip"><strong>view</strong>：2D 画板使用 viewBounds 指定世界坐标视野；3D 画板使用 viewCamera3d 指定相机与世界坐标视野。<br /><strong>contain</strong>：需要完整包住全部内容且不限定最终宽高时使用；输出尺寸由内容包围盒
+                class="info-tip"><strong>view</strong>：2D 画板使用 viewBound 指定世界坐标视野；3D 画板使用 viewCamera3d 指定相机与世界坐标视野。<br /><strong>contain</strong>：需要完整包住全部内容且不限定最终宽高时使用；输出尺寸由内容包围盒
                 × 文件 camera.scale × pixelRatio，再加四周绝对 px padding
                 计算。<br /><strong>size</strong>：需要固定最终输出宽高时使用；扣除四周 minPadding
                 后，根据内容可视包围盒自动计算
@@ -694,17 +695,17 @@
                 <button data-dimension="3d">3D 画板</button>
               </div>
               <div class="field-grid" data-view-dimension="2d" style="grid-column: 1 / -1">
-                <label><span><span class="required-mark" aria-hidden="true">*</span>视野 X（世界坐标）</span>
-                  <input id="vbXInput" type="number" step="1" value="-5" />
+                <label><span><span class="required-mark" aria-hidden="true">*</span>左边界（世界坐标）</span>
+                  <input id="vbLeftInput" type="number" step="1" value="-5" />
                 </label>
-                <label><span><span class="required-mark" aria-hidden="true">*</span>视野 Y（世界坐标）</span>
-                  <input id="vbYInput" type="number" step="1" value="-5" />
+                <label><span><span class="required-mark" aria-hidden="true">*</span>上边界（世界坐标）</span>
+                  <input id="vbTopInput" type="number" step="1" value="-5" />
                 </label>
-                <label><span><span class="required-mark" aria-hidden="true">*</span>视野宽度（世界坐标）</span>
-                  <input id="vbWInput" type="number" min="1" step="1" value="10" />
+                <label><span><span class="required-mark" aria-hidden="true">*</span>右边界（世界坐标）</span>
+                  <input id="vbRightInput" type="number" step="1" value="5" />
                 </label>
-                <label><span><span class="required-mark" aria-hidden="true">*</span>视野高度（世界坐标）</span>
-                  <input id="vbHInput" type="number" min="1" step="1" value="10" />
+                <label><span><span class="required-mark" aria-hidden="true">*</span>下边界（世界坐标）</span>
+                  <input id="vbBottomInput" type="number" step="1" value="5" />
                 </label>
                 <label>相机 scale（可选，留空读取画板文件）
                   <input id="vbScaleInput" type="number" min="0.1" step="0.1" placeholder="camera.scale" />
@@ -788,6 +789,7 @@
     const statusEl = document.getElementById('status');
     const logsEl = document.getElementById('logs');
     const previewGridEl = document.getElementById('previewGrid');
+    const responsePanel = document.getElementById('responsePanel');
     const exportBtn = document.getElementById('exportBtn');
     const importBtn = document.getElementById('importBtn');
     const fileInput = document.getElementById('fileInput');
@@ -818,10 +820,10 @@
     const minPadHInput = document.getElementById('minPadHInput');
     const minPadVInput = document.getElementById('minPadVInput');
 
-    const vbXInput = document.getElementById('vbXInput');
-    const vbYInput = document.getElementById('vbYInput');
-    const vbWInput = document.getElementById('vbWInput');
-    const vbHInput = document.getElementById('vbHInput');
+    const vbLeftInput = document.getElementById('vbLeftInput');
+    const vbTopInput = document.getElementById('vbTopInput');
+    const vbRightInput = document.getElementById('vbRightInput');
+    const vbBottomInput = document.getElementById('vbBottomInput');
     const vbScaleInput = document.getElementById('vbScaleInput');
     const vc3dOffsetXInput = document.getElementById('vc3dOffsetXInput');
     const vc3dOffsetYInput = document.getElementById('vc3dOffsetYInput');
@@ -996,14 +998,40 @@
       previewGridEl.classList.toggle('hidden', images.length === 0);
     }
 
+    function toResponseSummary() {
+      if (latestResult.kind === 'latex') {
+        return latestResult.items.map((item) => ({
+          index: item.index,
+          format: item.format,
+          fileName: item.fileName,
+          code: item.code,
+          blob: item.blob instanceof Blob
+            ? { type: item.blob.type, size: item.blob.size }
+            : undefined,
+        }));
+      }
+
+      return latestResult.items.map((item) => ({
+        index: item.index,
+        format: item.format,
+        width: item.width,
+        height: item.height,
+        blob: { type: item.blob.type, size: item.blob.size },
+      }));
+    }
+
     function renderExportResult() {
       const hasResult = latestResult.items.length > 0;
       exportResultSectionEl.classList.toggle('hidden', !hasResult);
+      responsePanel.classList.toggle('hidden', !hasResult);
 
       if (!hasResult) {
         clearImagePreviews();
+        responsePanel.textContent = '';
         return;
       }
+
+      responsePanel.textContent = JSON.stringify(toResponseSummary(), null, 2);
 
       if (latestResult.kind === 'latex') {
         clearImagePreviews();
@@ -1125,11 +1153,11 @@
           '  pixelRatio: ' + Number(viewPixelRatioInput.value) + ',',
         );
         if (currentViewDimension === '2d') {
-          lines.push('  viewBounds: {');
-          lines.push('    x: ' + Number(vbXInput.value) + ',');
-          lines.push('    y: ' + Number(vbYInput.value) + ',');
-          lines.push('    width: ' + Number(vbWInput.value) + ',');
-          lines.push('    height: ' + Number(vbHInput.value) + ',');
+          lines.push('  viewBound: {');
+          lines.push('    left: ' + Number(vbLeftInput.value) + ',');
+          lines.push('    top: ' + Number(vbTopInput.value) + ',');
+          lines.push('    right: ' + Number(vbRightInput.value) + ',');
+          lines.push('    bottom: ' + Number(vbBottomInput.value) + ',');
           if (vbScaleInput.value !== '') lines.push('    scale: ' + Number(vbScaleInput.value) + ',');
           lines.push('  },');
         } else {
@@ -1188,13 +1216,13 @@
       } else if (currentMode === 'view') {
         options.pixelRatio = Number(viewPixelRatioInput.value);
         if (currentViewDimension === '2d') {
-          options.viewBounds = {
-            x: Number(vbXInput.value),
-            y: Number(vbYInput.value),
-            width: Number(vbWInput.value),
-            height: Number(vbHInput.value),
+          options.viewBound = {
+            left: Number(vbLeftInput.value),
+            top: Number(vbTopInput.value),
+            right: Number(vbRightInput.value),
+            bottom: Number(vbBottomInput.value),
           };
-          if (vbScaleInput.value !== '') options.viewBounds.scale = Number(vbScaleInput.value);
+          if (vbScaleInput.value !== '') options.viewBound.scale = Number(vbScaleInput.value);
         } else {
           const offsetValues = [vc3dOffsetXInput.value, vc3dOffsetYInput.value, vc3dOffsetZInput.value];
           if (offsetValues.some((value) => value !== '') && offsetValues.some((value) => value === '')) {
@@ -1387,10 +1415,10 @@
       heightInput,
       minPadHInput,
       minPadVInput,
-      vbXInput,
-      vbYInput,
-      vbWInput,
-      vbHInput,
+      vbLeftInput,
+      vbTopInput,
+      vbRightInput,
+      vbBottomInput,
       vbScaleInput,
       vc3dOffsetXInput,
       vc3dOffsetYInput,

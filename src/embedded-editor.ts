@@ -114,7 +114,9 @@ export class EmbeddedEditor extends EmbeddedTarget<
       },
       exportImage: async (options: ExportImageOptions) => {
         const result = await this.post<ExportSlideImageResult>(
-          'exportSlideImage',
+          options.mode === 'view' && options.viewBound !== undefined
+            ? 'exportSlideImageV2'
+            : 'exportSlideImage',
           { options },
         );
         return result.images;
