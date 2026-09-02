@@ -596,7 +596,7 @@ const images = await editor.slides.exportImage({
 
 `viewBound` 的 `left`、`top`、`right`、`bottom` 均为世界坐标边界，`scale` 为可选的相机缩放比例。省略 `scale` 时使用目标画板文件中的 `camera.scale`。
 
-3D 画板传同级的 `viewCamera3d`。其中 `width`、`height` 必填；`width`、`height` 为世界坐标视野范围。`offset`、`yaw`、`pitch`、`scale` 可选且省略时沿用文件相机；投影方式与斜投影参数始终沿用画板文件。
+3D 画板传同级的 `viewCamera3d`。其中 `width`、`height` 为逻辑输出像素，省略时均为 `1024`；`pixelRatio` 只放大最终物理像素。`offset`、`yaw`、`pitch`、`scale` 可选且省略时沿用文件相机；`scale` 独立决定相机远近与可见世界范围。投影方式与斜投影参数始终沿用画板文件。
 
 ```ts
 const images = await editor.slides.exportImage({
@@ -608,8 +608,8 @@ const images = await editor.slides.exportImage({
     yaw: Math.PI / 4,
     pitch: Math.PI / 6,
     scale: 0.2,
-    width: 12,
-    height: 8,
+    width: 1200,
+    height: 800,
   },
   pixelRatio: 2,
 });

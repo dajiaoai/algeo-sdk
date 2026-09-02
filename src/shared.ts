@@ -376,10 +376,10 @@ export interface ExportViewCamera3D {
   pitch?: number;
   yaw?: number;
   scale?: number;
-  /** 3D 导出视野的世界坐标宽度。 */
-  width: number;
-  /** 3D 导出视野的世界坐标高度。 */
-  height: number;
+  /** 3D 导出的逻辑输出宽度（px），默认 1024。 */
+  width?: number;
+  /** 3D 导出的逻辑输出高度（px），默认 1024。 */
+  height?: number;
 }
 
 /** 导出留白，单位为输出像素 px。 */

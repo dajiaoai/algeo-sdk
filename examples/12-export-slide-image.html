@@ -629,7 +629,7 @@
           <h2>
             导出方式
             <span class="info-icon" tabindex="0" role="note" aria-label="导出方式说明">i<span
-                class="info-tip"><strong>view</strong>：2D 画板使用 viewBound 指定世界坐标视野；3D 画板使用 viewCamera3d 指定相机与世界坐标视野。<br /><strong>contain</strong>：需要完整包住全部内容且不限定最终宽高时使用；输出尺寸由内容包围盒
+                class="info-tip"><strong>view</strong>：2D 画板使用 viewBound 指定世界坐标视野；3D 画板使用 viewCamera3d 指定相机与逻辑输出尺寸。<br /><strong>contain</strong>：需要完整包住全部内容且不限定最终宽高时使用；输出尺寸由内容包围盒
                 × 文件 camera.scale × pixelRatio，再加四周绝对 px padding
                 计算。<br /><strong>size</strong>：需要固定最终输出宽高时使用；扣除四周 minPadding
                 后，根据内容可视包围盒自动计算
@@ -713,9 +713,9 @@
               </div>
               <div class="field-grid hidden" data-view-dimension="3d" style="grid-column: 1 / -1">
                 <div class="field-group">
-                  <div class="field-group-title">必填视野</div>
-                  <label><span><span class="required-mark" aria-hidden="true">*</span>视野宽度（世界坐标）</span><input id="vc3dWidthInput" type="number" min="0.0001" step="0.1" value="12" /></label>
-                  <label><span><span class="required-mark" aria-hidden="true">*</span>视野高度（世界坐标）</span><input id="vc3dHeightInput" type="number" min="0.0001" step="0.1" value="8" /></label>
+                  <div class="field-group-title">逻辑输出尺寸</div>
+                  <label><span>宽度（px，默认 1024）</span><input id="vc3dWidthInput" type="number" min="1" step="1" value="1200" /></label>
+                  <label><span>高度（px，默认 1024）</span><input id="vc3dHeightInput" type="number" min="1" step="1" value="800" /></label>
                 </div>
                 <div class="field-group">
                   <div class="field-group-title">可选相机覆盖（留空读取画板文件）</div>
@@ -1168,8 +1168,8 @@
           }
           if (vc3dYawInput.value !== '') lines.push('    yaw: ' + Number(vc3dYawInput.value) + ',');
           if (vc3dPitchInput.value !== '') lines.push('    pitch: ' + Number(vc3dPitchInput.value) + ',');
-          lines.push('    width: ' + Number(vc3dWidthInput.value) + ',');
-          lines.push('    height: ' + Number(vc3dHeightInput.value) + ',');
+          if (vc3dWidthInput.value !== '') lines.push('    width: ' + Number(vc3dWidthInput.value) + ',');
+          if (vc3dHeightInput.value !== '') lines.push('    height: ' + Number(vc3dHeightInput.value) + ',');
           if (vc3dScaleInput.value !== '') lines.push('    scale: ' + Number(vc3dScaleInput.value) + ',');
           lines.push('  },');
         }
@@ -1228,10 +1228,9 @@
           if (offsetValues.some((value) => value !== '') && offsetValues.some((value) => value === '')) {
             throw new Error('3D 相机 offset 如需覆盖，请同时填写 X、Y、Z');
           }
-          options.viewCamera3d = {
-            width: Number(vc3dWidthInput.value),
-            height: Number(vc3dHeightInput.value),
-          };
+          options.viewCamera3d = {};
+          if (vc3dWidthInput.value !== '') options.viewCamera3d.width = Number(vc3dWidthInput.value);
+          if (vc3dHeightInput.value !== '') options.viewCamera3d.height = Number(vc3dHeightInput.value);
           if (offsetValues.every((value) => value !== '')) options.viewCamera3d.offset = offsetValues.map(Number);
           if (vc3dYawInput.value !== '') options.viewCamera3d.yaw = Number(vc3dYawInput.value);
           if (vc3dPitchInput.value !== '') options.viewCamera3d.pitch = Number(vc3dPitchInput.value);
