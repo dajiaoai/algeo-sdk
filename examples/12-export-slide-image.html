@@ -843,6 +843,8 @@
     let currentMode = 'view';
     let currentView = 'form';
     let currentViewDimension = '2d';
+    // 已切换过的维度会一并保留在导出请求中，支持混合 2D/3D 画板批量导出。
+    const configuredViewDimensions = new Set(['2d']);
     let latestResult = { kind: 'image', items: [] };
     let previewUrls = [];
     let hasLogs = false;
@@ -1152,7 +1154,7 @@
         lines.push(
           '  pixelRatio: ' + Number(viewPixelRatioInput.value) + ',',
         );
-        if (currentViewDimension === '2d') {
+        if (configuredViewDimensions.has('2d')) {
           lines.push('  viewBound: {');
           lines.push('    left: ' + Number(vbLeftInput.value) + ',');
           lines.push('    top: ' + Number(vbTopInput.value) + ',');
@@ -1160,7 +1162,8 @@
           lines.push('    bottom: ' + Number(vbBottomInput.value) + ',');
           if (vbScaleInput.value !== '') lines.push('    scale: ' + Number(vbScaleInput.value) + ',');
           lines.push('  },');
-        } else {
+        }
+        if (configuredViewDimensions.has('3d')) {
           lines.push('  viewCamera3d: {');
           const offsetValues = [vc3dOffsetXInput.value, vc3dOffsetYInput.value, vc3dOffsetZInput.value];
           if (offsetValues.some((value) => value !== '')) {
@@ -1215,7 +1218,7 @@
         };
       } else if (currentMode === 'view') {
         options.pixelRatio = Number(viewPixelRatioInput.value);
-        if (currentViewDimension === '2d') {
+        if (configuredViewDimensions.has('2d')) {
           options.viewBound = {
             left: Number(vbLeftInput.value),
             top: Number(vbTopInput.value),
@@ -1223,7 +1226,8 @@
             bottom: Number(vbBottomInput.value),
           };
           if (vbScaleInput.value !== '') options.viewBound.scale = Number(vbScaleInput.value);
-        } else {
+        }
+        if (configuredViewDimensions.has('3d')) {
           const offsetValues = [vc3dOffsetXInput.value, vc3dOffsetYInput.value, vc3dOffsetZInput.value];
           if (offsetValues.some((value) => value !== '') && offsetValues.some((value) => value === '')) {
             throw new Error('3D 相机 offset 如需覆盖，请同时填写 X、Y、Z');
@@ -1388,7 +1392,10 @@
     viewDimensionSwitch.addEventListener('click', (event) => {
       const btn = event.target.closest('button[data-dimension]');
       if (!btn) return;
-      currentViewDimension = btn.getAttribute('data-dimension');
+      const dimension = btn.getAttribute('data-dimension');
+      if (!dimension) return;
+      currentViewDimension = dimension;
+      configuredViewDimensions.add(dimension);
       applyViewDimensionVisibility();
       if (currentView === 'code') codePanel.textContent = buildExportCode();
     });
