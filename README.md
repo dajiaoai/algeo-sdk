@@ -569,7 +569,7 @@ interface FileContent {
 | -------------------------------- | ------------------------------------------------------------------------------------ |
 | `getCount()`                     | 获取当前已知画板数量                                                                 |
 | `getCurrentIndex()`              | 获取当前已知画板索引                                                                 |
-| `getCurrentViewBounds()`         | 异步获取当前有限画布的导出视野 `{ left, top, right, bottom, scale }`；可直接传给 `exportImage`；无限画布返回 `null` |
+| `getViewBounds(index?)`          | 异步获取指定或当前画板的有限画布导出视野 `{ left, top, right, bottom, scale }`；可直接传给 `exportImage`；无限画布返回 `null` |
 | `switchTo(index)`                | 切换画板                                                                             |
 | `add()`                          | 在末尾新增画板                                                                       |
 | `addAt(index)`                   | 在指定位置新增画板                                                                   |

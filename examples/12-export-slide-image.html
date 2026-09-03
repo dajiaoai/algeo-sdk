@@ -871,7 +871,7 @@
         throw new Error('编辑器尚未初始化');
       }
 
-      const viewBound = await editor.slides.getCurrentViewBounds();
+      const viewBound = await editor.slides.getViewBounds();
       if (!viewBound) {
         throw new Error('当前画板没有有限画布，无法读取尺寸');
       }

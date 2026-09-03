@@ -328,7 +328,7 @@ export interface GetSlideCountResult {
   count: number;
 }
 
-export interface GetCurrentViewBoundsResult {
+export interface GetViewBoundsResult {
   /** 与 ExportImageViewMode.viewBound 格式一致，可直接传给 exportImage。 */
   viewBounds: ExportViewBound | null;
 }
@@ -512,7 +512,7 @@ export interface DocumentApi {
 export interface SlidesApi {
   getCount(): number;
   getCurrentIndex(): number;
-  getCurrentViewBounds(): Promise<ExportViewBound | null>;
+  getViewBounds(index?: number): Promise<ExportViewBound | null>;
   switchTo(index: number): Promise<void>;
   add(): Promise<SlideIndexResult>;
   addAt(index: number): Promise<SlideIndexResult>;

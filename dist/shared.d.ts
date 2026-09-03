@@ -241,7 +241,7 @@ export interface SwitchSlideResult {
 export interface GetSlideCountResult {
     count: number;
 }
-export interface GetCurrentViewBoundsResult {
+export interface GetViewBoundsResult {
     /** 与 ExportImageViewMode.viewBound 格式一致，可直接传给 exportImage。 */
     viewBounds: ExportViewBound | null;
 }
@@ -407,7 +407,11 @@ export interface DocumentApi {
 export interface SlidesApi {
     getCount(): number;
     getCurrentIndex(): number;
-    getCurrentViewBounds(): Promise<ExportViewBound | null>;
+    /**
+     * 获取有限画布的导出视野。index 为 0-based，省略时读取当前画板；
+     * 无限画布返回 null，结果可直接作为 exportImage 的 viewBound。
+     */
+    getViewBounds(index?: number): Promise<ExportViewBound | null>;
     switchTo(index: number): Promise<void>;
     add(): Promise<SlideIndexResult>;
     addAt(index: number): Promise<SlideIndexResult>;
