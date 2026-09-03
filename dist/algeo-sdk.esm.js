@@ -4009,7 +4009,7 @@ function convertToLatest(content) {
 }
 
 /** SDK 版本号，构建时由 rollup 注入 */
-const VERSION = '2.13.3';
+const VERSION = '2.13.4';
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
 const DEFAULT_PRESENTATION_PATH = '/embed/present';
 const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4518,6 +4518,9 @@ class EmbeddedEditor extends EmbeddedTarget {
                     ...(index === undefined ? {} : { index }),
                 });
                 return result.viewBounds;
+            },
+            setViewBounds: async (options) => {
+                await this.post('setViewBounds', { ...options });
             },
             switchTo: async (index) => {
                 await this.switchTo(index);

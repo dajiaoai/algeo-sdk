@@ -61,6 +61,7 @@ export type {
   ResourceLibraryQueryContext,
   ResourceLibraryResult,
   ReplResult,
+  SetViewBoundsOptions,
   SlideChangeEvent,
   SlideIndexResult,
   SlidesApi,

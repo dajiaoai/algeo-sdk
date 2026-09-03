@@ -36,6 +36,7 @@ import {
   type SaveRequestEvent,
   type SaveEvent,
   type SaveRequestMessage,
+  type SetViewBoundsOptions,
   type SlideIndexResult,
   type SlidesApi,
   type SwitchSlideResult,
@@ -95,6 +96,9 @@ export class EmbeddedEditor extends EmbeddedTarget<
           ...(index === undefined ? {} : { index }),
         });
         return result.viewBounds;
+      },
+      setViewBounds: async (options: SetViewBoundsOptions) => {
+        await this.post('setViewBounds', { ...options });
       },
       switchTo: async (index: number) => {
         await this.switchTo(index);

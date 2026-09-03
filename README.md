@@ -570,6 +570,7 @@ interface FileContent {
 | `getCount()`                     | 获取当前已知画板数量                                                                 |
 | `getCurrentIndex()`              | 获取当前已知画板索引                                                                 |
 | `getViewBounds(index?)`          | 异步获取指定或当前画板的有限画布导出视野 `{ left, top, right, bottom, scale }`；可直接传给 `exportImage`；无限画布返回 `null` |
+| `setViewBounds(options)`         | 设置指定或当前画板的有限画布边界                                                     |
 | `switchTo(index)`                | 切换画板                                                                             |
 | `add()`                          | 在末尾新增画板                                                                       |
 | `addAt(index)`                   | 在指定位置新增画板                                                                   |
@@ -578,6 +579,20 @@ interface FileContent {
 | `reorder(fromIndex, toIndex)`    | 重排画板                                                                             |
 | `exportImage(options)`           | 按 `view` / `contain` / `size` 模式导出 PNG、JPG 或 SVG，返回 `ExportedSlideImage[]` |
 | `exportLatex(options?)`          | 将画板导出为 LaTeX/TikZ 源码，返回 `ExportedLatex[]`                                 |
+
+##### `editor.slides.setViewBounds(options)`
+
+设置有限画布的世界坐标边界。参数与 MCP 保持一致，使用 `left`、`top`、`bottom`、`right`；`index` 省略时设置当前画板。
+
+```ts
+await editor.slides.setViewBounds({
+  left: -10,
+  top: 6,
+  bottom: -6,
+  right: 10,
+  index: 1,
+});
+```
 
 ##### `editor.slides.exportImage(options)`
 

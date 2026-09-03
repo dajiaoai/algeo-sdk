@@ -245,6 +245,17 @@ export interface GetViewBoundsResult {
     /** 与 ExportImageViewMode.viewBound 格式一致，可直接传给 exportImage。 */
     viewBounds: ExportViewBound | null;
 }
+/**
+ * 设置有限画布的世界坐标边界。未指定 index 时作用于当前画板。
+ * 坐标字段与 MCP 保持一致。
+ */
+export interface SetViewBoundsOptions {
+    left: number;
+    top: number;
+    bottom: number;
+    right: number;
+    index?: number;
+}
 export interface ReplResult {
     output: string;
 }
@@ -408,6 +419,7 @@ export interface SlidesApi {
     getCount(): number;
     getCurrentIndex(): number;
     getViewBounds(index?: number): Promise<ExportViewBound | null>;
+    setViewBounds(options: SetViewBoundsOptions): Promise<void>;
     switchTo(index: number): Promise<void>;
     add(): Promise<SlideIndexResult>;
     addAt(index: number): Promise<SlideIndexResult>;

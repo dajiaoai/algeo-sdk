@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>19 有限画布 - Algeo SDK</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root { --bg:#f2eee6; --panel:#fffaf0; --line:#d8cebb; --text:#2b2418; --muted:#6e6659; --accent:#0f766e; --danger:#b91c1c; }
+    body { margin:0; min-height:100vh; padding:20px; font-family:"Segoe UI","PingFang SC",sans-serif; color:var(--text); background:radial-gradient(circle at top left,#fff7cd,transparent 30%),linear-gradient(180deg,#f8f4eb,var(--bg)); }
+    a { color:var(--accent); } .page { width:100%; margin:0; display:grid; gap:16px; } .hero { display:grid; gap:8px; } h1,h2,h3,p { margin:0; } h1 { font-size:1.8rem; } p { color:var(--muted); line-height:1.65; }
+    .layout { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(360px,.95fr); gap:16px; align-items:start; } .left-column { display:grid; gap:16px; } .card { background:rgba(255,252,247,.93); border:1px solid var(--line); border-radius:18px; box-shadow:0 18px 45px rgba(70,53,28,.08); }
+    .embed { overflow:hidden; } .embed-header,.section { padding:16px; } .embed-header { display:flex; justify-content:space-between; align-items:center; gap:12px; border-bottom:1px solid var(--line); background:rgba(15,118,110,.08); } #algeo-container { height:680px; background:#f8f5ef; }
+    .sidebar { display:grid; gap:16px; } .section { display:grid; gap:12px; } h2 { font-size:1rem; } h3 { font-size:.92rem; } .operation { padding:12px; display:grid; gap:10px; border:1px solid var(--line); border-radius:14px; background:var(--panel); }
+    .field-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } label { display:grid; gap:6px; color:var(--muted); font-size:.82rem; } input { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:12px; font:inherit; color:var(--text); background:#fffdfa; }
+    button { border:0; border-radius:999px; padding:10px 16px; font:inherit; cursor:pointer; } .primary { color:white; background:linear-gradient(135deg,var(--accent),#14b8a6); } .secondary { color:var(--text); background:var(--panel); border:1px solid var(--line); } .status { padding:12px 14px; border:1px solid rgba(15,118,110,.18); border-radius:14px; color:#115e59; background:rgba(15,118,110,.08); white-space:pre-wrap; word-break:break-word; }
+    pre { margin:0; max-height:280px; overflow:auto; padding:14px; border-radius:14px; background:#172033; color:#e5e7eb; font:12px/1.6 Consolas,monospace; white-space:pre-wrap; word-break:break-word; } code { font-family:Consolas,monospace; } .hint { font-size:.82rem; }
+    @media (max-width:980px) { .layout { grid-template-columns:1fr; } #algeo-container { height:440px; } } @media (max-width:480px) { .field-row { grid-template-columns:1fr; } }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <a href="index.html">← 返回示例列表</a>
+      <h1>19 有限画布</h1>
+      <p>演示 <code>editor.slides.getViewBounds(index?)</code> 与 <code>editor.slides.setViewBounds({ left, top, bottom, right, index? })</code>。索引省略时，两个操作都会使用当前画板。</p>
+    </header>
+
+    <div class="layout">
+      <div class="left-column">
+        <section class="card embed">
+          <div class="embed-header">
+            <strong>Embedded Editor</strong>
+            <div>
+              <button class="secondary" id="emptyBtn">初始化空白画板</button>
+              <button class="secondary" id="exportBtn">导出文件</button>
+            </div>
+          </div>
+          <div id="algeo-container"></div>
+        </section>
+
+        <section class="card section">
+          <h2>调用日志</h2>
+          <pre id="logs">等待操作…</pre>
+        </section>
+      </div>
+
+      <aside class="sidebar">
+        <section class="card section">
+          <h2>画布状态</h2>
+          <p>读取结果会显示有限画布边界和缩放；无限画布时返回 <code>null</code>。</p>
+          <div class="field-row">
+            <label>读取画板索引（留空为当前）<input id="readIndex" type="number" min="0" step="1" placeholder="当前画板"></label>
+          </div>
+          <button class="secondary" id="readBtn">读取画布状态</button>
+          <div class="status" id="status">等待编辑器初始化…</div>
+          <pre id="result">暂无结果</pre>
+        </section>
+
+        <section class="card section">
+          <h2>设置有限画布</h2>
+          <div class="operation">
+            <div class="field-row">
+              <label>left<input id="left" type="number" step="any" value="-5"></label>
+              <label>right<input id="right" type="number" step="any" value="5"></label>
+              <label>top<input id="top" type="number" step="any" value="3"></label>
+              <label>bottom<input id="bottom" type="number" step="any" value="-3"></label>
+            </div>
+            <label>设置画板索引（留空为当前）<input id="setIndex" type="number" min="0" step="1" placeholder="当前画板"></label>
+            <button class="primary" id="setBtn">设置画布状态</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script src="../dist/algeo-sdk.umd.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script>
+    const { baseUrl, appId, shareId } = window.ALGEO_CONFIG;
+    const $ = (id) => document.getElementById(id);
+    const status = $('status'); const result = $('result'); const logs = $('logs');
+    let editor = null;
+
+    function log(label, payload) {
+      logs.textContent = new Date().toLocaleTimeString() + ' ' + label + '\n' +
+        (payload === undefined ? '' : JSON.stringify(payload, null, 2)) + '\n\n' + logs.textContent;
+    }
+    function getEditor() { if (!editor) throw new Error('编辑器尚未初始化'); return editor; }
+    function parseOptionalIndex(id) {
+      const raw = $(id).value.trim();
+      if (!raw) return undefined;
+      const index = Number(raw);
+      if (!Number.isInteger(index) || index < 0) throw new Error('画板索引必须是大于等于 0 的整数');
+      return index;
+    }
+    function numberValue(id) {
+      const value = Number($(id).value);
+      if (!Number.isFinite(value)) throw new Error(id + ' 必须是有限数字');
+      return value;
+    }
+    async function readViewBounds(index) {
+      const viewBounds = await getEditor().slides.getViewBounds(index);
+      const targetIndex = index === undefined ? getEditor().slides.getCurrentIndex() : index;
+      const payload = { index: targetIndex, viewBounds };
+      result.textContent = JSON.stringify(payload, null, 2);
+      status.textContent = viewBounds ? '已读取画板 ' + targetIndex + ' 的有限画布' : '画板 ' + targetIndex + ' 当前为无限画布';
+      log('slides.getViewBounds(' + (index === undefined ? '' : index) + ')', payload);
+      return payload;
+    }
+    async function createEditor(loadShare) {
+      if (editor) await editor.destroy();
+      $('algeo-container').innerHTML = '';
+      status.textContent = '正在创建编辑器…';
+      editor = await AlgeoSdk.create($('algeo-container'), {
+        mode: 'editor', baseUrl,
+        editor: { auth: { appId }, ...(loadShare ? { shareId } : {}), ui: { navbar:false, slidePanel:true, toolboxPanel:true, algebraPanel:false, docPanel:false } },
+      });
+      editor.on('slideChange', () => { status.textContent = '当前画板已切换，可重新读取画布状态'; });
+      log('editor initialized', { ready: editor.ready, version: editor.version, currentIndex: editor.slides.getCurrentIndex() });
+      await readViewBounds();
+    }
+    $('readBtn').addEventListener('click', () => readViewBounds(parseOptionalIndex('readIndex')).catch(showError));
+    $('setBtn').addEventListener('click', async () => {
+      try {
+        const options = { left:numberValue('left'), top:numberValue('top'), bottom:numberValue('bottom'), right:numberValue('right') };
+        const index = parseOptionalIndex('setIndex');
+        if (index !== undefined) options.index = index;
+        await getEditor().slides.setViewBounds(options);
+        log('slides.setViewBounds(options)', options);
+        status.textContent = '已设置有限画布，正在读取结果…';
+        await readViewBounds(index);
+      } catch (error) { showError(error); }
+    });
+    $('emptyBtn').addEventListener('click', () => createEditor(false).catch(showError));
+    $('exportBtn').addEventListener('click', async () => {
+      try {
+        const content = await getEditor().document.getContent();
+        const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'algeo-canvas.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+        status.textContent = '当前画板文件已导出';
+        log('document.getContent() 导出文件', { slides: content.slides.length });
+      } catch (error) { showError(error); }
+    });
+    function showError(error) { const message = error instanceof Error ? error.message : String(error); status.textContent = '操作失败：' + message; log('操作失败', { message, code:error && error.code }); }
+    createEditor(true).catch(showError);
+  </script>
+</body>
+</html>

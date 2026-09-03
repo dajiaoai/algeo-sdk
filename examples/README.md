@@ -48,6 +48,7 @@ npx serve examples
 | 16-hidden-tab-resize.html            | 演示 + 编辑 | 切换可见时调用 `resize()` 重绘画布 |
 | 17-resource-library.html             | 编辑模式 | 接入自有图片资源库，并切换查看可视化结果与协议数据结构 |
 | 18-custom-fonts.html                 | 编辑模式 | 编辑并执行实例化代码，体验自定义字体与系统字体配置 |
+| 19-finite-canvas.html                | 编辑模式 | 读取和设置指定或当前画板的有限画布边界             |
 
 ## 全屏支持
 
