@@ -28,6 +28,7 @@ import {
   type ExportSlideImageResult,
   type FileContentLatest,
   type GetContentResult,
+  type GetCurrentViewBoundsResult,
   type GetHistoryStateResult,
   type HistoryApi,
   type LoadFileResult,
@@ -89,6 +90,13 @@ export class EmbeddedEditor extends EmbeddedTarget<
     this.slides = {
       getCount: () => this.slideCount,
       getCurrentIndex: () => this.currentSlideIndex,
+      getCurrentViewBounds: async () => {
+        const result = await this.post<GetCurrentViewBoundsResult>(
+          'getCurrentViewBounds',
+          {},
+        );
+        return result.viewBounds;
+      },
       switchTo: async (index: number) => {
         await this.switchTo(index);
       },

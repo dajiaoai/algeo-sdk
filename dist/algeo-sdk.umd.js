@@ -4015,7 +4015,7 @@
     }
 
     /** SDK 版本号，构建时由 rollup 注入 */
-    const VERSION = '2.13.0';
+    const VERSION = '2.13.1';
     const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
     const DEFAULT_PRESENTATION_PATH = '/embed/present';
     const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4519,6 +4519,10 @@
             this.slides = {
                 getCount: () => this.slideCount,
                 getCurrentIndex: () => this.currentSlideIndex,
+                getCurrentViewBounds: async () => {
+                    const result = await this.post('getCurrentViewBounds', {});
+                    return result.viewBounds;
+                },
                 switchTo: async (index) => {
                     await this.switchTo(index);
                 },

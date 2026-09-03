@@ -695,6 +695,9 @@
                 <button data-dimension="3d">3D 画板</button>
               </div>
               <div class="field-grid" data-view-dimension="2d" style="grid-column: 1 / -1">
+                <div style="grid-column: 1 / -1">
+                  <button type="button" class="secondary" id="readViewBoundsBtn">从画板读取尺寸</button>
+                </div>
                 <label><span><span class="required-mark" aria-hidden="true">*</span>左边界（世界坐标）</span>
                   <input id="vbLeftInput" type="number" step="1" value="-5" />
                 </label>
@@ -795,6 +798,7 @@
     const fileInput = document.getElementById('fileInput');
     const reloadBtn = document.getElementById('reloadBtn');
     const downloadAllBtn = document.getElementById('downloadAllBtn');
+    const readViewBoundsBtn = document.getElementById('readViewBoundsBtn');
 
     const modeSwitch = document.getElementById('modeSwitch');
     const viewSwitch = document.getElementById('viewSwitch');
@@ -858,7 +862,32 @@
     function setActionButtonsDisabled(disabled) {
       exportBtn.disabled = disabled;
       importBtn.disabled = disabled;
+      readViewBoundsBtn.disabled = disabled;
       downloadAllBtn.disabled = disabled || latestResult.items.length === 0;
+    }
+
+    async function readCurrentViewBounds() {
+      if (!editor) {
+        throw new Error('编辑器尚未初始化');
+      }
+
+      const viewBound = await editor.slides.getCurrentViewBounds();
+      if (!viewBound) {
+        throw new Error('当前画板没有有限画布，无法读取尺寸');
+      }
+
+      vbLeftInput.value = String(viewBound.left);
+      vbTopInput.value = String(viewBound.top);
+      vbRightInput.value = String(viewBound.right);
+      vbBottomInput.value = String(viewBound.bottom);
+      vbScaleInput.value = String(viewBound.scale);
+
+      if (currentView === 'code') {
+        codePanel.textContent = buildExportCode();
+      }
+
+      setStatus('已从当前画板读取有限画布尺寸');
+      logSdk('读取当前有限画布：' + JSON.stringify(viewBound));
     }
 
     function appendLog(type, message) {
@@ -1485,6 +1514,13 @@
     });
     exportBtn.addEventListener('click', () => {
       void exportImages();
+    });
+    readViewBoundsBtn.addEventListener('click', () => {
+      readCurrentViewBounds().catch((error) => {
+        const message = error instanceof Error ? error.message : String(error);
+        setStatus(message, true);
+        logError('读取画板尺寸失败：' + message);
+      });
     });
     downloadAllBtn.addEventListener('click', downloadLatest);
 
