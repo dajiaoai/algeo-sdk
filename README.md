@@ -590,7 +590,7 @@ const images = await editor.slides.exportImage({
   mode: 'view',
   slideIndices: [1],
   format: 'png',
-  viewBound: { left: -5, top: -5, right: 5, bottom: 5, scale: 50 },
+  viewBound: { left: -5, top: 5, right: 5, bottom: -5, scale: 50 },
   pixelRatio: 2,
 });
 ```

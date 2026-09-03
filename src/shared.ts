@@ -413,7 +413,7 @@ export interface ExportImageSizeMode extends ExportImageBaseOptions {
 /**
  * 场景二（view）：viewBound 的四条边界均为世界坐标。
  * scale 省略时从文件的 camera.scale 读取。
- * 输出像素 = (right - left, bottom - top) x viewBound.scale x pixelRatio。
+ * 输出像素 = (right - left, top - bottom) x viewBound.scale x pixelRatio。
  */
 export interface ExportImageViewMode extends ExportImageBaseOptions {
   mode: 'view';

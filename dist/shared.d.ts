@@ -319,7 +319,7 @@ export interface ExportImageSizeMode extends ExportImageBaseOptions {
 /**
  * 场景二（view）：viewBound 的四条边界均为世界坐标。
  * scale 省略时从文件的 camera.scale 读取。
- * 输出像素 = (right - left, bottom - top) x viewBound.scale x pixelRatio。
+ * 输出像素 = (right - left, top - bottom) x viewBound.scale x pixelRatio。
  */
 export interface ExportImageViewMode extends ExportImageBaseOptions {
     mode: 'view';
@@ -407,10 +407,6 @@ export interface DocumentApi {
 export interface SlidesApi {
     getCount(): number;
     getCurrentIndex(): number;
-    /**
-     * 获取有限画布的导出视野。index 为 0-based，省略时读取当前画板；
-     * 无限画布返回 null，结果可直接作为 exportImage 的 viewBound。
-     */
     getViewBounds(index?: number): Promise<ExportViewBound | null>;
     switchTo(index: number): Promise<void>;
     add(): Promise<SlideIndexResult>;
