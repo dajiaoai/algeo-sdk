@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>12 导出画板图片（2D画板）- Algeo SDK</title>
+  <title>12 导出画板图片 - Algeo SDK</title>
   <style>
     * {
       box-sizing: border-box;
@@ -110,46 +110,6 @@
       background: #fbfdff;
     }
 
-    .export-guide {
-      display: grid;
-      gap: 10px;
-      margin: 14px 16px 16px;
-      padding: 14px 16px;
-      border: 1px solid rgba(17, 104, 234, 0.24);
-      border-left: 4px solid var(--primary);
-      border-radius: 12px;
-      background: linear-gradient(135deg,
-          rgba(17, 104, 234, 0.11),
-          rgba(17, 104, 234, 0.035));
-      color: #334155;
-      font-size: 0.875rem;
-      line-height: 1.6;
-    }
-
-    .export-guide-title {
-      color: #0f4fa8;
-      font-size: 0.9375rem;
-      font-weight: 700;
-    }
-
-    .export-guide strong {
-      color: #172033;
-    }
-
-    .export-guide code {
-      padding: 2px 7px;
-      border: 1px solid rgba(17, 104, 234, 0.2);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.78);
-      color: #0b5dcc;
-      font-size: 0.8125rem;
-      font-weight: 700;
-    }
-
-    .export-guide p {
-      margin: 0;
-    }
-
     .sidebar {
       display: grid;
       gap: 16px;
@@ -176,6 +136,10 @@
     .field-grid {
       display: grid;
       gap: 10px;
+    }
+
+    .field-grid.two-columns {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .field-grid label,
@@ -205,6 +169,71 @@
       color: var(--text);
       font-size: 0.82rem;
       font-weight: 700;
+    }
+
+    .field-group-description {
+      margin-top: -4px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.55;
+    }
+
+    .config-steps {
+      display: grid;
+      gap: 14px;
+    }
+
+    .config-step {
+      display: grid;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .config-step:first-child {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .config-step-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+    }
+
+    .step-number {
+      display: inline-grid;
+      place-items: center;
+      flex: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(17, 104, 234, 0.1);
+      color: var(--brand-strong);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .step-copy {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .step-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .step-description {
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .parameter-groups {
+      display: grid;
+      gap: 10px;
     }
 
     input,
@@ -519,6 +548,14 @@
       gap: 10px;
     }
 
+    .view-toggle .segmented {
+      width: 100%;
+    }
+
+    .view-toggle .segmented button {
+      flex: 1;
+    }
+
     .view-toggle>span {
       font-size: 0.8rem;
       color: var(--muted);
@@ -527,9 +564,6 @@
     .mode-fields {
       display: grid;
       gap: 10px;
-      margin-top: 4px;
-      border-top: 1px dashed var(--line);
-      padding-top: 12px;
     }
 
     .hidden {
@@ -565,6 +599,12 @@
         max-height: none;
       }
     }
+
+    @media (max-width: 520px) {
+      .field-grid.two-columns {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 
@@ -573,13 +613,14 @@
     <a href="index.html">← 返回示例列表</a>
 
     <section class="hero">
-      <h1>12 导出画板图片（2D画板）</h1>
+      <h1>12 导出画板图片</h1>
       <p>
         这个示例使用公共配置中的分享文件创建编辑器，演示
         <code>editor.slides.exportImage()</code> 的三种导出方式（<code>size</code>
         / <code>view</code> / <code>contain</code>），以及
         <code>editor.slides.exportLatex()</code> 导出 LaTeX/TikZ
-        源码。右侧可切换导出方式，并切换为代码模式查看当前配置对应的调用代码。
+        源码。右侧先选择参数或代码视图；在参数视图中依次选择 2D / 3D
+        画板、导出方式，并填写对应参数。
       </p>
     </section>
 
@@ -597,18 +638,6 @@
             </div>
           </div>
           <div id="algeo-container"></div>
-          <div class="export-guide" role="note" aria-label="导出模式选择建议">
-            <div class="export-guide-title">导出模式选择建议</div>
-            <p>
-              <strong>函数图形：</strong>推荐使用 <code>view</code>
-              模式，通过 <code>viewBound</code>
-              明确指定坐标范围，确保导出的函数视野、坐标轴和网格符合预期。
-            </p>
-            <p>
-              <strong>几何图形：</strong>推荐使用 <code>contain</code>
-              模式，根据可见图元自动计算包围盒并将图形居中；图形位置或大小变化后，通常无需重新调整导出范围。
-            </p>
-          </div>
         </section>
 
         <section class="card section">
@@ -622,153 +651,205 @@
           <h2>导出结果</h2>
           <div class="status" id="status">等待初始化...</div>
           <div class="preview-grid hidden" id="previewGrid"></div>
-          <pre class="code-panel hidden" id="responsePanel" aria-label="导出响应内容"></pre>
         </section>
 
         <section class="card section">
-          <h2>
-            导出方式
-            <span class="info-icon" tabindex="0" role="note" aria-label="导出方式说明">i<span
-                class="info-tip"><strong>view</strong>：2D 画板使用 viewBound 指定世界坐标视野；3D 画板使用 viewCamera3d 指定相机与逻辑输出尺寸。<br /><strong>contain</strong>：需要完整包住全部内容且不限定最终宽高时使用；输出尺寸由内容包围盒
-                × 文件 camera.scale × pixelRatio，再加四周绝对 px padding
-                计算。<br /><strong>size</strong>：需要固定最终输出宽高时使用；扣除四周 minPadding
-                后，根据内容可视包围盒自动计算
-                pixelRatio，使内容完整缩放并居中。<br /><strong>latex</strong>：需要继续编辑、排版或编译几何图形时使用；输出 LaTeX/TikZ
-                源码而非位图。</span></span>
-          </h2>
-          <div class="segmented" id="modeSwitch">
-            <button data-mode="view" class="active">view</button>
-            <button data-mode="contain">contain</button>
-            <button data-mode="size">size</button>
-            <button data-mode="latex">latex</button>
-          </div>
+          <h2>导出配置</h2>
 
-          <div class="view-toggle">
-            <div class="segmented small" id="viewSwitch">
+          <div class="view-toggle" aria-label="配置查看方式">
+            <div class="segmented" id="viewSwitch">
               <button data-view="form" class="active">参数</button>
               <button data-view="code">代码</button>
             </div>
           </div>
 
-          <div id="formView">
-            <div class="field-grid">
-              <label>导出画板索引（留空导出全部，1-based，逗号分隔）
-                <input id="slideIndicesInput" placeholder="例如：1,3" />
-              </label>
-            </div>
-            <div class="hint"><span class="required-mark" aria-hidden="true">*</span>必填项</div>
-
-            <div class="field-grid" id="commonImageFields" style="margin-top: 10px">
-              <label>格式
-                <select id="formatSelect">
-                  <option value="png">png</option>
-                  <option value="jpg">jpg</option>
-                  <option value="svg">svg</option>
-                </select>
-              </label>
-              <label id="qualityField" class="hidden">质量（0~1，仅 jpg 生效）
-                <input id="qualityInput" type="number" min="0" max="1" step="0.01" value="0.92" />
-              </label>
-            </div>
-
-            <div class="mode-fields" data-for="size">
-              <label><span><span class="required-mark" aria-hidden="true">*</span>输出框宽度像素</span>
-                <input id="widthInput" type="number" min="1" step="1" value="1200" />
-              </label>
-              <label><span><span class="required-mark" aria-hidden="true">*</span>输出框高度像素</span>
-                <input id="heightInput" type="number" min="1" step="1" value="900" />
-              </label>
-              <label>最小留白·水平（每侧像素）
-                <input id="minPadHInput" type="number" min="0" step="1" value="0" />
-              </label>
-              <label>最小留白·垂直（每侧像素）
-                <input id="minPadVInput" type="number" min="0" step="1" value="0" />
-              </label>
-            </div>
-
-            <div class="mode-fields hidden" data-for="view">
-              <label>pixelRatio（缩放比例，可选）
-                <input id="viewPixelRatioInput" type="number" min="0.1" step="0.1" value="1" />
-              </label>
-              <div class="segmented" id="viewDimensionSwitch" style="grid-column: 1 / -1">
+          <div id="formView" class="config-steps">
+            <section class="config-step">
+              <div class="config-step-header">
+                <span class="step-number">1</span>
+                <div class="step-copy">
+                  <div class="step-title">选择画板类型</div>
+                  <div class="step-description">按要导出的目标画板选择，类型会决定可用格式和视野参数。</div>
+                </div>
+              </div>
+              <div class="segmented" id="dimensionSwitch">
                 <button data-dimension="2d" class="active">2D 画板</button>
                 <button data-dimension="3d">3D 画板</button>
               </div>
-              <div class="field-grid" data-view-dimension="2d" style="grid-column: 1 / -1">
-                <div style="grid-column: 1 / -1">
-                  <button type="button" class="secondary" id="readViewBoundsBtn">从画板读取尺寸</button>
+            </section>
+
+            <section class="config-step">
+              <div class="config-step-header">
+                <span class="step-number">2</span>
+                <div class="step-copy">
+                  <div class="step-title">
+                    选择导出方式
+                    <span class="info-icon" tabindex="0" role="note" aria-label="导出方式说明">i<span
+                        class="info-tip"><strong>view</strong>：精确指定导出视野。<br /><strong>contain</strong>：完整包住全部内容，图片尺寸跟随内容。<br /><strong>size</strong>：按固定宽高输出，内容自动缩放并居中。<br /><strong>latex</strong>：导出可继续编辑或编译的 LaTeX/TikZ 源码，仅用于 2D。</span></span>
+                  </div>
+                  <div class="step-description">先确定最终图片尺寸由视野、内容还是固定画布决定。</div>
                 </div>
-                <label><span><span class="required-mark" aria-hidden="true">*</span>左边界（世界坐标）</span>
-                  <input id="vbLeftInput" type="number" step="1" value="-5" />
-                </label>
-                <label><span><span class="required-mark" aria-hidden="true">*</span>上边界（世界坐标）</span>
-                  <input id="vbTopInput" type="number" step="1" value="5" />
-                </label>
-                <label><span><span class="required-mark" aria-hidden="true">*</span>右边界（世界坐标）</span>
-                  <input id="vbRightInput" type="number" step="1" value="5" />
-                </label>
-                <label><span><span class="required-mark" aria-hidden="true">*</span>下边界（世界坐标）</span>
-                  <input id="vbBottomInput" type="number" step="1" value="-5" />
-                </label>
-                <label>相机 scale（可选，留空读取画板文件）
-                  <input id="vbScaleInput" type="number" min="0.1" step="0.1" placeholder="camera.scale" />
-                </label>
               </div>
-              <div class="field-grid hidden" data-view-dimension="3d" style="grid-column: 1 / -1">
+              <div class="segmented" id="modeSwitch">
+                <button data-mode="view" class="active">view</button>
+                <button data-mode="contain">contain</button>
+                <button data-mode="size">size</button>
+                <button data-mode="latex" id="latexModeBtn">latex</button>
+              </div>
+            </section>
+
+            <section class="config-step">
+              <div class="config-step-header">
+                <span class="step-number">3</span>
+                <div class="step-copy">
+                  <div class="step-title">填写导出参数</div>
+                  <div class="step-description">参数按目标、文件与当前导出方式分组；<span class="required-mark" aria-hidden="true">*</span>为必填项。</div>
+                </div>
+              </div>
+
+              <div class="parameter-groups">
                 <div class="field-group">
-                  <div class="field-group-title">逻辑输出尺寸</div>
-                  <label><span>宽度（px，默认 1024）</span><input id="vc3dWidthInput" type="number" min="1" step="1" value="1200" /></label>
-                  <label><span>高度（px，默认 1024）</span><input id="vc3dHeightInput" type="number" min="1" step="1" value="800" /></label>
+                  <div class="field-group-title">导出目标</div>
+                  <div class="field-group-description">指定要处理的画板；留空时导出文件中的全部画板。</div>
+                  <label>画板索引（1-based，英文逗号分隔）
+                    <input id="slideIndicesInput" placeholder="例如：1,3" />
+                  </label>
                 </div>
-                <div class="field-group">
-                  <div class="field-group-title">可选相机覆盖（留空读取画板文件）</div>
-                  <label>相机 offset X（世界坐标）<input id="vc3dOffsetXInput" type="number" step="0.1" placeholder="camera3d.offset[0]" /></label>
-                  <label>相机 offset Y（世界坐标）<input id="vc3dOffsetYInput" type="number" step="0.1" placeholder="camera3d.offset[1]" /></label>
-                  <label>相机 offset Z（世界坐标）<input id="vc3dOffsetZInput" type="number" step="0.1" placeholder="camera3d.offset[2]" /></label>
-                  <label>yaw（弧度）<input id="vc3dYawInput" type="number" step="0.01" placeholder="camera3d.yaw" /></label>
-                  <label>pitch（弧度）<input id="vc3dPitchInput" type="number" step="0.01" placeholder="camera3d.pitch" /></label>
-                  <label>scale<input id="vc3dScaleInput" type="number" min="0.0001" step="0.01" placeholder="camera3d.scale" /></label>
+
+                <div class="field-group" id="commonImageFields">
+                  <div class="field-group-title">文件设置</div>
+                  <div class="field-group-description" id="formatDescription">2D 支持 PNG、JPG 和 SVG。</div>
+                  <div class="field-grid two-columns">
+                    <label>图片格式
+                      <select id="formatSelect">
+                        <option value="png">png</option>
+                        <option value="jpg">jpg</option>
+                        <option value="svg" id="svgFormatOption">svg</option>
+                      </select>
+                    </label>
+                    <label id="qualityField" class="hidden">JPG 质量（0~1）
+                      <input id="qualityInput" type="number" min="0" max="1" step="0.01" value="0.92" />
+                    </label>
+                  </div>
                 </div>
-                <div class="hint" style="grid-column: 1 / -1">3D 仅支持 PNG、JPG；投影方式及斜投影参数沿用画板文件。</div>
+
+                <div class="mode-fields field-group hidden" data-for="size">
+                  <div class="field-group-title">固定输出尺寸</div>
+                  <div class="field-group-description">最终图片严格使用指定宽高，内容在扣除最小留白后自动缩放并居中。</div>
+                  <div class="field-grid two-columns">
+                    <label><span><span class="required-mark" aria-hidden="true">*</span>宽度（px）</span>
+                      <input id="widthInput" type="number" min="1" step="1" value="1200" />
+                    </label>
+                    <label><span><span class="required-mark" aria-hidden="true">*</span>高度（px）</span>
+                      <input id="heightInput" type="number" min="1" step="1" value="900" />
+                    </label>
+                    <label>水平最小留白（每侧 px）
+                      <input id="minPadHInput" type="number" min="0" step="1" value="0" />
+                    </label>
+                    <label>垂直最小留白（每侧 px）
+                      <input id="minPadVInput" type="number" min="0" step="1" value="0" />
+                    </label>
+                  </div>
+                </div>
+
+                <div class="mode-fields field-group" data-for="view">
+                  <div class="field-group-title">清晰度</div>
+                  <div class="field-group-description">pixelRatio 只放大最终物理像素，不改变所选视野。</div>
+                  <label>pixelRatio（可选）
+                    <input id="viewPixelRatioInput" type="number" min="0.1" step="0.1" value="1" />
+                  </label>
+                </div>
+
+                <div class="field-group" data-view-dimension="2d" data-view-only>
+                  <div class="field-group-title">2D 世界坐标视野</div>
+                  <div class="field-group-description">四条边界决定导出范围；scale 决定每个世界坐标单位对应的逻辑像素数。</div>
+                  <div>
+                    <button type="button" class="secondary" id="readViewBoundsBtn">从当前画板读取视野</button>
+                  </div>
+                  <div class="field-grid two-columns">
+                    <label><span><span class="required-mark" aria-hidden="true">*</span>左边界</span>
+                      <input id="vbLeftInput" type="number" step="1" value="-5" />
+                    </label>
+                    <label><span><span class="required-mark" aria-hidden="true">*</span>上边界</span>
+                      <input id="vbTopInput" type="number" step="1" value="5" />
+                    </label>
+                    <label><span><span class="required-mark" aria-hidden="true">*</span>右边界</span>
+                      <input id="vbRightInput" type="number" step="1" value="5" />
+                    </label>
+                    <label><span><span class="required-mark" aria-hidden="true">*</span>下边界</span>
+                      <input id="vbBottomInput" type="number" step="1" value="-5" />
+                    </label>
+                  </div>
+                  <label>相机 scale（可选，留空读取画板文件）
+                    <input id="vbScaleInput" type="number" min="0.1" step="0.1" placeholder="camera.scale" />
+                  </label>
+                </div>
+
+                <div class="mode-fields field-group hidden" data-for="contain">
+                  <div class="field-group-title">内容适配与留白</div>
+                  <div class="field-group-description">根据可见内容计算图片尺寸，并在内容四周加入绝对像素留白。</div>
+                  <label>pixelRatio（可选）
+                    <input id="containPixelRatioInput" type="number" min="0.1" step="0.1" value="1" />
+                  </label>
+                  <div class="field-grid two-columns">
+                    <label>水平留白（每侧 px）
+                      <input id="paddingHInput" type="number" min="0" step="1" value="0" />
+                    </label>
+                    <label>垂直留白（每侧 px）
+                      <input id="paddingVInput" type="number" min="0" step="1" value="0" />
+                    </label>
+                  </div>
+                </div>
+
+                <div class="field-group hidden" data-view-dimension="3d" data-view-only>
+                  <div class="field-group-title">3D 逻辑输出尺寸</div>
+                  <div class="field-group-description">设置构图画布的逻辑尺寸；pixelRatio 会在此基础上放大物理像素。</div>
+                  <div class="field-grid two-columns">
+                    <label>宽度（px，默认 1024）<input id="vc3dWidthInput" type="number" min="1" step="1" value="1200" /></label>
+                    <label>高度（px，默认 1024）<input id="vc3dHeightInput" type="number" min="1" step="1" value="800" /></label>
+                  </div>
+                </div>
+
+                <div class="field-group hidden" data-view-dimension="3d" data-view-only>
+                  <div class="field-group-title">3D 相机覆盖</div>
+                  <div class="field-group-description">全部为可选项；留空时沿用画板相机。offset 如需覆盖，X、Y、Z 必须同时填写。</div>
+                  <div class="field-grid two-columns">
+                    <label>offset X（世界坐标）<input id="vc3dOffsetXInput" type="number" step="0.1" placeholder="camera3d.offset[0]" /></label>
+                    <label>offset Y（世界坐标）<input id="vc3dOffsetYInput" type="number" step="0.1" placeholder="camera3d.offset[1]" /></label>
+                    <label>offset Z（世界坐标）<input id="vc3dOffsetZInput" type="number" step="0.1" placeholder="camera3d.offset[2]" /></label>
+                    <label>yaw（弧度）<input id="vc3dYawInput" type="number" step="0.01" placeholder="camera3d.yaw" /></label>
+                    <label>pitch（弧度）<input id="vc3dPitchInput" type="number" step="0.01" placeholder="camera3d.pitch" /></label>
+                    <label>scale<input id="vc3dScaleInput" type="number" min="0.0001" step="0.01" placeholder="camera3d.scale" /></label>
+                  </div>
+                  <div class="hint">投影方式及斜投影参数沿用画板文件。</div>
+                </div>
+
+                <div class="mode-fields field-group hidden" data-for="latex">
+                  <div class="field-group-title">LaTeX / TikZ 文档</div>
+                  <div class="field-group-description">导出源码而非位图，可选择生成能够直接编译的完整文档。</div>
+                  <label>生成独立可编译文档（standalone）
+                    <select id="standaloneSelect">
+                      <option value="true">true</option>
+                      <option value="false">false</option>
+                    </select>
+                  </label>
+                  <div class="hint">
+                    可以在<a href="https://texample.net/projectile-motion/" target="_blank"
+                      rel="noopener noreferrer">这个网站</a>在线渲染查看 TikZ 效果
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div class="mode-fields hidden" data-for="contain">
-              <label>pixelRatio（缩放比例，可选）
-                <input id="containPixelRatioInput" type="number" min="0.1" step="0.1" value="1" />
-              </label>
-              <label>留白·水平（每侧像素单位）
-                <input id="paddingHInput" type="number" min="0" step="1" value="0" />
-              </label>
-              <label>留白·垂直（每侧像素单位）
-                <input id="paddingVInput" type="number" min="0" step="1" value="0" />
-              </label>
-            </div>
-
-            <div class="mode-fields hidden" data-for="latex">
-              <label>生成独立可编译文档（standalone）
-                <select id="standaloneSelect">
-                  <option value="true">true</option>
-                  <option value="false">false</option>
-                </select>
-              </label>
-              <div class="hint">
-                可以在<a href="https://texample.net/projectile-motion/" target="_blank"
-                  rel="noopener noreferrer">这个网站</a>在线渲染查看 TikZ 效果
+              <div class="button-row">
+                <button class="primary" id="exportBtn">导出</button>
+                <button class="secondary" id="downloadAllBtn">下载结果</button>
               </div>
-            </div>
-
-            <div class="button-row" style="margin-top: 12px">
-              <button class="primary" id="exportBtn">导出</button>
-              <button class="secondary" id="downloadAllBtn">下载结果</button>
-            </div>
+            </section>
           </div>
 
           <div id="codeView" class="hidden">
             <pre class="code-panel"><code id="codePanel"></code></pre>
-            <div class="hint">
-              以上为当前配置对应的 SDK 调用代码（只读预览）。
-            </div>
+            <div class="hint">以上为当前参数对应的 SDK 调用代码（只读预览）。</div>
           </div>
         </section>
 
@@ -792,7 +873,6 @@
     const statusEl = document.getElementById('status');
     const logsEl = document.getElementById('logs');
     const previewGridEl = document.getElementById('previewGrid');
-    const responsePanel = document.getElementById('responsePanel');
     const exportBtn = document.getElementById('exportBtn');
     const importBtn = document.getElementById('importBtn');
     const fileInput = document.getElementById('fileInput');
@@ -802,15 +882,18 @@
 
     const modeSwitch = document.getElementById('modeSwitch');
     const viewSwitch = document.getElementById('viewSwitch');
-    const viewDimensionSwitch = document.getElementById('viewDimensionSwitch');
+    const dimensionSwitch = document.getElementById('dimensionSwitch');
     const formView = document.getElementById('formView');
     const codeView = document.getElementById('codeView');
     const codePanel = document.getElementById('codePanel');
+    const latexModeBtn = document.getElementById('latexModeBtn');
 
     const slideIndicesInput = document.getElementById('slideIndicesInput');
     const formatSelect = document.getElementById('formatSelect');
     const qualityInput = document.getElementById('qualityInput');
     const qualityField = document.getElementById('qualityField');
+    const svgFormatOption = document.getElementById('svgFormatOption');
+    const formatDescription = document.getElementById('formatDescription');
     const viewPixelRatioInput = document.getElementById(
       'viewPixelRatioInput',
     );
@@ -846,9 +929,7 @@
     let editor = null;
     let currentMode = 'view';
     let currentView = 'form';
-    let currentViewDimension = '2d';
-    // 已切换过的维度会一并保留在导出请求中，支持混合 2D/3D 画板批量导出。
-    const configuredViewDimensions = new Set(['2d']);
+    let currentDimension = '2d';
     let latestResult = { kind: 'image', items: [] };
     let previewUrls = [];
     let hasLogs = false;
@@ -1029,40 +1110,14 @@
       previewGridEl.classList.toggle('hidden', images.length === 0);
     }
 
-    function toResponseSummary() {
-      if (latestResult.kind === 'latex') {
-        return latestResult.items.map((item) => ({
-          index: item.index,
-          format: item.format,
-          fileName: item.fileName,
-          code: item.code,
-          blob: item.blob instanceof Blob
-            ? { type: item.blob.type, size: item.blob.size }
-            : undefined,
-        }));
-      }
-
-      return latestResult.items.map((item) => ({
-        index: item.index,
-        format: item.format,
-        width: item.width,
-        height: item.height,
-        blob: { type: item.blob.type, size: item.blob.size },
-      }));
-    }
-
     function renderExportResult() {
       const hasResult = latestResult.items.length > 0;
       exportResultSectionEl.classList.toggle('hidden', !hasResult);
-      responsePanel.classList.toggle('hidden', !hasResult);
 
       if (!hasResult) {
         clearImagePreviews();
-        responsePanel.textContent = '';
         return;
       }
-
-      responsePanel.textContent = JSON.stringify(toResponseSummary(), null, 2);
 
       if (latestResult.kind === 'latex') {
         clearImagePreviews();
@@ -1073,6 +1128,21 @@
     }
 
     function applyModeVisibility() {
+      const is3d = currentDimension === '3d';
+      latexModeBtn.classList.toggle('hidden', is3d);
+      svgFormatOption.disabled = is3d;
+      svgFormatOption.hidden = is3d;
+      formatDescription.textContent = is3d
+        ? '3D 支持 PNG 和 JPG；SVG 与 LaTeX/TikZ 不适用。'
+        : '2D 支持 PNG、JPG 和 SVG。';
+
+      if (is3d && currentMode === 'latex') {
+        currentMode = 'view';
+      }
+      if (is3d && formatSelect.value === 'svg') {
+        formatSelect.value = 'png';
+      }
+
       const isImageMode = currentMode !== 'latex';
       commonImageFields.classList.toggle('hidden', !isImageMode);
       qualityField.classList.toggle(
@@ -1091,20 +1161,15 @@
           btn.getAttribute('data-mode') === currentMode,
         );
       });
-      applyViewDimensionVisibility();
-    }
-
-    function applyViewDimensionVisibility() {
       const isViewMode = currentMode === 'view';
-      viewDimensionSwitch.classList.toggle('hidden', !isViewMode);
-      document.querySelectorAll('[data-view-dimension]').forEach((el) => {
+      document.querySelectorAll('[data-view-only]').forEach((el) => {
         el.classList.toggle(
           'hidden',
-          !isViewMode || el.getAttribute('data-view-dimension') !== currentViewDimension,
+          !isViewMode || el.getAttribute('data-view-dimension') !== currentDimension,
         );
       });
-      document.querySelectorAll('#viewDimensionSwitch button').forEach((btn) => {
-        btn.classList.toggle('active', btn.getAttribute('data-dimension') === currentViewDimension);
+      document.querySelectorAll('#dimensionSwitch button').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-dimension') === currentDimension);
       });
     }
 
@@ -1141,7 +1206,7 @@
       const format = formatSelect.value;
       const quality = Number(qualityInput.value);
       const lines = [
-        '// 场景：' + currentMode + ' 导出图片',
+        '// 场景：' + currentDimension.toUpperCase() + ' 画板，' + currentMode + ' 导出图片',
         'const images = await editor.slides.exportImage({',
         "  mode: '" + currentMode + "',",
         "  format: '" + format + "',",
@@ -1183,7 +1248,7 @@
         lines.push(
           '  pixelRatio: ' + Number(viewPixelRatioInput.value) + ',',
         );
-        if (configuredViewDimensions.has('2d')) {
+        if (currentDimension === '2d') {
           lines.push('  viewBound: {');
           lines.push('    left: ' + Number(vbLeftInput.value) + ',');
           lines.push('    top: ' + Number(vbTopInput.value) + ',');
@@ -1191,8 +1256,7 @@
           lines.push('    bottom: ' + Number(vbBottomInput.value) + ',');
           if (vbScaleInput.value !== '') lines.push('    scale: ' + Number(vbScaleInput.value) + ',');
           lines.push('  },');
-        }
-        if (configuredViewDimensions.has('3d')) {
+        } else {
           lines.push('  viewCamera3d: {');
           const offsetValues = [vc3dOffsetXInput.value, vc3dOffsetYInput.value, vc3dOffsetZInput.value];
           if (offsetValues.some((value) => value !== '')) {
@@ -1247,7 +1311,7 @@
         };
       } else if (currentMode === 'view') {
         options.pixelRatio = Number(viewPixelRatioInput.value);
-        if (configuredViewDimensions.has('2d')) {
+        if (currentDimension === '2d') {
           options.viewBound = {
             left: Number(vbLeftInput.value),
             top: Number(vbTopInput.value),
@@ -1255,8 +1319,7 @@
             bottom: Number(vbBottomInput.value),
           };
           if (vbScaleInput.value !== '') options.viewBound.scale = Number(vbScaleInput.value);
-        }
-        if (configuredViewDimensions.has('3d')) {
+        } else {
           const offsetValues = [vc3dOffsetXInput.value, vc3dOffsetYInput.value, vc3dOffsetZInput.value];
           if (offsetValues.some((value) => value !== '') && offsetValues.some((value) => value === '')) {
             throw new Error('3D 相机 offset 如需覆盖，请同时填写 X、Y、Z');
@@ -1418,14 +1481,13 @@
       }
     });
 
-    viewDimensionSwitch.addEventListener('click', (event) => {
+    dimensionSwitch.addEventListener('click', (event) => {
       const btn = event.target.closest('button[data-dimension]');
       if (!btn) return;
       const dimension = btn.getAttribute('data-dimension');
       if (!dimension) return;
-      currentViewDimension = dimension;
-      configuredViewDimensions.add(dimension);
-      applyViewDimensionVisibility();
+      currentDimension = dimension;
+      applyModeVisibility();
       if (currentView === 'code') codePanel.textContent = buildExportCode();
     });
 
