@@ -134,8 +134,7 @@
 <body>
   <a href="index.html">← 返回示例列表</a>
   <h1>04 loadFile</h1>
-  <p class="desc">通过 loadFile 加载 JSON 内容，支持粘贴 JSON 文本或导入 .json / .algeo 文件。需符合 FileContentLatest
-    格式（slides、messages、metadata）。</p>
+  <p class="desc">通过 loadFile 加载 JSON 内容，支持粘贴 JSON 文本或导入 .json / .algeo 文件。</p>
 
   <div class="toolbar">
     <button class="primary" id="loadBtn">加载</button>
@@ -172,12 +171,7 @@
       function parseContent(text) {
         const raw = JSON.parse(text);
         if (!raw || typeof raw !== 'object') throw new Error('无效 JSON');
-        try {
-          return AlgeoSdk.convertToLatest(raw);
-        } catch (error) {
-          const message = error?.message || String(error);
-          throw new Error('文件内容不符合协议：' + message);
-        }
+        return raw;
       }
 
       let sdk = await AlgeoSdk.create(container, {

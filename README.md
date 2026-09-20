@@ -313,7 +313,7 @@ type AlgeoCreateOptions =
 | ---------------- | ------------------------------ | ------ | ------------------------------------------------------ |
 | `auth`           | `{ appId: string }`            | -      | 编辑模式鉴权参数，其中 `appId` 会参与默认路由生成      |
 | `shareId`        | `string`                       | `''`   | 编辑模式初始分享 ID，会映射到 `/embed/edit/:appId/:id` |
-| `initialContent` | `FileContentLatest`            | -      | 初始化后自动注入的文件内容                             |
+| `initialContent` | `FileContentAny`               | -      | 初始化后自动注入的文件内容；SDK 会自动转换为最新格式       |
 | `ui`             | `Partial<AlgeoEditorUiConfig>` | -      | 编辑器 UI 开关配置                                     |
 | `fonts`          | `AlgeoFontConfig`              | -      | 字体资源、字体选择器列表及默认字体配置                 |
 
@@ -474,26 +474,13 @@ SDK 内部已通过 `ResizeObserver` 在容器从隐藏（`display:none`，尺�
 
 ---
 
-##### `presentation.loadFile(content: FileContent): Promise<LoadFileResult>`
+##### `presentation.loadFile(content: FileContentAny): Promise<LoadFileResult>`
 
-加载完整文件数据（覆盖式），需符合 FileContentLatest 格式。
+加载完整文件数据（覆盖式）。
 
 | 参数      | 类型          | 说明         |
 | --------- | ------------- | ------------ |
-| `content` | `FileContent` | 文件内容对象 |
-
-**FileContent 结构：**
-
-```typescript
-interface FileContent {
-  slides: unknown[]; // 画板数据数组
-  messages: unknown[]; // 消息数据（最新版本为会话数组）
-  metadata: {
-    version: string; // 如 '11'
-    shareOptions?: unknown;
-  };
-}
-```
+| `content` | `FileContentAny` | 协议包支持读取的文件内容对象 |
 
 **返回值：** `{ success: true }`
 
@@ -560,8 +547,8 @@ interface FileContent {
 
 | 方法                   | 说明                             |
 | ---------------------- | -------------------------------- |
-| `loadContent(content)` | 加载完整画板文件内容             |
-| `getContent()`         | 异步获取 iframe 当前实时画板内容 |
+| `loadContent(content: FileContentAny)` | 加载完整画板文件内容，并自动转换为最新格式 |
+| `getContent(): Promise<FileContentLatest>` | 异步获取 iframe 当前实时画板内容 |
 
 #### `editor.slides`
 

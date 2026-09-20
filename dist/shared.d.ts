@@ -1,8 +1,8 @@
-import { AlgeoError, type AlgeoErrorPayload, type AiRunPayloadV1, type AiStreamEventV1, type EmbedReadyMessage, type EmbedResponseMessage, type FileContentLatest, EMBED_ERROR_CODES } from '@dajiaoai/algeo-protocol';
+import { AlgeoError, type AlgeoErrorPayload, type AiRunPayloadV1, type AiStreamEventV1, type EmbedReadyMessage, type EmbedResponseMessage, type FileContentAny, type FileContentLatest, EMBED_ERROR_CODES } from '@dajiaoai/algeo-protocol';
 /** SDK 版本号，构建时由 rollup 注入 */
 export declare const VERSION = "__ALGEO_SDK_VERSION__";
 /** 从协议层 re-export，供外部使用 */
-export type { FileContentLatest, AlgeoErrorPayload };
+export type { FileContentAny, FileContentLatest, AlgeoErrorPayload };
 export type { AiRawSseEventV1, AiResponseRecordV1, AiRunPayloadV1, AiStreamEventV1, GeometryOpV1, OpenAiChatMessageV1, } from '@dajiaoai/algeo-protocol';
 export { AlgeoError, EMBED_ERROR_CODES };
 export declare const EMBED_TIMEOUT_MS = 30000;
@@ -75,7 +75,7 @@ export type AlgeoEditorSaveResult = {
 export interface AlgeoEditorCreateOptions {
     auth?: AlgeoEditorAuthOptions;
     shareId?: string;
-    initialContent?: FileContentLatest;
+    initialContent?: FileContentAny;
     ui?: AlgeoEditorUiConfig;
     /** 字体资源、字体选择器列表及默认字体配置。 */
     fonts?: AlgeoFontConfig;
@@ -414,7 +414,7 @@ export interface GetHistoryStateResult {
     canRedo: boolean;
 }
 export interface DocumentApi {
-    loadContent(content: FileContentLatest): Promise<void>;
+    loadContent(content: FileContentAny): Promise<void>;
     getContent(): Promise<FileContentLatest>;
 }
 export interface SlidesApi {

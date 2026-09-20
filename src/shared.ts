@@ -5,6 +5,7 @@ import {
   type AiStreamEventV1,
   type EmbedReadyMessage,
   type EmbedResponseMessage,
+  type FileContentAny,
   type FileContentLatest,
   EMBED_ERROR_CODES,
 } from '@dajiaoai/algeo-protocol';
@@ -13,7 +14,7 @@ import {
 export const VERSION = '__ALGEO_SDK_VERSION__';
 
 /** 从协议层 re-export，供外部使用 */
-export type { FileContentLatest, AlgeoErrorPayload };
+export type { FileContentAny, FileContentLatest, AlgeoErrorPayload };
 export type {
   AiRawSseEventV1,
   AiResponseRecordV1,
@@ -114,7 +115,7 @@ export type AlgeoEditorSaveResult =
 export interface AlgeoEditorCreateOptions {
   auth?: AlgeoEditorAuthOptions;
   shareId?: string;
-  initialContent?: FileContentLatest;
+  initialContent?: FileContentAny;
   ui?: AlgeoEditorUiConfig;
   /** 字体资源、字体选择器列表及默认字体配置。 */
   fonts?: AlgeoFontConfig;
@@ -519,7 +520,7 @@ export interface GetHistoryStateResult {
 }
 
 export interface DocumentApi {
-  loadContent(content: FileContentLatest): Promise<void>;
+  loadContent(content: FileContentAny): Promise<void>;
   getContent(): Promise<FileContentLatest>;
 }
 

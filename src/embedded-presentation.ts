@@ -1,4 +1,5 @@
 import { EmbeddedTarget } from './embedded-target';
+import { convertToLatest } from '@dajiaoai/algeo-protocol';
 import {
   AlgeoError,
   type AlgeoPresentationCreateOptions,
@@ -6,6 +7,7 @@ import {
   type EmbeddedPresentationEventListenerMap,
   type EmbeddedPresentationEventMap,
   type EmbeddedPresentationEventName,
+  type FileContentAny,
   type FileContentLatest,
   type GetSlideCountResult,
   type LoadFileResult,
@@ -116,12 +118,15 @@ export class EmbeddedPresentation extends EmbeddedTarget<
     return result;
   }
 
-  async loadFile(content: FileContentLatest): Promise<LoadFileResult> {
+  async loadFile(content: FileContentAny): Promise<LoadFileResult> {
     this.ensureWhitelistAccess('loadFile');
-    const result = await this.post<LoadFileResult>('loadContent', { content });
-    this.currentContent = content;
+    const latestContent = convertToLatest(content);
+    const result = await this.post<LoadFileResult>('loadContent', {
+      content: latestContent,
+    });
+    this.currentContent = latestContent;
     this.currentSlideIndex = 0;
-    this.slideCount = content.slides.length;
+    this.slideCount = latestContent.slides.length;
     return result;
   }
 

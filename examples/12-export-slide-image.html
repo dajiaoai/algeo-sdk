@@ -1033,14 +1033,7 @@
       if (!raw || typeof raw !== 'object') {
         throw new Error('无效 JSON');
       }
-
-      try {
-        return AlgeoSdk.convertToLatest(raw);
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : String(error);
-        throw new Error('文件内容不符合协议：' + message);
-      }
+      return raw;
     }
 
     function downloadBlob(blob, fileName) {

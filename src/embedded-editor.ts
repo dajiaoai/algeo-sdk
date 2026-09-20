@@ -1,5 +1,8 @@
 import { EmbeddedTarget } from './embedded-target';
-import { safeParseAiStreamEventV1 } from '@dajiaoai/algeo-protocol';
+import {
+  convertToLatest,
+  safeParseAiStreamEventV1,
+} from '@dajiaoai/algeo-protocol';
 import {
   AlgeoError,
   type AiApi,
@@ -26,6 +29,7 @@ import {
   type ExportLatexResult,
   type ExportSlideImageOptions,
   type ExportSlideImageResult,
+  type FileContentAny,
   type FileContentLatest,
   type GetContentResult,
   type GetViewBoundsResult,
@@ -72,7 +76,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
     super(container, 'editor');
 
     this.document = {
-      loadContent: async (content: FileContentLatest) => {
+      loadContent: async (content: FileContentAny) => {
         await this.loadContent(content, 'loadContent');
       },
       getContent: async () => {
@@ -439,13 +443,14 @@ export class EmbeddedEditor extends EmbeddedTarget<
   }
 
   private async loadContent(
-    content: FileContentLatest,
+    content: FileContentAny,
     source: ContentChangeEvent['source'],
   ): Promise<void> {
-    await this.post<LoadFileResult>('loadContent', { content });
-    this.currentContent = content;
+    const latestContent = convertToLatest(content);
+    await this.post<LoadFileResult>('loadContent', { content: latestContent });
+    this.currentContent = latestContent;
     this.currentSlideIndex = 0;
-    this.slideCount = content.slides.length;
+    this.slideCount = latestContent.slides.length;
     await this.refreshHistoryState();
   }
 

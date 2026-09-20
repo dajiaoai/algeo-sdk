@@ -301,7 +301,7 @@
     <div class="hero">
       <a href="index.html">← 返回示例列表</a>
       <h1>09 HistoryApi</h1>
-      <p>这个示例专门用于联调编辑模式下的历史协议。你可以先加载一份演示内容，然后在 iframe 内手动创建、拖动或删除对象，再回到宿主侧读取历史状态，继续测试
+      <p>这个示例专门用于联调编辑模式下的历史协议。你可以在 iframe 内手动创建、拖动或删除对象，再回到宿主侧读取历史状态，继续测试
         <code>undo</code>、<code>redo</code>、<code>jumpTo</code> 和 <code>clear</code>。
       </p>
     </div>
@@ -347,7 +347,6 @@
           <h2>快捷操作</h2>
           <p>先在 iframe 内做几次编辑，再用这些按钮验证历史协议是否正常生效。</p>
           <div class="button-row">
-            <button class="primary" id="loadDemoBtn">加载演示内容</button>
             <button class="secondary" id="syncBtn">读取文档并同步历史状态</button>
             <button class="secondary" id="undoBtn">undo()</button>
             <button class="secondary" id="redoBtn">redo()</button>
@@ -375,7 +374,7 @@
               </div>
             </div>
           </div>
-          <div class="hint">建议流程：加载演示内容后，在 iframe 内继续编辑 2 到 3 次，再回来读取状态并测试撤销、重做和跳转。</div>
+          <div class="hint">建议流程：在 iframe 内编辑 2 到 3 次，再回来读取状态并测试撤销、重做和跳转。</div>
         </section>
 
         <section class="card section">
@@ -397,51 +396,8 @@
   <script>
     const { baseUrl, appId, shareId } = window.ALGEO_CONFIG;
 
-    const demoContent = {
-      messages: [],
-      slides: [
-        {
-          definitions: [
-            { kind: 'primitive', id: 'A', source: 'Point(?, ?)', label: '{{id}}' },
-            { kind: 'primitive', id: 'B', source: 'Point(?, ?)', label: '{{id}}' },
-            { kind: 'primitive', id: 'C', source: 'Point(?, ?)', label: '{{id}}' },
-            { kind: 'primitive', id: 'tri', source: 'Polygon(A, B, C)' },
-            { kind: 'primitive', id: 'ab', source: 'tri.edge(1)', parent: 'tri', inheritStyle: true },
-            { kind: 'primitive', id: 'bc', source: 'tri.edge(2)', parent: 'tri', inheritStyle: true },
-            { kind: 'primitive', id: 'ca', source: 'tri.edge(3)', parent: 'tri', inheritStyle: true }
-          ],
-          uvarMap: [
-            ['A.0', -4], ['A.1', -1],
-            ['B.0', -2], ['B.1', 2],
-            ['C.0', 1], ['C.1', -1]
-          ],
-          styleSheet: {
-            background: {},
-            xaxis: {},
-            yaxis: {},
-            grid: {},
-            types: [],
-            typeLabels: [],
-            primitives: [],
-            primitiveLabels: [],
-            textType: {},
-            texts: [],
-            sliderType: {},
-            sliders: [],
-            buttonType: {},
-            buttons: []
-          },
-          doc: []
-        }
-      ],
-      metadata: {
-        version: '11'
-      }
-    };
-
     const container = document.getElementById('algeo-container');
     const recreateBtn = document.getElementById('recreateBtn');
-    const loadDemoBtn = document.getElementById('loadDemoBtn');
     const syncBtn = document.getElementById('syncBtn');
     const undoBtn = document.getElementById('undoBtn');
     const redoBtn = document.getElementById('redoBtn');
@@ -587,16 +543,6 @@
 
     recreateBtn.addEventListener('click', function () {
       createEditorInstance(false).catch(function () { });
-    });
-
-    loadDemoBtn.addEventListener('click', function () {
-      runAction('document.loadContent(demoContent)', async function () {
-        await getEditor().document.loadContent(demoContent);
-        return {
-          slides: demoContent.slides.length,
-          definitions: demoContent.slides[0].definitions.length,
-        };
-      }).catch(function () { });
     });
 
     syncBtn.addEventListener('click', function () {

@@ -3865,6 +3865,12 @@ var AlgeoError = class extends Error {
     this.name = "AlgeoError";
   }
 };
+objectType({
+  text: stringType().optional(),
+  images: arrayType(stringType().trim().min(1)).optional(),
+  openPanel: booleanType().optional(),
+  focus: booleanType().optional()
+}).passthrough();
 var openAiChatMessageV1Schema = objectType({
   role: stringType(),
   content: unionType([
@@ -3878,9 +3884,23 @@ var openAiChatMessageV1Schema = objectType({
   name: stringType().optional()
 }).passthrough();
 objectType({
-  model_id: stringType(),
-  messages: arrayType(unionType([openAiChatMessageV1Schema, recordType(unknownType())])),
-  extra_openai_params: recordType(unknownType()).optional()
+  model: stringType().trim().min(1),
+  input: unionType([
+    stringType(),
+    arrayType(unionType([openAiChatMessageV1Schema, recordType(unknownType())]))
+  ]).optional(),
+  previous_response_id: stringType().trim().min(1).optional(),
+  instructions: stringType().optional(),
+  temperature: numberType().min(0).max(2).optional(),
+  max_output_tokens: numberType().int().positive().optional(),
+  metadata: recordType(unknownType()).optional()
+}).passthrough().superRefine((value, ctx) => {
+  if (!("input" in value) && !("previous_response_id" in value)) {
+    ctx.addIssue({
+      code: ZodIssueCode.custom,
+      message: "input or previous_response_id is required."
+    });
+  }
 });
 objectType({
   id: stringType(),
@@ -4011,7 +4031,7 @@ function convertToLatest(content) {
 }
 
 /** SDK 版本号，构建时由 rollup 注入 */
-const VERSION = '2.14.0';
+const VERSION = '2.14.1';
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
 const DEFAULT_PRESENTATION_PATH = '/embed/present';
 const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4466,10 +4486,13 @@ class EmbeddedPresentation extends EmbeddedTarget {
     }
     async loadFile(content) {
         this.ensureWhitelistAccess('loadFile');
-        const result = await this.post('loadContent', { content });
-        this.currentContent = content;
+        const latestContent = convertToLatest(content);
+        const result = await this.post('loadContent', {
+            content: latestContent,
+        });
+        this.currentContent = latestContent;
         this.currentSlideIndex = 0;
-        this.slideCount = content.slides.length;
+        this.slideCount = latestContent.slides.length;
         return result;
     }
     async switchSlide(index) {
@@ -4790,10 +4813,11 @@ class EmbeddedEditor extends EmbeddedTarget {
         }
     }
     async loadContent(content, source) {
-        await this.post('loadContent', { content });
-        this.currentContent = content;
+        const latestContent = convertToLatest(content);
+        await this.post('loadContent', { content: latestContent });
+        this.currentContent = latestContent;
         this.currentSlideIndex = 0;
-        this.slideCount = content.slides.length;
+        this.slideCount = latestContent.slides.length;
         await this.refreshHistoryState();
     }
     async switchTo(index) {

@@ -349,9 +349,8 @@
           </div>
           <div class="tab-panel" id="guidePanel" role="tabpanel" aria-labelledby="guideTab" hidden>
             <h2>操作建议</h2>
-            <p>先加载演示内容，再在左侧编辑器中修改对象、切换画板，最后点击编辑器导航栏中的保存按钮。每完成一步，都可以在下方看到相应事件的计数和数据变化。</p>
+            <p>在左侧编辑器中修改对象、切换画板，最后点击编辑器导航栏中的保存按钮。每完成一步，都可以在下方看到相应事件的计数和数据变化。</p>
             <div class="button-row">
-              <button class="primary" id="loadDemoBtn">加载演示内容</button>
               <button class="primary" id="getContentBtn">读取当前内容</button>
             </div>
             <div class="status" id="status">等待初始化...</div>
@@ -411,79 +410,8 @@
   <script>
     const { baseUrl, appId, shareId } = window.ALGEO_CONFIG;
 
-    const demoContent = {
-      messages: [],
-      slides: [
-        {
-          definitions: [
-            { kind: 'primitive', id: 'A', source: 'Point(?, ?)', label: '{{id}}' },
-            { kind: 'primitive', id: 'B', source: 'Point(?, ?)', label: '{{id}}' },
-            { kind: 'primitive', id: 'C', source: 'Point(?, ?)', label: '{{id}}' },
-            { kind: 'primitive', id: 'tri', source: 'Polygon(A, B, C)' },
-            { kind: 'primitive', id: 'ab', source: 'tri.edge(1)', parent: 'tri', inheritStyle: true },
-            { kind: 'primitive', id: 'bc', source: 'tri.edge(2)', parent: 'tri', inheritStyle: true },
-            { kind: 'primitive', id: 'ca', source: 'tri.edge(3)', parent: 'tri', inheritStyle: true }
-          ],
-          uvarMap: [
-            ['A.0', -4], ['A.1', -1],
-            ['B.0', -2], ['B.1', 2],
-            ['C.0', 1], ['C.1', -1]
-          ],
-          styleSheet: {
-            background: {},
-            xaxis: {},
-            yaxis: {},
-            grid: {},
-            types: [],
-            typeLabels: [],
-            primitives: [],
-            primitiveLabels: [],
-            textType: {},
-            texts: [],
-            sliderType: {},
-            sliders: [],
-            buttonType: {},
-            buttons: []
-          },
-          doc: []
-        },
-        {
-          definitions: [
-            { kind: 'primitive', id: 'O', source: 'Point(?, ?)', label: '{{id}}' },
-            { kind: 'primitive', id: 'P', source: 'Point(?, ?)', label: '{{id}}' },
-            { kind: 'primitive', id: 'circ', source: 'Circle(O, P)' }
-          ],
-          uvarMap: [
-            ['O.0', -1], ['O.1', 0],
-            ['P.0', 2], ['P.1', 0]
-          ],
-          styleSheet: {
-            background: {},
-            xaxis: {},
-            yaxis: {},
-            grid: {},
-            types: [],
-            typeLabels: [],
-            primitives: [],
-            primitiveLabels: [],
-            textType: {},
-            texts: [],
-            sliderType: {},
-            sliders: [],
-            buttonType: {},
-            buttons: []
-          },
-          doc: []
-        }
-      ],
-      metadata: {
-        version: '11'
-      }
-    };
-
     const container = document.getElementById('algeo-container');
     const recreateBtn = document.getElementById('recreateBtn');
-    const loadDemoBtn = document.getElementById('loadDemoBtn');
     const getContentBtn = document.getElementById('getContentBtn');
     const eventsTab = document.getElementById('eventsTab');
     const guideTab = document.getElementById('guideTab');
@@ -665,18 +593,6 @@
 
     recreateBtn.addEventListener('click', function () {
       void createEditorInstance(false);
-    });
-
-    loadDemoBtn.addEventListener('click', function () {
-      void (async function () {
-        const instance = await getEditor();
-        await instance.document.loadContent(demoContent);
-        status.textContent = '演示内容已加载。接下来可在 iframe 内编辑、切换画板或保存。';
-        log('document.loadContent', summarizeContent(demoContent));
-      }()).catch(function (error) {
-        status.textContent = '加载演示内容失败：' + error.message;
-        log('document.loadContent.error', { message: error.message });
-      });
     });
 
     getContentBtn.addEventListener('click', function () {

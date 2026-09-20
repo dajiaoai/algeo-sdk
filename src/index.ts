@@ -1,5 +1,8 @@
 export { AlgeoError, EMBED_ERROR_CODES, VERSION } from './shared';
-export type { FileContentLatest } from '@dajiaoai/algeo-protocol';
+export type {
+  FileContentAny,
+  FileContentLatest,
+} from '@dajiaoai/algeo-protocol';
 export { convertToLatest } from '@dajiaoai/algeo-protocol';
 
 export type {

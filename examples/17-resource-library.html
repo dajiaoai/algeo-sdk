@@ -602,8 +602,7 @@
       exportBtn.disabled = true;
       document.getElementById('status').textContent = `正在导入：${file.name}`;
       try {
-        const raw = JSON.parse(await file.text());
-        const content = AlgeoSdk.convertToLatest(raw);
+        const content = JSON.parse(await file.text());
         await editor.document.loadContent(content);
         document.getElementById('status').textContent = `已导入：${file.name}`;
         log(`document.loadContent 导入完成：${file.name}`);
