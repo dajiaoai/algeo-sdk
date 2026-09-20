@@ -314,6 +314,8 @@ interface ExportImageBaseOptions {
     format?: ExportImageFormat;
     /** 仅 jpg 生效，0~1 */
     quality?: number;
+    /** 是否导出透明背景，默认 false；仅 PNG、SVG 支持。 */
+    transparent?: boolean;
 }
 /**
  * 场景一（size）：

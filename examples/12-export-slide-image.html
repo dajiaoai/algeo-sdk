@@ -427,7 +427,7 @@
       max-width: 100%;
       max-height: 420px;
       object-fit: contain;
-      background: #fff;
+      background: transparent;
       box-shadow: 0 4px 16px rgba(24, 32, 47, 0.12);
     }
 
@@ -730,7 +730,14 @@
                     <label id="qualityField" class="hidden">JPG 质量（0~1）
                       <input id="qualityInput" type="number" min="0" max="1" step="0.01" value="0.92" />
                     </label>
+                    <label>透明背景
+                      <select id="transparentSelect" aria-describedby="transparentHint">
+                        <option value="false">关闭（默认）</option>
+                        <option value="true">开启</option>
+                      </select>
+                    </label>
                   </div>
+                  <div class="hint" id="transparentHint">仅 PNG、SVG 支持透明背景；选择 JPG 时自动关闭。预览中的棋盘格表示透明区域。</div>
                 </div>
 
                 <div class="mode-fields field-group hidden" data-for="size">
@@ -891,6 +898,7 @@
     const slideIndicesInput = document.getElementById('slideIndicesInput');
     const formatSelect = document.getElementById('formatSelect');
     const qualityInput = document.getElementById('qualityInput');
+    const transparentSelect = document.getElementById('transparentSelect');
     const qualityField = document.getElementById('qualityField');
     const svgFormatOption = document.getElementById('svgFormatOption');
     const formatDescription = document.getElementById('formatDescription');
@@ -1144,6 +1152,10 @@
       }
 
       const isImageMode = currentMode !== 'latex';
+      transparentSelect.disabled = formatSelect.value === 'jpg';
+      if (transparentSelect.disabled) {
+        transparentSelect.value = 'false';
+      }
       commonImageFields.classList.toggle('hidden', !isImageMode);
       qualityField.classList.toggle(
         'hidden',
@@ -1210,6 +1222,7 @@
         'const images = await editor.slides.exportImage({',
         "  mode: '" + currentMode + "',",
         "  format: '" + format + "',",
+        '  transparent: ' + (transparentSelect.value === 'true') + ',',
       ];
 
       if (slideIndices !== undefined) {
@@ -1291,6 +1304,7 @@
         ...base,
         mode: currentMode,
         format,
+        transparent: transparentSelect.value === 'true',
       };
       if (format === 'jpg') {
         options.quality = Number(qualityInput.value);
@@ -1506,6 +1520,7 @@
       slideIndicesInput,
       formatSelect,
       qualityInput,
+      transparentSelect,
       viewPixelRatioInput,
       containPixelRatioInput,
       widthInput,
