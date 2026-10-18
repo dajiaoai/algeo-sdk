@@ -93,18 +93,6 @@
         margin: 0 0 16px;
         font-size: 14px;
       }
-      .status {
-        padding: 10px 14px;
-        background: #e8effb;
-        border-radius: 8px;
-        margin-bottom: 16px;
-        font-size: 13px;
-        overflow-wrap: anywhere;
-      }
-      .status[data-state='error'] {
-        color: #b42318;
-        background: #fff0ed;
-      }
       .workspace {
         display: grid;
         grid-template-columns: minmax(0, 1.4fr) minmax(360px, 1fr);
@@ -233,9 +221,6 @@
         <a class="mode-link" id="presentation-link" href="?mode=presentation"
           >演示模式</a
         >
-        <a href="/sdk/repl.html" target="_blank" rel="noopener"
-          >完整 REPL 文档 ↗</a
-        >
       </div>
     </nav>
     <h1>REPL 指令实验室</h1>
@@ -243,9 +228,6 @@
       选择常用指令，修改代码并执行，实时观察画板变化。appId
       与初始分享内容统一读取示例配置。
     </p>
-    <div id="status" class="status" role="status" aria-live="polite">
-      正在初始化画板…
-    </div>
     <main class="workspace">
       <section class="panel" aria-labelledby="canvas-heading">
         <div class="panel-heading">
@@ -293,7 +275,7 @@
             <p>选择指令并执行，文本结果会显示在这里。</p>
           </div>
           <p class="docs">
-            继续探索：<a href="/sdk/repl.html" target="_blank" rel="noopener"
+            继续探索：<a href="https://open.dajiaoai.com/sdk/repl.html" target="_blank" rel="noopener"
               >查看完整命令、几何类型与动画交互文档 ↗</a
             >
           </p>

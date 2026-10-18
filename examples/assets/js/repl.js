@@ -60,11 +60,6 @@
   let busy = false;
   let hasOutput = false;
 
-  function setStatus(message, state = 'ready') {
-    get('status').textContent = message;
-    get('status').dataset.state = state;
-  }
-
   function updateControls() {
     get('run').disabled = busy || !sdk;
     get('undo').disabled =
@@ -124,13 +119,12 @@
     if (!sdk || busy) return;
     const command = get('command').value.trim();
     if (action === 'repl' && !command) {
-      setStatus('请先输入 REPL 指令。', 'error');
+      appendOutput('repl', '请先输入 REPL 指令。', true);
       get('command').focus();
       return;
     }
     busy = true;
     updateControls();
-    setStatus('正在执行…', 'busy');
     try {
       if (action === 'repl') {
         // Keep the full script intact, including on … do … end blocks.
@@ -140,11 +134,9 @@
         await sdk.history[action]();
         appendOutput(action, action === 'undo' ? '已撤销' : '已重做');
       }
-      setStatus('执行完成，可以继续修改或选择其他指令。');
     } catch (error) {
       const message = `${error.code ? '[' + error.code + '] ' : ''}${error.message || String(error)}`;
       appendOutput(action === 'repl' ? command : action, message, true);
-      setStatus(message, 'error');
     } finally {
       busy = false;
       updateControls();
@@ -185,11 +177,8 @@
       sdk = undefined;
       throw new Error('当前 SDK 不支持此模式的 REPL，请先构建最新版本。');
     }
-    setStatus(
-      `${mode === 'editor' ? '编辑' : '演示'}模式已就绪 · appId: ${config.appId}`,
-    );
   } catch (error) {
-    setStatus(`初始化失败：${error.message || String(error)}`, 'error');
+    appendOutput('初始化', error.message || String(error), true);
   }
   updateControls();
 })();
