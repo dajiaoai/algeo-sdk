@@ -406,7 +406,7 @@
       <div class="toolbar">
         <div class="field">
           <label for="shareId">分享 ID</label>
-          <input type="text" id="shareId" placeholder="输入分享 ID" autocomplete="off">
+          <input type="text" id="shareId" placeholder="可选，留空打开空白画板" autocomplete="off">
         </div>
         <button class="primary-button" id="reload" type="button">重新加载</button>
       </div>
@@ -504,9 +504,9 @@
     shareIdEl.value = DEFAULT_SHARE_ID;
 
     function getEmbedSrc() {
-      const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
+      const id = shareIdEl.value.trim();
       const embedBase = baseUrl.replace(/\/+$/, '');
-      return embedBase + '/embed/present/' + encodeURIComponent(appId) + '/' + encodeURIComponent(id);
+      return embedBase + '/embed/present/' + encodeURIComponent(appId) + (id ? '/' + encodeURIComponent(id) : '');
     }
 
     function loadPanel(panel) {

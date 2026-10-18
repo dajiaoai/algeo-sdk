@@ -886,8 +886,8 @@
           <input id="configAppId" name="appId" type="text" autocomplete="off" required />
         </div>
         <div class="config-field">
-          <label for="configShareId">Share ID</label>
-          <input id="configShareId" name="shareId" type="text" autocomplete="off" required />
+          <label for="configShareId">Share ID（可选）</label>
+          <input id="configShareId" name="shareId" type="text" autocomplete="off" placeholder="留空打开空白画板" />
         </div>
         <div class="config-actions">
           <button class="save" type="submit">保存</button>
@@ -952,7 +952,7 @@
           <p>适合展示、播放、加载文件，以及从画板中读取结构化信息。</p>
         </div>
         <div class="grid">
-          <a class="example" href="01-basic-iframe.html" target="_blank" rel="noopener">
+          <a class="example" href="01-basic-iframe" target="_blank" rel="noopener">
             <div>
               <h3>01 基础嵌入</h3>
               <span>100% 宽度、居中 max-width、vh、双列等高频布局</span>
@@ -961,7 +961,7 @@
               <span class="tag">iframe</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="02-sdk-usage.html" target="_blank" rel="noopener">
+          <a class="example" href="02-sdk-usage" target="_blank" rel="noopener">
             <div>
               <h3>02 演示模式 UI 配置</h3>
               <span>初始化并动态切换演示模式 UI 元件</span>
@@ -970,7 +970,7 @@
               <span class="tag">SDK</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="03-switch-slide.html" target="_blank" rel="noopener">
+          <a class="example" href="03-switch-slide" target="_blank" rel="noopener">
             <div>
               <h3>03 切换画板</h3>
               <span>多画板内容，通过 switchSlide 切换</span>
@@ -979,7 +979,7 @@
               <span class="tag">Slides</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="04-load-file.html" target="_blank" rel="noopener">
+          <a class="example" href="04-load-file" target="_blank" rel="noopener">
             <div>
               <h3>04 loadFile</h3>
               <span>输入 JSON 文本或导入 .json 文件加载内容</span>
@@ -988,16 +988,7 @@
               <span class="tag">File</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="05-repl.html" target="_blank" rel="noopener">
-            <div>
-              <h3>05 REPL</h3>
-              <span>执行 REPL 指令，获取面向 AI 的文档/文本内容</span>
-            </div>
-            <div class="meta">
-              <span class="tag">REPL</span><span>打开示例</span>
-            </div>
-          </a>
-          <a class="example" href="15-presentation-master-template.html" target="_blank" rel="noopener">
+          <a class="example" href="15-presentation-master-template" target="_blank" rel="noopener">
             <div>
               <h3>15 应用母版风格</h3>
               <span>按 shareId 加载演示实例，并通过 setMasterTemplate 应用母版</span>
@@ -1006,13 +997,22 @@
               <span class="tag presentation">Template</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="16-hidden-tab-resize.html" target="_blank" rel="noopener">
+          <a class="example" href="16-hidden-tab-resize" target="_blank" rel="noopener">
             <div>
               <h3>16 容器重绘</h3>
               <span>切换可见后调用 resize() 重绘画布</span>
             </div>
             <div class="meta">
               <span class="tag presentation">Resize</span><span>打开示例</span>
+            </div>
+          </a>
+          <a class="example" href="20-repl?mode=presentation" target="_blank" rel="noopener">
+            <div>
+              <h3>20 REPL 指令实验室</h3>
+              <span>分类体验几何构造、样式、动画与画板管理，编辑指令并实时查看结果</span>
+            </div>
+            <div class="meta">
+              <span class="tag">REPL</span><span>打开示例</span>
             </div>
           </a>
         </div>
@@ -1024,7 +1024,7 @@
           <p>覆盖编辑器初始化、文档读写、画板管理、历史记录和事件回传。</p>
         </div>
         <div class="grid">
-          <a class="example" href="06-editor-mode.html" target="_blank" rel="noopener">
+          <a class="example" href="06-editor-mode" target="_blank" rel="noopener">
             <div>
               <h3>06 内嵌编辑模式</h3>
               <span>预接入 editor mode，验证新 URL 构造与初始化参数</span>
@@ -1033,7 +1033,7 @@
               <span class="tag editor">Editor</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="07-document-api.html" target="_blank" rel="noopener">
+          <a class="example" href="07-document-api" target="_blank" rel="noopener">
             <div>
               <h3>07 DocumentApi</h3>
               <span>设置初始画板内容，以及如何取回当前画板内容</span>
@@ -1042,7 +1042,7 @@
               <span class="tag editor">Document</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="08-slides-api.html" target="_blank" rel="noopener">
+          <a class="example" href="08-slides-api" target="_blank" rel="noopener">
             <div>
               <h3>08 SlidesApi</h3>
               <span>编辑模式下的切换、新增、复制、删除与重排画板能力</span>
@@ -1051,7 +1051,7 @@
               <span class="tag editor">Slides</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="09-history-api.html" target="_blank" rel="noopener">
+          <a class="example" href="09-history-api" target="_blank" rel="noopener">
             <div>
               <h3>09 HistoryApi</h3>
               <span>测试撤销、重做、跳转与清空历史记录的宿主调用能力</span>
@@ -1060,7 +1060,7 @@
               <span class="tag editor">History</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="10-editor-events.html" target="_blank" rel="noopener">
+          <a class="example" href="10-editor-events" target="_blank" rel="noopener">
             <div>
               <h3>10 编辑器事件</h3>
               <span>监听 contentChange、slideChange 与
@@ -1070,7 +1070,7 @@
               <span class="tag editor">Events</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="11-editor-share-id.html" target="_blank" rel="noopener">
+          <a class="example" href="11-editor-share-id" target="_blank" rel="noopener">
             <div>
               <h3>11 shareId 加载编辑器</h3>
               <span>输入 shareId 后重建编辑器，验证 /embed/edit/:appId/:shareId
@@ -1080,7 +1080,7 @@
               <span class="tag editor">ShareId</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="12-export-slide-image.html" target="_blank" rel="noopener">
+          <a class="example" href="12-export-slide-image" target="_blank" rel="noopener">
             <div>
               <h3>12 导出画板图片</h3>
               <span>默认导出全部画板，也可按索引导出指定画板图片</span>
@@ -1089,7 +1089,7 @@
               <span class="tag editor">Export</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="13-ai-chat.html" target="_blank" rel="noopener">
+          <a class="example" href="13-ai-chat" target="_blank" rel="noopener">
             <div>
               <h3>13 AI 对话面板</h3>
               <span>开启 aiChatPanel，监听 aiRequest，并将 SSE 流透传回
@@ -1099,7 +1099,7 @@
               <span class="tag editor">AI</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="15-presentation-master-template.html?mode=editor" target="_blank" rel="noopener">
+          <a class="example" href="15-presentation-master-template?mode=editor" target="_blank" rel="noopener">
             <div>
               <h3>15 应用母版风格</h3>
               <span>以编辑模式加载实例，并通过 setMasterTemplate 应用母版</span>
@@ -1108,7 +1108,7 @@
               <span class="tag editor">Template</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="17-resource-library.html" target="_blank" rel="noopener">
+          <a class="example" href="17-resource-library" target="_blank" rel="noopener">
             <div>
               <h3>17 自有资源库</h3>
               <span>接入 resourceLibrary provider，可视化资源并查看协议数据</span>
@@ -1117,7 +1117,7 @@
               <span class="tag editor">Assets</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="18-custom-fonts.html" target="_blank" rel="noopener">
+          <a class="example" href="18-custom-fonts" target="_blank" rel="noopener">
             <div>
               <h3>18 自定义字体</h3>
               <span>体验 URL 字体和系统字体配置</span>
@@ -1126,13 +1126,22 @@
               <span class="tag editor">Fonts</span><span>打开示例</span>
             </div>
           </a>
-          <a class="example" href="19-finite-canvas.html" target="_blank" rel="noopener">
+          <a class="example" href="19-finite-canvas" target="_blank" rel="noopener">
             <div>
               <h3>19 有限画布</h3>
               <span>读取和设置指定或当前画板的有限画布边界</span>
             </div>
             <div class="meta">
               <span class="tag editor">Canvas</span><span>打开示例</span>
+            </div>
+          </a>
+          <a class="example" href="20-repl?mode=editor" target="_blank" rel="noopener">
+            <div>
+              <h3>20 REPL 指令实验室</h3>
+              <span>分类体验几何构造、样式、动画与画板管理，编辑指令并实时查看结果</span>
+            </div>
+            <div class="meta">
+              <span class="tag editor">REPL</span><span>打开示例</span>
             </div>
           </a>
         </div>

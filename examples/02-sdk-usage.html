@@ -476,7 +476,7 @@
             <section class="panel" id="createToolbar">
               <h2>初始化配置</h2>
               <label class="field-label" for="shareId">分享 ID</label>
-              <input type="text" id="shareId" placeholder="输入分享 ID" />
+              <input type="text" id="shareId" placeholder="可选，留空打开空白画板" />
               <div class="check-grid">
                 <label class="inline-check">
                   <input type="checkbox" id="logo" checked />
@@ -595,7 +595,7 @@
       }
 
       function updateCodePreview() {
-        const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
+        const id = shareIdEl.value.trim();
         const config = currentUiConfig || getInitialUiConfig();
         const configLines = uiFields
           .map(({ key }) => `      ${key}: ${Boolean(config[key])},`)
@@ -714,7 +714,7 @@ ${configLines}
       updateCodePreview();
 
       document.getElementById('createBtn').onclick = async () => {
-        const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
+        const id = shareIdEl.value.trim();
         try {
           sdk = await AlgeoSdk.create(container, {
             baseUrl,

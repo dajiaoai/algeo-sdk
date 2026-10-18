@@ -127,7 +127,7 @@
   <p class="desc">多画板内容，通过 switchSlide 切换。需分享 ID 对应多画板文件。</p>
   <div class="toolbar">
     <label>分享 ID</label>
-    <input type="text" id="shareId" placeholder="输入分享 ID">
+    <input type="text" id="shareId" placeholder="可选，留空打开空白画板">
     <button class="primary" id="reload">加载</button>
     <span style="margin-left: 8px;">画板：</span>
     <div id="slideBtnList" class="slide-btn-list"></div>
@@ -184,11 +184,15 @@
     }
 
     async function load() {
-      const id = shareIdEl.value.trim() || DEFAULT_SHARE_ID;
+      const id = shareIdEl.value.trim();
       slideBtnListEl.innerHTML = '';
 
       try {
-        if (!sdk) {
+        if (!sdk || !id) {
+          if (sdk) {
+            await sdk.destroy();
+            sdk = null;
+          }
           sdk = await AlgeoSdk.create(container, {
             baseUrl,
             mode: 'presentation',

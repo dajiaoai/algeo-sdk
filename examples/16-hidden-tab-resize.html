@@ -298,15 +298,17 @@
           log(label + ' ready', { version: presentation.version || '-' });
           updatePanel('');
         });
-        // 演示模式需加载分享内容后画布才有可视内容
-        presentation
-          .loadShareById(shareId)
-          .then(() => log(label + ' loadShareById 成功'))
-          .catch((e) =>
-            log(label + ' loadShareById 失败', {
-              message: e.message || String(e),
-            }),
-          );
+        // 配置了分享 ID 时才加载分享内容；留空保留空白画板。
+        if (shareId) {
+          presentation
+            .loadShareById(shareId)
+            .then(() => log(label + ' loadShareById 成功'))
+            .catch((e) =>
+              log(label + ' loadShareById 失败', {
+                message: e.message || String(e),
+              }),
+            );
+        }
         return presentation;
       } catch (e) {
         log(label + ' createPresentation 失败', {

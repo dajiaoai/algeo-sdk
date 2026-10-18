@@ -23,7 +23,7 @@
     ['baseUrl', 'appId', 'shareId'].forEach(function (key) {
       if (typeof config[key] === 'string') {
         var value = config[key].trim();
-        if (value) next[key] = value;
+        if (value || key === 'shareId') next[key] = value;
       }
     });
     return next;

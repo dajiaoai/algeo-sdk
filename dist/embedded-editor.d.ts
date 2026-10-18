@@ -1,5 +1,5 @@
 import { EmbeddedTarget } from './embedded-target';
-import { type AiApi, type AiCancelEvent, type AlgeoEditorCreateOptions, type ContentChangeEvent, type DocumentApi, type EmbedRequestMessage, type EmbeddedEditorEventListenerMap, type EmbeddedEditorEventMap, type EmbeddedEditorEventName, type HistoryApi, type ModeApi, type SaveEvent, type SlidesApi } from './shared';
+import { type AiApi, type AiCancelEvent, type ReplResult, type AlgeoEditorCreateOptions, type ContentChangeEvent, type DocumentApi, type EmbedRequestMessage, type EmbeddedEditorEventListenerMap, type EmbeddedEditorEventMap, type EmbeddedEditorEventName, type HistoryApi, type ModeApi, type SaveEvent, type SlidesApi } from './shared';
 export declare class EmbeddedEditor extends EmbeddedTarget<EmbeddedEditorEventMap, EmbeddedEditorEventName, EmbeddedEditorEventListenerMap> {
     private resourceLibrary?;
     private readonly resourceLibraryRequests;
@@ -16,6 +16,9 @@ export declare class EmbeddedEditor extends EmbeddedTarget<EmbeddedEditorEventMa
     private uiConfig;
     private activeAiRun?;
     constructor(container: HTMLElement);
+    /** Execute a REPL command and synchronize editor state before resolving. */
+    repl(command: string): Promise<ReplResult>;
+    private applyReplState;
     initialize(options?: AlgeoEditorCreateOptions, baseUrl?: string): Promise<void>;
     protected handleEventMessage(event: ContentChangeEvent | SaveEvent | {
         type: 'slideChange';

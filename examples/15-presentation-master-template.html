@@ -374,7 +374,7 @@
             </label>
             <label>
               shareId
-              <input id="shareIdInput" type="text" autocomplete="off" />
+              <input id="shareIdInput" type="text" autocomplete="off" placeholder="可选，留空打开空白画板" />
             </label>
             <button class="primary" type="submit">加载实例</button>
           </form>
@@ -665,11 +665,6 @@
       event.preventDefault();
       const mode = modeSelect.value;
       const shareId = shareIdInput.value.trim();
-      if (!shareId) {
-        setStatus('请输入 shareId', 'error');
-        return;
-      }
-
       createInstance(mode, shareId).catch((error) => {
         const message =
           error instanceof Error ? error.message : String(error);

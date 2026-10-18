@@ -506,24 +506,26 @@ SDK 内部已通过 `ResizeObserver` 在容器从隐藏（`display:none`，尺�
 
 ---
 
+##### `editor.repl(command: string): Promise<ReplResult>`
+
+执行 REPL 指令，返回 `{ output: string }`。修改支持撤销、重做，调用后自动同步画板和历史状态。
+
+```ts
+const { output } = await editor.repl('def A := Point(0,0)');
+await editor.history.undo();
+```
+
+调用不触发 `contentChange` / `slideChange`，读取最新内容请用 `editor.document.getContent()`。执行失败时，已完成的修改不会自动回滚。
+
 ##### `presentation.repl(command: string): Promise<ReplResult>`
 
-执行 REPL 指令，返回面向 AI 的文档/文本内容。需先通过 `loadShareById` 或 `loadFile` 加载内容后，部分指令才有数据可查。
+执行 REPL 指令，返回 `{ output: string }`。查询已有内容前，可通过 `loadShareById` 或 `loadFile` 加载画板。
 
-| 参数      | 类型     | 说明      |
-| --------- | -------- | --------- |
-| `command` | `string` | REPL 指令 |
+```ts
+const { output } = await presentation.repl('list');
+```
 
-**常用指令：**
-
-| 指令          | 说明                          |
-| ------------- | ----------------------------- |
-| `help`        | 查看 REPL 帮助                |
-| `list`        | 列出当前画板中的对象          |
-| `list_slides` | 列出所有画板                  |
-| `eval`        | 执行表达式（具体用法见 help） |
-
-**返回值：** `{ output: string }` — 指令输出的文本内容
+两种模式均可通过 `repl('help')` 查看命令帮助，或参考 [REPL 指令实验室](examples/20-repl.html)。
 
 ---
 

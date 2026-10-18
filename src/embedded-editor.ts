@@ -11,6 +11,7 @@ import {
   type AiRequestEvent,
   type AiRunPayloadV1,
   type AiStreamEventV1,
+  type ReplResult,
   type ResourceLibraryProvider,
   type ResourceLibraryQuery,
   type ResourceLibraryResult,
@@ -46,6 +47,13 @@ import {
   type SwitchSlideResult,
   validateFontConfig,
 } from './shared';
+
+interface EditorReplState {
+  slideCount: number;
+  currentSlideIndex: number;
+  historyCount: number;
+  historyCurrentIndex: number;
+}
 
 export class EmbeddedEditor extends EmbeddedTarget<
   EmbeddedEditorEventMap,
@@ -194,6 +202,33 @@ export class EmbeddedEditor extends EmbeddedTarget<
         this.pushAiStreamEvent(event);
       },
     };
+  }
+
+  /** Execute a REPL command and synchronize editor state before resolving. */
+  async repl(command: string): Promise<ReplResult> {
+    try {
+      const result = await this.post<ReplResult & { state: EditorReplState }>(
+        'repl',
+        { command },
+      );
+      this.applyReplState(result.state);
+      return { output: result.output };
+    } catch (error) {
+      // REPL execution can fail after applying some operations.
+      if (error instanceof AlgeoError) {
+        const details = error.details as { state?: EditorReplState } | undefined;
+        if (details?.state) this.applyReplState(details.state);
+      }
+      throw error;
+    }
+  }
+
+  private applyReplState(state: EditorReplState): void {
+    this.currentContent = undefined;
+    this.slideCount = state.slideCount;
+    this.currentSlideIndex = state.currentSlideIndex;
+    this.historyCount = state.historyCount;
+    this.historyCurrentIndex = state.historyCurrentIndex;
   }
 
   async initialize(

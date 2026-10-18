@@ -4631,6 +4631,30 @@
                 },
             };
         }
+        /** Execute a REPL command and synchronize editor state before resolving. */
+        async repl(command) {
+            try {
+                const result = await this.post('repl', { command });
+                this.applyReplState(result.state);
+                return { output: result.output };
+            }
+            catch (error) {
+                // REPL execution can fail after applying some operations.
+                if (error instanceof AlgeoError) {
+                    const details = error.details;
+                    if (details?.state)
+                        this.applyReplState(details.state);
+                }
+                throw error;
+            }
+        }
+        applyReplState(state) {
+            this.currentContent = undefined;
+            this.slideCount = state.slideCount;
+            this.currentSlideIndex = state.currentSlideIndex;
+            this.historyCount = state.historyCount;
+            this.historyCurrentIndex = state.historyCurrentIndex;
+        }
         async initialize(options = {}, baseUrl) {
             if (!options.auth?.appId?.trim()) {
                 throw new AlgeoError('编辑模式需要提供 auth.appId。', EMBED_ERROR_CODES.MISSING_APP_ID);

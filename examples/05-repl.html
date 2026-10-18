@@ -200,7 +200,7 @@
 
     <section class="log-panel">
       <div class="toolbar" style="margin-bottom: 8px;">
-        <input type="text" id="shareIdInput" placeholder="输入分享 ID" style="max-width: 200px;">
+        <input type="text" id="shareIdInput" placeholder="可选，留空打开空白画板" style="max-width: 200px;">
         <button class="primary" id="loadBtn">加载</button>
       </div>
 
@@ -238,7 +238,7 @@
         logEl.scrollTop = logEl.scrollHeight;
       }
 
-      const sdk = await AlgeoSdk.create(container, {
+      let sdk = await AlgeoSdk.create(container, {
         baseUrl,
         mode: 'presentation',
         presentation: {
@@ -272,15 +272,23 @@
         outputEl.classList.remove('empty');
       }
 
-      document.getElementById('loadBtn').onclick = () => {
+      document.getElementById('loadBtn').onclick = async () => {
         const id = shareIdInput.value.trim();
-        if (!id) {
-          log('请输入分享 ID', true);
-          return;
+        try {
+          if (id) {
+            await sdk.loadShareById(id);
+          } else {
+            await sdk.destroy();
+            sdk = await AlgeoSdk.create(container, {
+              baseUrl,
+              mode: 'presentation',
+              presentation: { auth: { appId } },
+            });
+          }
+          log(id ? '加载成功' : '已打开空白画板');
+        } catch (e) {
+          log('加载失败: ' + e.message, true);
         }
-        sdk.loadShareById(id)
-          .then(() => log('加载成功'))
-          .catch((e) => log('加载失败: ' + e.message, true));
       };
 
       document.getElementById('runBtn').onclick = () => runRepl();
