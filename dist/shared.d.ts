@@ -76,6 +76,8 @@ export interface AlgeoEditorCreateOptions {
     auth?: AlgeoEditorAuthOptions;
     shareId?: string;
     initialContent?: FileContentAny;
+    /** 空白画板模式，默认 2d。初始化优先级：initialContent > shareId > 空白画板。 */
+    initialMode?: '2d' | '3d';
     ui?: AlgeoEditorUiConfig;
     /** 字体资源、字体选择器列表及默认字体配置。 */
     fonts?: AlgeoFontConfig;
@@ -478,6 +480,7 @@ export declare function normalizeMode(mode?: AlgeoEmbedMode): AlgeoEmbedMode;
 export declare function getEmbedPath(mode: AlgeoEmbedMode): string;
 export interface EmbedInitOptions extends AlgeoSdkOptions {
     auth?: AlgeoEditorAuthOptions;
+    cameraMode?: '2d' | '3d';
 }
 export declare function buildEmbedSrc(options: EmbedInitOptions): string;
 export type KnownEventName = 'ready' | 'contentChange' | 'slideChange' | 'save' | 'aiRequest' | 'aiCancel';

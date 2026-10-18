@@ -4156,10 +4156,10 @@
         const path = getEmbedPath(mode);
         const appId = options.auth?.appId?.trim() ?? '';
         const initialId = options.initialId?.trim();
-        if (!initialId) {
-            return `${baseUrl}${path}/${encodeURIComponent(appId)}`;
-        }
-        return `${baseUrl}${path}/${encodeURIComponent(appId)}/${encodeURIComponent(initialId)}`;
+        const src = `${baseUrl}${path}/${encodeURIComponent(appId)}${initialId ? `/${encodeURIComponent(initialId)}` : ''}`;
+        return mode === 'editor' && options.cameraMode
+            ? `${src}?cameraMode=${encodeURIComponent(options.cameraMode)}`
+            : src;
     }
 
     class EmbeddedTarget {
@@ -4667,7 +4667,8 @@
             await this.init({
                 baseUrl,
                 auth: options.auth,
-                initialId: options.shareId,
+                initialId: options.initialContent ? undefined : options.shareId,
+                cameraMode: options.initialContent ? undefined : options.initialMode,
             });
             if (options.fonts) {
                 await this.post('setFontConfig', { config: options.fonts });

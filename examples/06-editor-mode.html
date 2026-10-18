@@ -37,19 +37,34 @@
         line-height: 1.6;
       }
 
-      .toolbar {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
       button {
         padding: 8px 16px;
         border: none;
-        border-radius: 6px;
+        border-radius: 8px;
+        font: inherit;
+        font-size: 0.8125rem;
+        font-weight: 500;
         cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+      }
+
+      button:focus-visible,
+      select:focus-visible {
+        outline: 3px solid #bfdbfe;
+        outline-offset: 2px;
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      select {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: white;
+        font: inherit;
       }
 
       button.primary {
@@ -57,7 +72,7 @@
         color: white;
       }
 
-      button.primary:hover {
+      button.primary:hover:not(:disabled) {
         background: #1d4ed8;
       }
 
@@ -67,17 +82,8 @@
         border: 1px solid #d1d5db;
       }
 
-      button.secondary:hover {
+      button.secondary:hover:not(:disabled) {
         background: #f9fafb;
-      }
-
-      button.ghost {
-        background: #111827;
-        color: white;
-      }
-
-      button.ghost:hover {
-        background: #1f2937;
       }
 
       .layout {
@@ -98,53 +104,146 @@
 
       .controls {
         width: 100%;
-        padding: 12px;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
         background: #fff;
+        box-shadow: 0 4px 20px rgb(15 23 42 / 4%);
         max-height: 600px;
         overflow: auto;
       }
 
+      .config-section {
+        padding: 18px;
+      }
+
+      .config-section + .config-section {
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .create-section {
+        background: #f8faff;
+      }
+
+      .section-heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .section-number {
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 0.6875rem;
+        font-weight: 700;
+      }
+
       .controls h2 {
-        margin: 0 0 8px;
-        font-size: 1rem;
+        margin: 0;
+        color: #0f172a;
+        font-size: 0.9375rem;
+        font-weight: 600;
       }
 
       .controls p {
-        margin: 0 0 12px;
-        color: #6b7280;
+        margin: 0 0 14px;
+        color: #64748b;
         font-size: 0.8125rem;
-        line-height: 1.5;
+        line-height: 1.6;
+      }
+
+      .create-form {
+        display: flex;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .mode-field {
+        display: flex;
+        flex: 1 1 130px;
+        flex-direction: column;
+        gap: 6px;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .mode-field select {
+        width: 100%;
+        min-height: 38px;
+        color: #0f172a;
+      }
+
+      .create-form button {
+        min-height: 38px;
+        flex: 1 1 120px;
+      }
+
+      .config-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+
+      .config-actions button {
+        flex: 1 1 auto;
+        padding: 7px 10px;
       }
 
       .control-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 8px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
       }
 
       .control-card {
-        padding: 10px;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        background: #f9fafb;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 12px;
+      }
+
+      .control-card + .control-card {
+        border-top: 1px solid #f1f5f9;
       }
 
       .control-card h3 {
-        margin: 0 0 8px;
-        font-size: 0.875rem;
+        margin: 0;
+        color: #334155;
+        font-size: 0.8125rem;
+        font-weight: 500;
       }
 
-      .button-group {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
+      .visibility-toggle {
+        flex-shrink: 0;
+        min-width: 76px;
+        padding: 7px 16px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background: #fff;
+        color: #334155;
+        box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
+        font-size: 0.8125rem;
       }
 
-      .button-group button {
-        flex: 1 1 100%;
-        min-width: 120px;
+      .visibility-toggle:hover:not(:disabled) {
+        border-color: #93c5fd;
+        background: #eff6ff;
+        color: #1d4ed8;
+      }
+
+      .visibility-toggle:active:not(:disabled) {
+        background: #dbeafe;
+        box-shadow: inset 0 1px 2px rgb(15 23 42 / 12%);
       }
 
       .logs {
@@ -225,7 +324,7 @@
       <a href="index.html">← 返回示例列表</a>
       <h1>06 内嵌编辑模式</h1>
       <p class="desc">
-        可直接测试编辑模式下的
+        支持创建 2D / 3D 空白画板，并测试编辑模式下的
         <code>setUiConfig</code> / <code>getUiConfig</code>。
       </p>
 
@@ -238,21 +337,38 @@
           </div>
 
           <div class="side-column">
-            <section class="controls">
-              <h2>UI 配置测试</h2>
-              <p>
-                每个模块使用一个 toggle 按钮；点击“读取当前配置”会调用
-                <code>editor.mode.getUiConfig()</code> 并同步按钮状态。
-              </p>
-              <div class="toolbar">
-                <button class="secondary" id="readConfigBtn">
-                  读取当前配置
-                </button>
-                <button class="secondary" id="showAllBtn">全部显示</button>
-                <button class="secondary" id="hideAllBtn">全部隐藏</button>
-              </div>
-              <div class="control-grid" id="controlGrid"></div>
-            </section>
+            <div class="controls">
+              <section class="config-section create-section" aria-labelledby="createHeading">
+                <div class="section-heading">
+                  <span class="section-number" aria-hidden="true">01</span>
+                  <h2 id="createHeading">新建空白画板</h2>
+                </div>
+                <p>选择画板模式，创建后将替换当前编辑内容。</p>
+                <div class="create-form">
+                  <label class="mode-field" for="initialModeSelect">
+                    画板模式
+                    <select id="initialModeSelect">
+                      <option value="2d">2D 平面画板</option>
+                      <option value="3d">3D 立体画板</option>
+                    </select>
+                  </label>
+                  <button class="primary" id="createBlankBtn">创建空白画板</button>
+                </div>
+              </section>
+              <section class="config-section" aria-labelledby="configHeading">
+                <div class="section-heading">
+                  <span class="section-number" aria-hidden="true">02</span>
+                  <h2 id="configHeading">界面配置</h2>
+                </div>
+                <p>点击“显示 / 隐藏”调整对应模块，可随时读取当前配置。</p>
+                <div class="config-actions">
+                  <button class="secondary" id="readConfigBtn">读取当前配置</button>
+                  <button class="secondary" id="showAllBtn">全部显示</button>
+                  <button class="secondary" id="hideAllBtn">全部隐藏</button>
+                </div>
+                <div class="control-grid" id="controlGrid"></div>
+              </section>
+            </div>
           </div>
         </div>
 
@@ -268,6 +384,8 @@
       const { baseUrl, appId, shareId } = window.ALGEO_CONFIG;
 
       const container = document.getElementById('algeo-container');
+      const initialModeSelect = document.getElementById('initialModeSelect');
+      const createBlankBtn = document.getElementById('createBlankBtn');
       const panel = document.getElementById('panel');
       const logs = document.getElementById('logs');
       const controlGrid = document.getElementById('controlGrid');
@@ -286,6 +404,7 @@
       ];
 
       let sdk = null;
+      let isInitializing = false;
       let currentUiConfig = null;
 
       function log(message, payload) {
@@ -316,7 +435,8 @@
           }
           const visible = Boolean(config[key]);
           button.textContent = visible ? '隐藏' : '显示';
-          button.className = visible ? 'ghost' : 'secondary';
+          const field = uiFields.find(({ key: fieldKey }) => fieldKey === key);
+          button.setAttribute('aria-label', button.textContent + (field?.label || key));
         });
       }
 
@@ -356,9 +476,8 @@
             ({ key, label }) => `
         <div class="control-card">
           <h3>${label}</h3>
-          <div class="button-group">
-            <button class="secondary" data-key="${key}">切换</button>
-          </div>
+          <button class="visibility-toggle" data-key="${key}"
+            aria-label="${label}">读取中</button>
         </div>
       `,
           )
@@ -413,28 +532,44 @@
         }
       };
 
-      async function initializeEditor() {
-        if (sdk) {
-          sdk.destroy();
-          sdk = null;
+      async function initializeEditor({ blank = false } = {}) {
+        if (isInitializing) {
+          return;
         }
-        container.innerHTML = '';
-        updatePanel('正在创建...');
+        isInitializing = true;
+        const initialMode = initialModeSelect.value;
+        const editorOptions = {
+          auth: { appId },
+          ...(blank ? { initialMode } : { shareId }),
+        };
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach((button) => {
+          button.disabled = true;
+        });
+        initialModeSelect.disabled = true;
+        updatePanel(
+          blank
+            ? '正在创建 ' + initialMode.toUpperCase() + ' 空白画板...'
+            : '正在创建...',
+        );
         log('create', {
           mode: 'editor',
           baseUrl,
+          ...editorOptions,
         });
 
         try {
+          const previousSdk = sdk;
+          sdk = null;
+          currentUiConfig = null;
+          if (previousSdk) {
+            await previousSdk.destroy();
+          }
+          container.innerHTML = '';
           sdk = await AlgeoSdk.create(container, {
             mode: 'editor',
             baseUrl,
-            editor: {
-              auth: {
-                appId,
-              },
-              shareId,
-            },
+            editor: editorOptions,
           });
           updatePanel(
             'ready: ' + sdk.ready + ', version: ' + (sdk.version || '-'),
@@ -447,8 +582,17 @@
         } catch (e) {
           updatePanel('初始化未完成: ' + (e.message || String(e)));
           log('create 失败', { message: e.message || String(e) });
+        } finally {
+          isInitializing = false;
+          buttons.forEach((button) => {
+            button.disabled = !sdk;
+          });
+          createBlankBtn.disabled = false;
+          initialModeSelect.disabled = false;
         }
       }
+
+      createBlankBtn.onclick = () => initializeEditor({ blank: true });
 
       void initializeEditor();
     </script>

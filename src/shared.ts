@@ -116,6 +116,8 @@ export interface AlgeoEditorCreateOptions {
   auth?: AlgeoEditorAuthOptions;
   shareId?: string;
   initialContent?: FileContentAny;
+  /** 空白画板模式，默认 2d。初始化优先级：initialContent > shareId > 空白画板。 */
+  initialMode?: '2d' | '3d';
   ui?: AlgeoEditorUiConfig;
   /** 字体资源、字体选择器列表及默认字体配置。 */
   fonts?: AlgeoFontConfig;
@@ -751,6 +753,7 @@ export function getEmbedPath(mode: AlgeoEmbedMode): string {
 
 export interface EmbedInitOptions extends AlgeoSdkOptions {
   auth?: AlgeoEditorAuthOptions;
+  cameraMode?: '2d' | '3d';
 }
 
 export function buildEmbedSrc(options: EmbedInitOptions): string {
@@ -760,11 +763,12 @@ export function buildEmbedSrc(options: EmbedInitOptions): string {
   const appId = options.auth?.appId?.trim() ?? '';
   const initialId = options.initialId?.trim();
 
-  if (!initialId) {
-    return `${baseUrl}${path}/${encodeURIComponent(appId)}`;
-  }
-
-  return `${baseUrl}${path}/${encodeURIComponent(appId)}/${encodeURIComponent(initialId)}`;
+  const src = `${baseUrl}${path}/${encodeURIComponent(appId)}${
+    initialId ? `/${encodeURIComponent(initialId)}` : ''
+  }`;
+  return mode === 'editor' && options.cameraMode
+    ? `${src}?cameraMode=${encodeURIComponent(options.cameraMode)}`
+    : src;
 }
 
 export type KnownEventName =

@@ -314,8 +314,11 @@ type AlgeoCreateOptions =
 | `auth`           | `{ appId: string }`            | -      | 编辑模式鉴权参数，其中 `appId` 会参与默认路由生成      |
 | `shareId`        | `string`                       | `''`   | 编辑模式初始分享 ID，会映射到 `/embed/edit/:appId/:id` |
 | `initialContent` | `FileContentAny`               | -      | 初始化后自动注入的文件内容；SDK 会自动转换为最新格式       |
+| `initialMode`     | `'2d' \| '3d'`                | `'2d'` | 空白画板模式，仅在没有初始内容或分享文件时生效          |
 | `ui`             | `Partial<AlgeoEditorUiConfig>` | -      | 编辑器 UI 开关配置                                     |
 | `fonts`          | `AlgeoFontConfig`              | -      | 字体资源、字体选择器列表及默认字体配置                 |
+
+初始化优先级：`initialContent` > `shareId` > 指定 `initialMode` 的空画板。提供 `initialContent` 时不会请求分享文件；加载已有内容时保留内容中的画板模式。
 
 **AlgeoEditorUiConfig：**
 

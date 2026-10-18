@@ -252,7 +252,8 @@ export class EmbeddedEditor extends EmbeddedTarget<
     await this.init({
       baseUrl,
       auth: options.auth,
-      initialId: options.shareId,
+      initialId: options.initialContent ? undefined : options.shareId,
+      cameraMode: options.initialContent ? undefined : options.initialMode,
     });
 
     if (options.fonts) {
