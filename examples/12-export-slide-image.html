@@ -178,6 +178,50 @@
       line-height: 1.55;
     }
 
+    #exportConfig {
+      display: grid;
+      gap: 14px;
+    }
+
+    .slide-query-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.82rem;
+    }
+
+    .slide-query-row label {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .slide-query-row input {
+      width: 72px;
+      padding: 7px 8px;
+      border-radius: 8px;
+    }
+
+    .slide-query-row button {
+      padding: 7px 12px;
+      border-radius: 8px;
+    }
+
+    .slide-info {
+      flex: 1 1 100px;
+      min-width: 0;
+      color: var(--brand-strong);
+      overflow-wrap: anywhere;
+    }
+
+    .slide-info.error {
+      color: var(--danger);
+    }
+
+    #viewCamera3dReadStatus {
+      color: var(--brand-strong);
+    }
+
     .config-steps {
       display: grid;
       gap: 14px;
@@ -619,8 +663,7 @@
         <code>editor.slides.exportImage()</code> 的三种导出方式（<code>size</code>
         / <code>view</code> / <code>contain</code>），以及
         <code>editor.slides.exportLatex()</code> 导出 LaTeX/TikZ
-        源码。右侧先选择参数或代码视图；在参数视图中依次选择 2D / 3D
-        画板、导出方式，并填写对应参数。
+        源码。
       </p>
     </section>
 
@@ -656,31 +699,25 @@
         <section class="card section">
           <h2>导出配置</h2>
 
-          <div class="view-toggle" aria-label="配置查看方式">
-            <div class="segmented" id="viewSwitch">
-              <button data-view="form" class="active">参数</button>
-              <button data-view="code">代码</button>
-            </div>
+          <div class="slide-query-row">
+            <label for="slideIndexInput">画板索引</label>
+            <input id="slideIndexInput" type="number" min="0" step="1" value="0" title="从 0 开始" />
+            <button class="secondary" id="querySlideBtn" disabled>查询</button>
+            <span id="slideInfoStatus" class="slide-info" role="status" aria-live="polite">等待初始化...</span>
           </div>
 
-          <div id="formView" class="config-steps">
+          <div id="exportConfig" class="hidden">
+            <h2 id="parametersTitle">导出参数</h2>
+            <div class="view-toggle" aria-label="配置查看方式">
+              <div class="segmented" id="viewSwitch">
+                <button data-view="form" class="active">参数</button>
+                <button data-view="code">代码</button>
+              </div>
+            </div>
+            <div id="formView" class="config-steps">
             <section class="config-step">
               <div class="config-step-header">
                 <span class="step-number">1</span>
-                <div class="step-copy">
-                  <div class="step-title">选择画板类型</div>
-                  <div class="step-description">按要导出的目标画板选择，类型会决定可用格式和视野参数。</div>
-                </div>
-              </div>
-              <div class="segmented" id="dimensionSwitch">
-                <button data-dimension="2d" class="active">2D 画板</button>
-                <button data-dimension="3d">3D 画板</button>
-              </div>
-            </section>
-
-            <section class="config-step">
-              <div class="config-step-header">
-                <span class="step-number">2</span>
                 <div class="step-copy">
                   <div class="step-title">
                     选择导出方式
@@ -700,7 +737,7 @@
 
             <section class="config-step">
               <div class="config-step-header">
-                <span class="step-number">3</span>
+                <span class="step-number">2</span>
                 <div class="step-copy">
                   <div class="step-title">填写导出参数</div>
                   <div class="step-description">参数按目标、文件与当前导出方式分组；<span class="required-mark" aria-hidden="true">*</span>为必填项。</div>
@@ -708,14 +745,6 @@
               </div>
 
               <div class="parameter-groups">
-                <div class="field-group">
-                  <div class="field-group-title">导出目标</div>
-                  <div class="field-group-description">指定要处理的画板；留空时导出文件中的全部画板。</div>
-                  <label>画板索引（1-based，英文逗号分隔）
-                    <input id="slideIndicesInput" placeholder="例如：1,3" />
-                  </label>
-                </div>
-
                 <div class="field-group" id="commonImageFields">
                   <div class="field-group-title">文件设置</div>
                   <div class="field-group-description" id="formatDescription">2D 支持 PNG、JPG 和 SVG。</div>
@@ -730,14 +759,14 @@
                     <label id="qualityField" class="hidden">JPG 质量（0~1）
                       <input id="qualityInput" type="number" min="0" max="1" step="0.01" value="0.92" />
                     </label>
-                    <label>透明背景
+                    <label id="transparentField">透明背景
                       <select id="transparentSelect" aria-describedby="transparentHint">
                         <option value="false">关闭（默认）</option>
                         <option value="true">开启</option>
                       </select>
                     </label>
                   </div>
-                  <div class="hint" id="transparentHint">仅 PNG、SVG 支持透明背景；选择 JPG 时自动关闭。预览中的棋盘格表示透明区域。</div>
+                  <div class="hint" id="transparentHint">PNG、SVG 支持透明背景。预览中的棋盘格表示透明区域。</div>
                 </div>
 
                 <div class="mode-fields field-group hidden" data-for="size">
@@ -771,24 +800,24 @@
                   <div class="field-group-title">2D 世界坐标视野</div>
                   <div class="field-group-description">四条边界决定导出范围；scale 决定每个世界坐标单位对应的逻辑像素数。</div>
                   <div>
-                    <button type="button" class="secondary" id="readViewBoundsBtn">从当前画板读取视野</button>
+                    <button type="button" class="secondary" id="readViewBoundsBtn">从目标画板读取视野</button>
                   </div>
                   <div class="field-grid two-columns">
                     <label><span><span class="required-mark" aria-hidden="true">*</span>左边界</span>
-                      <input id="vbLeftInput" type="number" step="1" value="-5" />
+                      <input id="vbLeftInput" type="number" step="any" required value="-5" />
                     </label>
                     <label><span><span class="required-mark" aria-hidden="true">*</span>上边界</span>
-                      <input id="vbTopInput" type="number" step="1" value="5" />
+                      <input id="vbTopInput" type="number" step="any" required value="5" />
                     </label>
                     <label><span><span class="required-mark" aria-hidden="true">*</span>右边界</span>
-                      <input id="vbRightInput" type="number" step="1" value="5" />
+                      <input id="vbRightInput" type="number" step="any" required value="5" />
                     </label>
                     <label><span><span class="required-mark" aria-hidden="true">*</span>下边界</span>
-                      <input id="vbBottomInput" type="number" step="1" value="-5" />
+                      <input id="vbBottomInput" type="number" step="any" required value="-5" />
                     </label>
                   </div>
                   <label>相机 scale（可选，留空读取画板文件）
-                    <input id="vbScaleInput" type="number" min="0.1" step="0.1" placeholder="camera.scale" />
+                    <input id="vbScaleInput" type="number" min="0" step="any" placeholder="camera.scale" />
                   </label>
                 </div>
 
@@ -809,26 +838,46 @@
                 </div>
 
                 <div class="field-group hidden" data-view-dimension="3d" data-view-only>
-                  <div class="field-group-title">3D 逻辑输出尺寸</div>
-                  <div class="field-group-description">设置构图画布的逻辑尺寸；pixelRatio 会在此基础上放大物理像素。</div>
-                  <div class="field-grid two-columns">
-                    <label>宽度（px，默认 1024）<input id="vc3dWidthInput" type="number" min="1" step="1" value="1200" /></label>
-                    <label>高度（px，默认 1024）<input id="vc3dHeightInput" type="number" min="1" step="1" value="800" /></label>
+                  <div class="field-group-title">3D 世界视图</div>
+                  <div class="field-group-description">设置视角、缩放、逻辑视口和截取范围。角度单位为度；可选项留空时沿用画板配置。</div>
+                  <div class="button-row">
+                    <button type="button" class="secondary" id="readViewCamera3dBtn">从目标画板读取参数</button>
                   </div>
-                </div>
-
-                <div class="field-group hidden" data-view-dimension="3d" data-view-only>
-                  <div class="field-group-title">3D 相机覆盖</div>
-                  <div class="field-group-description">全部为可选项；留空时沿用画板相机。offset 如需覆盖，X、Y、Z 必须同时填写。</div>
+                  <div class="hint" id="viewCamera3dReadStatus" role="status" aria-live="polite"></div>
                   <div class="field-grid two-columns">
-                    <label>offset X（世界坐标）<input id="vc3dOffsetXInput" type="number" step="0.1" placeholder="camera3d.offset[0]" /></label>
-                    <label>offset Y（世界坐标）<input id="vc3dOffsetYInput" type="number" step="0.1" placeholder="camera3d.offset[1]" /></label>
-                    <label>offset Z（世界坐标）<input id="vc3dOffsetZInput" type="number" step="0.1" placeholder="camera3d.offset[2]" /></label>
-                    <label>yaw（弧度）<input id="vc3dYawInput" type="number" step="0.01" placeholder="camera3d.yaw" /></label>
-                    <label>pitch（弧度）<input id="vc3dPitchInput" type="number" step="0.01" placeholder="camera3d.pitch" /></label>
-                    <label>scale<input id="vc3dScaleInput" type="number" min="0.0001" step="0.01" placeholder="camera3d.scale" /></label>
+                    <label>宽度（逻辑 px）<input id="vc3dWidthInput" type="number" min="1" step="1" value="1920" /></label>
+                    <label>高度（逻辑 px）<input id="vc3dHeightInput" type="number" min="1" step="1" value="1080" /></label>
+                    <label>中心 X（世界坐标）<input id="vc3dOffsetXInput" type="number" step="any" placeholder="沿用画板" /></label>
+                    <label>中心 Y（世界坐标）<input id="vc3dOffsetYInput" type="number" step="any" placeholder="沿用画板" /></label>
+                    <label>中心 Z（世界坐标）<input id="vc3dOffsetZInput" type="number" step="any" placeholder="沿用画板" /></label>
+                    <label>水平视角 yawDeg（°）<input id="vc3dYawInput" type="number" step="any" placeholder="沿用画板" /></label>
+                    <label>俯仰视角 pitchDeg（°）<input id="vc3dPitchInput" type="number" step="any" placeholder="沿用画板" /></label>
+                    <label>缩放 scale<input id="vc3dScaleInput" type="number" min="0.0001" max="100" step="any" placeholder="沿用画板" /></label>
+                    <label>投影方式
+                      <select id="vc3dProjectionSelect">
+                        <option value="">沿用画板</option>
+                        <option value="orthographic">正交投影</option>
+                        <option value="perspective">透视投影</option>
+                        <option value="oblique">斜投影</option>
+                      </select>
+                    </label>
+                    <label>斜投影方向角 obliqueAngleDeg（°）<input id="vc3dObliqueAngleInput" type="number" step="any" placeholder="沿用画板" /></label>
+                    <label>斜投影退行轴缩放比<input id="vc3dObliqueScaleRatioInput" type="number" min="0" step="any" placeholder="沿用画板" /></label>
+                    <label>画面截取
+                      <select id="vc3dCropSelect">
+                        <option value="">沿用画板</option>
+                        <option value="off">不截取</option>
+                        <option value="on">指定截取范围</option>
+                      </select>
+                    </label>
                   </div>
-                  <div class="hint">投影方式及斜投影参数沿用画板文件。</div>
+                  <div class="field-grid two-columns hidden" id="vc3dCropFields">
+                    <label>截取左边界（px）<input id="vc3dCropLeftInput" type="number" min="0" step="any" /></label>
+                    <label>截取上边界（px）<input id="vc3dCropTopInput" type="number" min="0" step="any" /></label>
+                    <label>截取右边界（px）<input id="vc3dCropRightInput" type="number" min="0" step="any" /></label>
+                    <label>截取下边界（px）<input id="vc3dCropBottomInput" type="number" min="0" step="any" /></label>
+                  </div>
+                  <div class="hint">中心坐标如需设置，X、Y、Z 必须同时填写。截取坐标以完整视口左上角为原点，先渲染再截取，不改变构图。</div>
                 </div>
 
                 <div class="mode-fields field-group hidden" data-for="latex">
@@ -857,6 +906,7 @@
           <div id="codeView" class="hidden">
             <pre class="code-panel"><code id="codePanel"></code></pre>
             <div class="hint">以上为当前参数对应的 SDK 调用代码（只读预览）。</div>
+          </div>
           </div>
         </section>
 
@@ -889,16 +939,21 @@
 
     const modeSwitch = document.getElementById('modeSwitch');
     const viewSwitch = document.getElementById('viewSwitch');
-    const dimensionSwitch = document.getElementById('dimensionSwitch');
+    const exportConfig = document.getElementById('exportConfig');
+    const parametersTitle = document.getElementById('parametersTitle');
+    const slideInfoStatus = document.getElementById('slideInfoStatus');
+    const querySlideBtn = document.getElementById('querySlideBtn');
     const formView = document.getElementById('formView');
     const codeView = document.getElementById('codeView');
     const codePanel = document.getElementById('codePanel');
     const latexModeBtn = document.getElementById('latexModeBtn');
 
-    const slideIndicesInput = document.getElementById('slideIndicesInput');
+    const slideIndexInput = document.getElementById('slideIndexInput');
     const formatSelect = document.getElementById('formatSelect');
     const qualityInput = document.getElementById('qualityInput');
     const transparentSelect = document.getElementById('transparentSelect');
+    const transparentField = document.getElementById('transparentField');
+    const transparentHint = document.getElementById('transparentHint');
     const qualityField = document.getElementById('qualityField');
     const svgFormatOption = document.getElementById('svgFormatOption');
     const formatDescription = document.getElementById('formatDescription');
@@ -928,6 +983,17 @@
     const vc3dScaleInput = document.getElementById('vc3dScaleInput');
     const vc3dWidthInput = document.getElementById('vc3dWidthInput');
     const vc3dHeightInput = document.getElementById('vc3dHeightInput');
+    const readViewCamera3dBtn = document.getElementById('readViewCamera3dBtn');
+    const viewCamera3dReadStatus = document.getElementById('viewCamera3dReadStatus');
+    const vc3dProjectionSelect = document.getElementById('vc3dProjectionSelect');
+    const vc3dObliqueAngleInput = document.getElementById('vc3dObliqueAngleInput');
+    const vc3dObliqueScaleRatioInput = document.getElementById('vc3dObliqueScaleRatioInput');
+    const vc3dCropSelect = document.getElementById('vc3dCropSelect');
+    const vc3dCropFields = document.getElementById('vc3dCropFields');
+    const vc3dCropLeftInput = document.getElementById('vc3dCropLeftInput');
+    const vc3dCropTopInput = document.getElementById('vc3dCropTopInput');
+    const vc3dCropRightInput = document.getElementById('vc3dCropRightInput');
+    const vc3dCropBottomInput = document.getElementById('vc3dCropBottomInput');
 
     const paddingHInput = document.getElementById('paddingHInput');
     const paddingVInput = document.getElementById('paddingVInput');
@@ -937,7 +1003,13 @@
     let editor = null;
     let currentMode = 'view';
     let currentView = 'form';
-    let currentDimension = '2d';
+    let currentDimension = null;
+    let selectedSlideInfo = null;
+    let slideQueryVersion = 0;
+    let queryTimer;
+    let viewCamera3dReadVersion = 0;
+    let actionBusy = true;
+    let pendingSlideSync = false;
     let latestResult = { kind: 'image', items: [] };
     let previewUrls = [];
     let hasLogs = false;
@@ -949,10 +1021,22 @@
     }
 
     function setActionButtonsDisabled(disabled) {
-      exportBtn.disabled = disabled;
+      actionBusy = disabled;
+      exportBtn.disabled = disabled || !selectedSlideInfo;
+      querySlideBtn.disabled = disabled;
+      slideIndexInput.disabled = disabled;
+      reloadBtn.disabled = disabled;
       importBtn.disabled = disabled;
-      readViewBoundsBtn.disabled = disabled;
+      readViewBoundsBtn.disabled = disabled || !selectedSlideInfo;
+      readViewCamera3dBtn.disabled = disabled || !selectedSlideInfo;
       downloadAllBtn.disabled = disabled || latestResult.items.length === 0;
+      if (!disabled && pendingSlideSync) {
+        pendingSlideSync = false;
+        const version = slideQueryVersion;
+        queueMicrotask(() => {
+          if (!actionBusy && version === slideQueryVersion) void querySlideInfo();
+        });
+      }
     }
 
     async function readCurrentViewBounds() {
@@ -960,9 +1044,12 @@
         throw new Error('编辑器尚未初始化');
       }
 
-      const viewBound = await editor.slides.getViewBounds();
+      const info = requireSlideInfo();
+      const version = slideQueryVersion;
+      const viewBound = await editor.slides.getViewBounds(info.index);
+      if (version !== slideQueryVersion) return;
       if (!viewBound) {
-        throw new Error('当前画板没有有限画布，无法读取尺寸');
+        throw new Error('目标画板不是有限画布，无法读取尺寸');
       }
 
       vbLeftInput.value = String(viewBound.left);
@@ -975,8 +1062,58 @@
         codePanel.textContent = buildExportCode();
       }
 
-      setStatus('已从当前画板读取有限画布尺寸');
-      logSdk('读取当前有限画布：' + JSON.stringify(viewBound));
+      setStatus('已从目标画板读取有限画布尺寸');
+      logSdk('读取目标有限画布：' + JSON.stringify(viewBound));
+    }
+
+    function applyCropVisibility() {
+      vc3dCropFields.classList.toggle('hidden', vc3dCropSelect.value !== 'on');
+    }
+
+    async function readTargetViewCamera3d() {
+      const info = requireSlideInfo();
+      const targetEditor = editor;
+      const version = slideQueryVersion;
+      const readVersion = ++viewCamera3dReadVersion;
+      const isCurrent = () => version === slideQueryVersion &&
+        readVersion === viewCamera3dReadVersion && targetEditor === editor;
+      readViewCamera3dBtn.disabled = true;
+      viewCamera3dReadStatus.textContent = '正在读取目标画板参数...';
+      try {
+        const view = await targetEditor.slides.getViewCamera3d(info.index);
+        if (!isCurrent()) return;
+        if (!view) {
+          viewCamera3dReadStatus.textContent = '目标画板不是 3D 画板，未更新参数。';
+          return;
+        }
+        [vc3dOffsetXInput, vc3dOffsetYInput, vc3dOffsetZInput].forEach((input, index) => {
+          input.value = view.offset ? String(view.offset[index]) : '';
+        });
+        vc3dYawInput.value = view.yawDeg === undefined ? '' : String(view.yawDeg);
+        vc3dPitchInput.value = view.pitchDeg === undefined ? '' : String(view.pitchDeg);
+        vc3dScaleInput.value = view.scale === undefined ? '' : String(view.scale);
+        vc3dWidthInput.value = view.width === undefined ? '' : String(view.width);
+        vc3dHeightInput.value = view.height === undefined ? '' : String(view.height);
+        vc3dProjectionSelect.value = view.projection ?? '';
+        vc3dObliqueAngleInput.value = view.obliqueAngleDeg === undefined ? '' : String(view.obliqueAngleDeg);
+        vc3dObliqueScaleRatioInput.value = view.obliqueScaleRatio === undefined ? '' : String(view.obliqueScaleRatio);
+        vc3dCropSelect.value = view.crop === undefined ? '' : view.crop ? 'on' : 'off';
+        [vc3dCropLeftInput, vc3dCropTopInput, vc3dCropRightInput, vc3dCropBottomInput]
+          .forEach((input, index) => {
+            input.value = view.crop ? String(view.crop[['left', 'top', 'right', 'bottom'][index]]) : '';
+          });
+        applyCropVisibility();
+        if (currentView === 'code') codePanel.textContent = buildExportCode();
+        viewCamera3dReadStatus.textContent = '已读取画板 ' + info.index + ' 的 3D 视图参数';
+        logSdk('读取 3D 固定视图：' + JSON.stringify(view));
+      } catch (error) {
+        if (!isCurrent()) return;
+        const message = error instanceof Error ? error.message : String(error);
+        viewCamera3dReadStatus.textContent = '读取失败：' + message;
+        logError('读取 3D 世界视图失败：' + message);
+      } finally {
+        if (isCurrent()) readViewCamera3dBtn.disabled = actionBusy || !selectedSlideInfo;
+      }
     }
 
     function appendLog(type, message) {
@@ -1014,18 +1151,68 @@
       appendLog('error', message);
     }
 
-    function parseSlideIndices(value) {
-      const trimmed = (value || '').trim();
-      if (!trimmed) {
-        return undefined;
+    function invalidateSlideInfo(message = '请查询画板类型') {
+      ++slideQueryVersion;
+      ++viewCamera3dReadVersion;
+      viewCamera3dReadStatus.textContent = '';
+      clearTimeout(queryTimer);
+      selectedSlideInfo = null;
+      currentDimension = null;
+      exportConfig.classList.add('hidden');
+      exportBtn.disabled = true;
+      readViewBoundsBtn.disabled = true;
+      readViewCamera3dBtn.disabled = true;
+      slideInfoStatus.textContent = message;
+      slideInfoStatus.classList.remove('error');
+      codePanel.textContent = '';
+    }
+
+    function requireSlideInfo() {
+      if (!selectedSlideInfo || selectedSlideInfo.index !== Number(slideIndexInput.value)) {
+        throw new Error('请先查询要导出的画板');
       }
+      return selectedSlideInfo;
+    }
 
-      const indices = trimmed
-        .split(',')
-        .map((part) => Number(part.trim()))
-        .filter((value) => Number.isInteger(value) && value > 0);
-
-      return indices.length > 0 ? Array.from(new Set(indices)) : [];
+    async function querySlideInfo() {
+      const previousDimension = currentDimension;
+      invalidateSlideInfo('正在查询画板类型...');
+      const version = slideQueryVersion;
+      const targetEditor = editor;
+      try {
+        if (!targetEditor || actionBusy) throw new Error('请等待编辑器准备完成');
+        const index = Number(slideIndexInput.value);
+        if (slideIndexInput.value.trim() === '' || !Number.isSafeInteger(index) || index < 0) {
+          throw new Error('画板索引必须是从 0 开始的非负整数');
+        }
+        const info = await targetEditor.slides.getInfo(index);
+        if (version !== slideQueryVersion || targetEditor !== editor) return;
+        if (info.index !== index || info.exportIndex !== index + 1 ||
+            !['2d', '3d'].includes(info.cameraMode)) {
+          throw new Error('画板信息无效，请检查 SDK 与内嵌页面版本');
+        }
+        if (targetEditor.slides.getCurrentIndex() !== info.index) {
+          await targetEditor.slides.switchTo(info.index);
+        }
+        if (version !== slideQueryVersion || targetEditor !== editor) return;
+        selectedSlideInfo = info;
+        currentDimension = info.cameraMode;
+        if (previousDimension !== currentDimension) currentMode = 'view';
+        applyModeVisibility();
+        applyViewVisibility();
+        parametersTitle.textContent = currentDimension.toUpperCase() + ' 画板导出参数';
+        slideInfoStatus.textContent = '画板 ' + info.index + ' · ' + currentDimension.toUpperCase();
+        exportConfig.classList.remove('hidden');
+        exportBtn.disabled = actionBusy;
+        readViewBoundsBtn.disabled = actionBusy;
+        readViewCamera3dBtn.disabled = actionBusy;
+        logSdk('查询画板：' + JSON.stringify(info));
+      } catch (error) {
+        if (version !== slideQueryVersion || targetEditor !== editor) return;
+        slideInfoStatus.textContent = error instanceof Error ? error.message : String(error);
+        slideInfoStatus.classList.add('error');
+        logError('查询画板失败：' + slideInfoStatus.textContent);
+      }
     }
 
     function parseContent(text) {
@@ -1146,6 +1333,8 @@
 
       const isImageMode = currentMode !== 'latex';
       transparentSelect.disabled = formatSelect.value === 'jpg';
+      transparentField.classList.toggle('hidden', transparentSelect.disabled);
+      transparentHint.classList.toggle('hidden', transparentSelect.disabled);
       if (transparentSelect.disabled) {
         transparentSelect.value = 'false';
       }
@@ -1173,9 +1362,7 @@
           !isViewMode || el.getAttribute('data-view-dimension') !== currentDimension,
         );
       });
-      document.querySelectorAll('#dimensionSwitch button').forEach((btn) => {
-        btn.classList.toggle('active', btn.getAttribute('data-dimension') === currentDimension);
-      });
+
     }
 
     function applyViewVisibility() {
@@ -1193,96 +1380,25 @@
     }
 
     function buildExportCode() {
-      const slideIndices = parseSlideIndices(slideIndicesInput.value);
-
-      if (currentMode === 'latex') {
-        const standalone = standaloneSelect.value === 'true';
-        const lines = [
-          '// 导出 LaTeX / TikZ 源码',
-          'const items = await editor.slides.exportLatex({',
-        ];
-        if (slideIndices !== undefined) {
-          lines.push('  slideIndices: ' + JSON.stringify(slideIndices) + ',');
-        }
-        lines.push('  standalone: ' + standalone + ',', '});');
-        return lines.join('\n');
+      if (!selectedSlideInfo) return '// 请先查询画板类型';
+      try {
+        const method = currentMode === 'latex' ? 'exportLatex' : 'exportImage';
+        return '// ' + currentDimension.toUpperCase() + ' 画板 ' + selectedSlideInfo.index +
+          '\nconst result = await editor.slides.' + method + '(' +
+          JSON.stringify(collectExportOptions(), null, 2) + ');';
+      } catch (error) {
+        return '// ' + (error instanceof Error ? error.message : String(error));
       }
-
-      const format = formatSelect.value;
-      const quality = Number(qualityInput.value);
-      const lines = [
-        '// 场景：' + currentDimension.toUpperCase() + ' 画板，' + currentMode + ' 导出图片',
-        'const images = await editor.slides.exportImage({',
-        "  mode: '" + currentMode + "',",
-        "  format: '" + format + "',",
-        '  transparent: ' + (transparentSelect.value === 'true') + ',',
-      ];
-
-      if (slideIndices !== undefined) {
-        lines.splice(
-          3,
-          0,
-          '  slideIndices: ' + JSON.stringify(slideIndices) + ',',
-        );
-      }
-
-      if (format === 'jpg') {
-        lines.push('  quality: ' + quality + ',');
-      }
-      if (currentMode === 'size') {
-        lines.push('  width: ' + Number(widthInput.value) + ',');
-        lines.push('  height: ' + Number(heightInput.value) + ',');
-        lines.push(
-          '  minPadding: { horizontal: ' +
-          Number(minPadHInput.value) +
-          ', vertical: ' +
-          Number(minPadVInput.value) +
-          ' },',
-        );
-      } else if (currentMode === 'contain') {
-        lines.push(
-          '  pixelRatio: ' + Number(containPixelRatioInput.value) + ',',
-        );
-        lines.push(
-          '  padding: { horizontal: ' +
-          Number(paddingHInput.value) +
-          ', vertical: ' +
-          Number(paddingVInput.value) +
-          ' },',
-        );
-      } else if (currentMode === 'view') {
-        lines.push(
-          '  pixelRatio: ' + Number(viewPixelRatioInput.value) + ',',
-        );
-        if (currentDimension === '2d') {
-          lines.push('  viewBound: {');
-          lines.push('    left: ' + Number(vbLeftInput.value) + ',');
-          lines.push('    top: ' + Number(vbTopInput.value) + ',');
-          lines.push('    right: ' + Number(vbRightInput.value) + ',');
-          lines.push('    bottom: ' + Number(vbBottomInput.value) + ',');
-          if (vbScaleInput.value !== '') lines.push('    scale: ' + Number(vbScaleInput.value) + ',');
-          lines.push('  },');
-        } else {
-          lines.push('  viewCamera3d: {');
-          const offsetValues = [vc3dOffsetXInput.value, vc3dOffsetYInput.value, vc3dOffsetZInput.value];
-          if (offsetValues.some((value) => value !== '')) {
-            lines.push('    offset: [' + offsetValues.map(Number).join(', ') + '],');
-          }
-          if (vc3dYawInput.value !== '') lines.push('    yaw: ' + Number(vc3dYawInput.value) + ',');
-          if (vc3dPitchInput.value !== '') lines.push('    pitch: ' + Number(vc3dPitchInput.value) + ',');
-          if (vc3dWidthInput.value !== '') lines.push('    width: ' + Number(vc3dWidthInput.value) + ',');
-          if (vc3dHeightInput.value !== '') lines.push('    height: ' + Number(vc3dHeightInput.value) + ',');
-          if (vc3dScaleInput.value !== '') lines.push('    scale: ' + Number(vc3dScaleInput.value) + ',');
-          lines.push('  },');
-        }
-      }
-
-      lines.push('});');
-      return lines.join('\n');
     }
 
     function collectExportOptions() {
-      const slideIndices = parseSlideIndices(slideIndicesInput.value);
+      const slideIndices = [requireSlideInfo().exportIndex];
+      document.querySelectorAll('#formView input, #formView select').forEach((input) => {
+        if (!input.closest('.hidden') && !input.checkValidity()) {
+          const label = input.parentElement.textContent.replace(/\*/g, '').trim();
+          throw new Error('请检查导出参数：' + label + '（' + input.validationMessage + '）');
+        }
+      });
       const base = { slideIndices };
 
       if (currentMode === 'latex') {
@@ -1319,6 +1435,13 @@
       } else if (currentMode === 'view') {
         options.pixelRatio = Number(viewPixelRatioInput.value);
         if (currentDimension === '2d') {
+          if (Number(vbLeftInput.value) >= Number(vbRightInput.value) ||
+              Number(vbBottomInput.value) >= Number(vbTopInput.value)) {
+            throw new Error('视野边界必须满足：左边界 < 右边界，下边界 < 上边界');
+          }
+          if (vbScaleInput.value !== '' && Number(vbScaleInput.value) <= 0) {
+            throw new Error('相机 scale 必须大于 0');
+          }
           options.viewBound = {
             left: Number(vbLeftInput.value),
             top: Number(vbTopInput.value),
@@ -1329,15 +1452,38 @@
         } else {
           const offsetValues = [vc3dOffsetXInput.value, vc3dOffsetYInput.value, vc3dOffsetZInput.value];
           if (offsetValues.some((value) => value !== '') && offsetValues.some((value) => value === '')) {
-            throw new Error('3D 相机 offset 如需覆盖，请同时填写 X、Y、Z');
+            throw new Error('3D 世界视图中心坐标请同时填写 X、Y、Z');
           }
           options.viewCamera3d = {};
           if (vc3dWidthInput.value !== '') options.viewCamera3d.width = Number(vc3dWidthInput.value);
           if (vc3dHeightInput.value !== '') options.viewCamera3d.height = Number(vc3dHeightInput.value);
           if (offsetValues.every((value) => value !== '')) options.viewCamera3d.offset = offsetValues.map(Number);
-          if (vc3dYawInput.value !== '') options.viewCamera3d.yaw = Number(vc3dYawInput.value);
-          if (vc3dPitchInput.value !== '') options.viewCamera3d.pitch = Number(vc3dPitchInput.value);
+          if (vc3dYawInput.value !== '') options.viewCamera3d.yaw = Number(vc3dYawInput.value) / 180 * Math.PI;
+          if (vc3dPitchInput.value !== '') options.viewCamera3d.pitch = Number(vc3dPitchInput.value) / 180 * Math.PI;
           if (vc3dScaleInput.value !== '') options.viewCamera3d.scale = Number(vc3dScaleInput.value);
+          // The existing exportImage override uses radians; the form and getViewCamera3d use degrees.
+          if (vc3dProjectionSelect.value !== '') options.viewCamera3d.projection = vc3dProjectionSelect.value;
+          if (vc3dObliqueAngleInput.value !== '') {
+            options.viewCamera3d.obliqueAngle = Number(vc3dObliqueAngleInput.value) / 180 * Math.PI;
+          }
+          if (vc3dObliqueScaleRatioInput.value !== '') {
+            options.viewCamera3d.obliqueScaleRatio = Number(vc3dObliqueScaleRatioInput.value);
+          }
+          if (vc3dCropSelect.value === 'off') options.viewCamera3d.cropEnabled = false;
+          if (vc3dCropSelect.value === 'on') {
+            const inputs = [vc3dCropLeftInput, vc3dCropTopInput, vc3dCropRightInput, vc3dCropBottomInput];
+            if (inputs.some((input) => input.value.trim() === '')) {
+              throw new Error('请填写完整的截取范围');
+            }
+            const [left, top, right, bottom] = inputs.map((input) => Number(input.value));
+            if (left < 0 || top < 0 || right <= left || bottom <= top ||
+                (vc3dWidthInput.value !== '' && right > Number(vc3dWidthInput.value)) ||
+                (vc3dHeightInput.value !== '' && bottom > Number(vc3dHeightInput.value))) {
+              throw new Error('截取范围必须满足 0 ≤ 左 < 右 ≤ 宽度、0 ≤ 上 < 下 ≤ 高度');
+            }
+            options.viewCamera3d.cropEnabled = true;
+            options.viewCamera3d.crop = { left, top, right, bottom };
+          }
         }
       }
 
@@ -1351,11 +1497,15 @@
 
       const text = await file.text();
       const content = parseContent(text);
+      invalidateSlideInfo('正在导入文件...');
+      setActionButtonsDisabled(true);
       await editor.document.loadContent(content);
+      slideIndexInput.value = String(editor.slides.getCurrentIndex());
       latestResult = { kind: 'image', items: [] };
       renderExportResult();
       setActionButtonsDisabled(false);
       setStatus('已通过 document.loadContent() 导入文件：' + file.name);
+      await querySlideInfo();
       logSdk(
         '导入文件完成，file=' +
         file.name +
@@ -1365,12 +1515,15 @@
     }
 
     async function createEditorInstance(loadConfiguredShare = true) {
+      invalidateSlideInfo('等待编辑器初始化...');
+      setActionButtonsDisabled(true);
       if (editor && typeof editor.destroy === 'function') {
         await editor.destroy();
       }
 
       container.innerHTML = '';
       editor = null;
+      pendingSlideSync = false;
       latestResult = { kind: 'image', items: [] };
       renderExportResult();
       setActionButtonsDisabled(true);
@@ -1385,6 +1538,24 @@
         },
       });
 
+      slideIndexInput.value = String(editor.slides.getCurrentIndex());
+      const targetEditor = editor;
+      editor.on('slideChange', (event) => {
+        if (targetEditor !== editor) return;
+        const index = String(event.index);
+        // 右侧查询触发的切换已在处理中，避免再次查询打断当前请求。
+        if (slideIndexInput.value === index) return;
+        slideIndexInput.value = index;
+        const previousDimension = currentDimension;
+        invalidateSlideInfo('当前画板已切换，正在查询...');
+        currentDimension = previousDimension;
+        if (actionBusy) {
+          pendingSlideSync = true;
+        } else {
+          void querySlideInfo();
+        }
+      });
+
       setActionButtonsDisabled(false);
       setStatus(
         loadConfiguredShare
@@ -1392,6 +1563,16 @@
           : '空白画板已初始化，可开始编辑或导入文件',
       );
       logSdk('编辑器初始化完成');
+      editor.on('contentChange', () => {
+        if (!actionBusy) {
+          clearTimeout(queryTimer);
+          const previousDimension = currentDimension;
+          invalidateSlideInfo('画板内容已更新，正在重新查询...');
+          currentDimension = previousDimension;
+          queryTimer = setTimeout(() => void querySlideInfo(), 300);
+        }
+      });
+      await querySlideInfo();
     }
 
     async function exportImages() {
@@ -1401,15 +1582,11 @@
         return;
       }
 
-      exportBtn.disabled = true;
+      setActionButtonsDisabled(true);
       setStatus('正在导出...');
 
       try {
-        const slideIndices = parseSlideIndices(slideIndicesInput.value);
-        if (slideIndices !== undefined && slideIndices.length === 0) {
-          throw new Error('画板索引格式无效，请输入正整数并使用英文逗号分隔');
-        }
-
+        const slideIndices = [requireSlideInfo().exportIndex];
         if (currentMode === 'latex') {
           const options = collectExportOptions();
           const items = await editor.slides.exportLatex(options);
@@ -1427,10 +1604,7 @@
         renderExportResult();
         setActionButtonsDisabled(false);
 
-        const target =
-          slideIndices && slideIndices.length > 0
-            ? '指定画板 ' + slideIndices.join(', ')
-            : '全部画板';
+        const target = '画板 ' + slideIndices[0];
         setStatus('导出成功，共返回 ' + images.length + ' 张图片');
         logSdk('导出完成，目标=' + target + '，返回=' + images.length + ' 张');
       } catch (error) {
@@ -1439,8 +1613,7 @@
         setStatus(message, true);
         logError('导出失败：' + message);
       } finally {
-        exportBtn.disabled = false;
-        downloadAllBtn.disabled = latestResult.items.length === 0;
+        setActionButtonsDisabled(false);
       }
     }
 
@@ -1488,14 +1661,12 @@
       }
     });
 
-    dimensionSwitch.addEventListener('click', (event) => {
-      const btn = event.target.closest('button[data-dimension]');
-      if (!btn) return;
-      const dimension = btn.getAttribute('data-dimension');
-      if (!dimension) return;
-      currentDimension = dimension;
-      applyModeVisibility();
-      if (currentView === 'code') codePanel.textContent = buildExportCode();
+    querySlideBtn.addEventListener('click', () => void querySlideInfo());
+    slideIndexInput.addEventListener('input', () => {
+      invalidateSlideInfo();
+      if (editor && !actionBusy) {
+        queryTimer = setTimeout(() => void querySlideInfo(), 300);
+      }
     });
 
     viewSwitch.addEventListener('click', (event) => {
@@ -1508,9 +1679,14 @@
     });
 
     formatSelect.addEventListener('change', applyModeVisibility);
+    vc3dCropSelect.addEventListener('change', applyCropVisibility);
+    readViewCamera3dBtn.addEventListener('click', () => {
+      readTargetViewCamera3d().catch((error) => {
+        viewCamera3dReadStatus.textContent = error instanceof Error ? error.message : String(error);
+      });
+    });
 
     [
-      slideIndicesInput,
       formatSelect,
       qualityInput,
       transparentSelect,
@@ -1533,6 +1709,14 @@
       vc3dScaleInput,
       vc3dWidthInput,
       vc3dHeightInput,
+      vc3dProjectionSelect,
+      vc3dObliqueAngleInput,
+      vc3dObliqueScaleRatioInput,
+      vc3dCropSelect,
+      vc3dCropLeftInput,
+      vc3dCropTopInput,
+      vc3dCropRightInput,
+      vc3dCropBottomInput,
       paddingHInput,
       paddingVInput,
       standaloneSelect,
@@ -1578,7 +1762,7 @@
           logError('导入文件失败：' + message);
         })
         .finally(() => {
-          importBtn.disabled = !editor;
+          setActionButtonsDisabled(!editor);
           fileInput.value = '';
         });
     });

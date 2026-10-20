@@ -4522,11 +4522,24 @@
             this.slides = {
                 getCount: () => this.slideCount,
                 getCurrentIndex: () => this.currentSlideIndex,
+                getInfo: async (index) => this.post('getSlideInfo', {
+                    ...(index === undefined ? {} : { index }),
+                }),
                 getViewBounds: async (index) => {
                     const result = await this.post('getViewBounds', {
                         ...(index === undefined ? {} : { index }),
                     });
                     return result.viewBounds;
+                },
+                getViewCamera3d: async (index) => {
+                    const result = await this.post('getViewCamera3d', {
+                        ...(index === undefined ? {} : { index }),
+                    });
+                    return result.viewCamera3d;
+                },
+                setViewCamera3d: async (options) => {
+                    await this.post('setViewCamera3d', { ...options });
+                    await this.refreshHistoryState();
                 },
                 setViewBounds: async (options) => {
                     await this.post('setViewBounds', { ...options });

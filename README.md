@@ -561,6 +561,9 @@ const { output } = await presentation.repl('list');
 | -------------------------------- | ------------------------------------------------------------------------------------ |
 | `getCount()`                     | 获取当前已知画板数量                                                                 |
 | `getCurrentIndex()`              | 获取当前已知画板索引                                                                 |
+| `getInfo(index?)` | 异步查询指定或当前画板信息 `{ index, exportIndex, cameraMode }`；`index` 从 0 开始，`exportIndex = index + 1`，`cameraMode` 为 `2d` 或 `3d`；自 SDK `2.15.0` 起支持 |
+| `getViewCamera3d(index?)` | 优先读取已启用的 3D 固定视图，否则读取画板相机参数；2D 返回 `null` |
+| `setViewCamera3d(options)` | 局部更新 3D 固定视图及启用状态，默认尺寸 1920 × 1080 |
 | `getViewBounds(index?)`          | 异步获取指定或当前画板的有限画布导出视野 `{ left, top, right, bottom, scale }`；可直接传给 `exportImage`；无限画布返回 `null` |
 | `setViewBounds(options)`         | 设置指定或当前画板的有限画布边界                                                     |
 | `switchTo(index)`                | 切换画板                                                                             |
@@ -604,7 +607,7 @@ const images = await editor.slides.exportImage({
 
 `viewBound` 的 `left`、`top`、`right`、`bottom` 均为世界坐标边界，`scale` 为可选的相机缩放比例。省略 `scale` 时使用目标画板文件中的 `camera.scale`。
 
-3D 画板传同级的 `viewCamera3d`。其中 `width`、`height` 为逻辑输出像素，省略时均为 `1024`；`pixelRatio` 只放大最终物理像素。`offset`、`yaw`、`pitch`、`scale` 可选且省略时沿用文件相机；`scale` 独立决定相机远近与可见世界范围。投影方式与斜投影参数始终沿用画板文件。
+3D 画板传同级的 `viewCamera3d`，允许传入 `{}`。本次传入的字段覆盖基础视图：优先使用目标画板已启用的固定视图；未启用或没有配置时使用该画板的 `camera3d`，逻辑视口默认 `1024 × 1024` 且不截取。已关闭但保留的配置不参与读取。`width`、`height` 是完整逻辑视口尺寸；`pixelRatio` 放大最终物理像素，`scale` 决定可见世界范围。可覆盖 `projection`、`obliqueAngle`、`obliqueScaleRatio`，以及 `cropEnabled` / `crop`；单次导出的角度单位为弧度。
 
 ```ts
 const images = await editor.slides.exportImage({
@@ -781,3 +784,39 @@ try {
 | `DESTROYED`        | SDK 已销毁                                        |
 | `MISSING_APP_ID`   | 编辑模式缺少 `auth.appId`                         |
 | `BAD_REQUEST`      | 非法请求（如重复 init、演示模式白名单校验未通过） |
+
+
+### 3D 固定视图
+
+3D 画板使用 `exportImage` 的 `contain` / `size` 模式时，视角和投影参数优先读取目标画板已启用的固定视图，未启用或没有配置时读取目标画板相机；完整内容的包围盒决定导出构图，不使用固定视图的截取范围。
+
+`slides.getViewCamera3d(index?)` 查询指定画板的固定视图，`index` 从 0 开始，省略时查询当前画板。3D 画板优先返回已启用的固定视图；未启用或没有配置时返回画板相机已有的 offset、角度、scale 和投影参数，width、height、crop 字段省略。2D 画板返回 `null`。
+
+`slides.setViewCamera3d({ index?, enabled?, viewCamera3d? })` 设置 3D 固定视图，支持局部更新。提供 `viewCamera3d` 时默认启用；显式指定 `enabled` 时以其为准。`enabled: false` 仅关闭，保留已有参数；单独设置 `enabled: true` 会启用已有参数，无配置时创建默认视图。参数和开关作为一次可撤销操作保存，不切换画板，也不移动编辑相机。2D 画板不能设置此配置。
+
+```typescript
+const view = await editor.slides.getViewCamera3d(0);
+await editor.slides.setViewCamera3d({
+  index: 0,
+  viewCamera3d: {
+    yawDeg: 45,
+    pitchDeg: 30,
+    width: 1920,
+    height: 1080,
+    crop: { left: 240, top: 135, right: 1680, bottom: 945 },
+  },
+});
+await editor.slides.setViewCamera3d({ index: 0, viewCamera3d: { crop: null } });
+await editor.slides.setViewCamera3d({ index: 0, enabled: false });
+// 此时 getViewCamera3d(0) 返回画板 camera3d 的已有参数，不读取保留的固定视图。
+```
+
+固定视图已启用时返回的 `Partial<ViewCamera3d>` 包含 `offset`、`yawDeg`、`pitchDeg`、`scale`、`projection`、`obliqueAngleDeg`、`obliqueScaleRatio`、`width`、`height`、`crop`。设置时均为可选字段，省略字段沿用保存值。无保存值时默认：`offset: [0,0,0]`、三个角度均为 `45`、`scale: 0.1`、`projection: 'orthographic'`、`obliqueScaleRatio: 0.5`、`width: 1920`、`height: 1080`、`crop: null`。
+
+所有角度单位为**度**，内部持久化为弧度。`projection` 支持 `orthographic`、`perspective`、`oblique`。所有数值必须有限；`scale` 范围为 `0.0001–100`，宽高为 `100–2000` 的整数，与编辑器固定视图限制一致；`obliqueScaleRatio >= 0`。
+
+`crop` 为完整逻辑视口内的截取矩形，左上角为原点，X 向右、Y 向下，单位为逻辑像素，满足 `0 <= left < right <= width`、`0 <= top < bottom <= height`，截取宽高至少为 1 像素。传入 `crop: null` 取消截取；省略则保留。缩小视口导致原截取框越界时会报错，可同时更新或清除截取框。`pixelRatio` 仅属于单次导出，不写入固定视图。
+
+无效索引抛出 `INVALID_SLIDE_INDEX`；设置 2D 画板抛出 `UNSUPPORTED_CAMERA_MODE`；无效配置抛出 `INVALID_VIEW_CAMERA_3D`。固定视图接口使用的度数字段与旧版 `exportImage` 相机覆盖项的弧度字段不同，不能将角度字段直接混用。
+
+

@@ -34,6 +34,7 @@ import {
   type FileContentLatest,
   type GetContentResult,
   type GetViewBoundsResult,
+  type GetViewCamera3dResult,
   type GetHistoryStateResult,
   type HistoryApi,
   type LoadFileResult,
@@ -42,7 +43,9 @@ import {
   type SaveEvent,
   type SaveRequestMessage,
   type SetViewBoundsOptions,
+  type SetViewCamera3dOptions,
   type SlideIndexResult,
+  type SlideInfo,
   type SlidesApi,
   type SwitchSlideResult,
   validateFontConfig,
@@ -103,11 +106,25 @@ export class EmbeddedEditor extends EmbeddedTarget<
     this.slides = {
       getCount: () => this.slideCount,
       getCurrentIndex: () => this.currentSlideIndex,
+      getInfo: async (index?: number) =>
+        this.post<SlideInfo>('getSlideInfo', {
+          ...(index === undefined ? {} : { index }),
+        }),
       getViewBounds: async (index?: number) => {
         const result = await this.post<GetViewBoundsResult>('getViewBounds', {
           ...(index === undefined ? {} : { index }),
         });
         return result.viewBounds;
+      },
+      getViewCamera3d: async (index?: number) => {
+        const result = await this.post<GetViewCamera3dResult>('getViewCamera3d', {
+          ...(index === undefined ? {} : { index }),
+        });
+        return result.viewCamera3d;
+      },
+      setViewCamera3d: async (options: SetViewCamera3dOptions) => {
+        await this.post('setViewCamera3d', { ...options });
+        await this.refreshHistoryState();
       },
       setViewBounds: async (options: SetViewBoundsOptions) => {
         await this.post('setViewBounds', { ...options });

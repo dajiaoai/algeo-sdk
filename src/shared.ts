@@ -327,8 +327,44 @@ export interface SwitchSlideResult {
   success: true;
 }
 
+export interface SlideInfo {
+  /** 画板索引，从 0 开始。 */
+  index: number;
+  /** 导出功能使用的画板索引，等于 index + 1。 */
+  exportIndex: number;
+  cameraMode: '2d' | '3d';
+}
+
 export interface GetSlideCountResult {
   count: number;
+}
+
+/** 3D 固定视图的对外参数；角度单位为度，尺寸和截取坐标单位为逻辑像素。 */
+export interface ViewCamera3d {
+  offset: [number, number, number];
+  yawDeg: number;
+  pitchDeg: number;
+  scale: number;
+  projection: 'orthographic' | 'perspective' | 'oblique';
+  obliqueAngleDeg: number;
+  obliqueScaleRatio: number;
+  width: number;
+  height: number;
+  /** null 表示不截取，截取坐标原点为完整视口左上角。 */
+  crop: { left: number; top: number; right: number; bottom: number } | null;
+}
+
+export interface GetViewCamera3dResult {
+  viewCamera3d: Partial<ViewCamera3d> | null;
+}
+
+export interface SetViewCamera3dOptions {
+  /** 从 0 开始；省略时操作当前画板。 */
+  index?: number;
+  /** 提供参数时默认启用；false 关闭固定视图但保留参数。 */
+  enabled?: boolean;
+  /** 局部更新；省略字段沿用保存值，无保存值时使用默认值（1920 × 1080）。 */
+  viewCamera3d?: Partial<ViewCamera3d>;
 }
 
 export interface GetViewBoundsResult {
@@ -392,6 +428,13 @@ export interface ExportViewBound {
  * 3D 画板的导出相机覆盖项。未提供的字段沿用画板当前 camera3d。
  */
 export interface ExportViewCamera3D {
+  projection?: 'orthographic' | 'perspective' | 'oblique';
+  /** 斜投影方向角，单位为弧度。 */
+  obliqueAngle?: number;
+  obliqueScaleRatio?: number;
+  cropEnabled?: boolean;
+  /** 完整逻辑视口内的截取范围，原点为左上角。 */
+  crop?: { left: number; top: number; right: number; bottom: number };
   offset?: [number, number, number];
   pitch?: number;
   yaw?: number;
@@ -529,8 +572,13 @@ export interface DocumentApi {
 export interface SlidesApi {
   getCount(): number;
   getCurrentIndex(): number;
+  /** 查询指定画板的信息；index 从 0 开始，省略时读取当前画板。 */
+  getInfo(index?: number): Promise<SlideInfo>;
   getViewBounds(index?: number): Promise<ExportViewBound | null>;
   setViewBounds(options: SetViewBoundsOptions): Promise<void>;
+  /** 优先返回已启用的 3D 固定视图，否则返回画板相机已有参数（不含宽高和截取）；2D 返回 null。 */
+  getViewCamera3d(index?: number): Promise<Partial<ViewCamera3d> | null>;
+  setViewCamera3d(options: SetViewCamera3dOptions): Promise<void>;
   switchTo(index: number): Promise<void>;
   add(): Promise<SlideIndexResult>;
   addAt(index: number): Promise<SlideIndexResult>;
