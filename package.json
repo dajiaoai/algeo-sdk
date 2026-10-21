@@ -8,8 +8,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "LICENSE",
-    "RELEASE.md"
+    "LICENSE"
   ],
   "scripts": {
     "build": "rollup -c",
