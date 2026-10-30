@@ -4011,7 +4011,7 @@ function convertToLatest(content) {
 }
 
 /** SDK 版本号，构建时由 rollup 注入 */
-const VERSION = '2.15.0';
+const VERSION = '2.15.1';
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
 const DEFAULT_PRESENTATION_PATH = '/embed/present';
 const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -5118,7 +5118,7 @@ const WHITELIST_CHECK_BASE_URL = 'https://open.dajiaoai.com/console';
 const WHITELIST_CHECK_PATH = '/api/whitelist/check';
 async function checkPresentationWhitelist(options) {
     const appId = options.auth?.appId?.trim() ?? '';
-    const host = window.location.host.trim();
+    const host = window.location.hostname.trim();
     const url = new URL(`${normalizeBaseUrl(WHITELIST_CHECK_BASE_URL)}${WHITELIST_CHECK_PATH}`);
     url.searchParams.set('appId', appId);
     url.searchParams.set('host', host);

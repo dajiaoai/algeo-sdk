@@ -18,7 +18,7 @@ async function checkPresentationWhitelist(
   options: AlgeoPresentationCreateOptions,
 ): Promise<AlgeoError | null> {
   const appId = options.auth?.appId?.trim() ?? '';
-  const host = window.location.host.trim();
+  const host = window.location.hostname.trim();
   const url = new URL(
     `${normalizeBaseUrl(WHITELIST_CHECK_BASE_URL)}${WHITELIST_CHECK_PATH}`,
   );
