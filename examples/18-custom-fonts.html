@@ -16,7 +16,7 @@
     }
 
     body { margin: 0; min-height: 100vh; }
-    button, textarea { font: inherit; }
+    button, textarea, input, select { font: inherit; }
     button { cursor: pointer; }
 
     .page {
@@ -119,7 +119,61 @@
     .card-title { margin: 0; font-size: 14px; }
     .card-note { color: #98a2b3; font-size: 12px; }
 
-    #fileInput { display: none; }
+    #fileInput, #fontFileInput { display: none; }
+
+    .sidebar {
+      overflow: hidden;
+    }
+
+    [hidden] { display: none !important; }
+    .tabs { display: flex; flex-shrink: 0; padding: 8px; gap: 4px; border-bottom: 1px solid #edf0f4; }
+    .tabs button {
+      flex: 1;
+      padding: 10px 6px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #667085;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tabs button[aria-selected="true"] { color: #6d28d9; background: #f3e8ff; }
+    .tabs button:focus-visible { outline: 2px solid #7c3aed; outline-offset: -2px; }
+    .tab-panel { flex: 1; min-height: 0; overflow: auto; }
+    .code-panel, .font-panel { display: flex; flex-direction: column; }
+    .code-panel { overflow: hidden; }
+    .tab-panel .card-head { flex-shrink: 0; flex-wrap: wrap; padding: 12px 16px; }
+    .panel-body { padding: 16px; }
+    .sidebar > .status {
+      max-width: none;
+      flex-shrink: 0;
+      border: 0;
+      border-top: 1px solid #ddd6fe;
+      border-radius: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .font-tool-body { padding: 12px 16px; }
+    .font-tool-note { margin: 0 0 10px; color: #667085; font-size: 12px; line-height: 1.55; }
+    .font-tool-note.error { color: #b42318; }
+
+    #fontBase64 {
+      display: block;
+      width: 100%;
+      height: 240px;
+      min-height: 120px;
+      padding: 10px;
+      resize: none;
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+      color: #344054;
+      background: #f9fafb;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
+
+    #fontBase64:focus-visible { outline: 2px solid #7c3aed; outline-offset: 2px; }
 
     #editor {
       min-height: 0;
@@ -149,6 +203,24 @@
     }
 
     .actions { display: flex; align-items: center; gap: 8px; }
+
+    .image-export { padding: 16px; }
+    .image-export .actions { flex-wrap: wrap; margin-top: 10px; }
+    .image-export label { display: flex; align-items: center; gap: 5px; color: #667085; font-size: 12px; }
+    .image-export input, .image-export select {
+      width: 74px;
+      min-height: 32px;
+      padding: 4px 6px;
+      border: 1px solid #d0d5dd;
+      border-radius: 6px;
+      background: #fff;
+      color: #344054;
+    }
+    .image-export .card-note { display: block; margin-top: 8px; line-height: 1.55; }
+    .image-group-title { margin-top: 20px; }
+    .camera-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+    .camera-fields label { flex-direction: column; align-items: stretch; }
+    .camera-fields input, .camera-fields select { width: 100%; }
 
     .button {
       min-height: 34px;
@@ -195,43 +267,115 @@
         <a class="back" href="./index.html">← 返回示例中心</a>
         <p class="eyebrow">SDK 2.12.0 · Fonts</p>
         <h1>自定义字体</h1>
-        <p class="intro">修改右侧实例化代码后重新执行，在左侧编辑器中新建文本并切换字体查看效果。</p>
+        <p class="intro">通过右侧 Tab 切换实例化代码、文件、图片导出与字体转换，在左侧画板查看效果。</p>
       </div>
-      <div class="status" id="status" role="status">准备执行实例化代码</div>
     </header>
 
     <div class="workspace">
       <section class="card" aria-label="编辑器实例">
-        <div class="card-head">
-          <h2 class="card-title">编辑面板</h2>
-          <div class="actions">
-            <input id="fileInput" type="file" accept=".json,application/json" />
-            <button class="button" id="importButton" type="button">导入文件</button>
-            <button class="button" id="exportButton" type="button">导出文件</button>
-          </div>
-        </div>
         <div id="editor"></div>
       </section>
 
-      <section class="card" aria-label="实例化代码">
-        <div class="card-head">
-          <div>
-            <h2 class="card-title">实例化代码</h2>
-            <span class="card-note">可直接修改 fonts 配置</span>
-          </div>
-          <div class="actions">
-            <button class="button" id="resetButton" type="button">恢复默认</button>
-            <button class="button primary" id="runButton" type="button">重新执行</button>
-          </div>
+      <aside class="card sidebar" aria-label="功能面板">
+        <div class="tabs" role="tablist" aria-label="功能切换">
+          <button id="codeTab" type="button" role="tab" aria-controls="codePanel" aria-selected="true">实例化代码</button>
+          <button id="fileTab" type="button" role="tab" aria-controls="filePanel" aria-selected="false" tabindex="-1">文件</button>
+          <button id="imageTab" type="button" role="tab" aria-controls="imagePanel" aria-selected="false" tabindex="-1">图片导出</button>
+          <button id="fontTab" type="button" role="tab" aria-controls="fontPanel" aria-selected="false" tabindex="-1">字体转换</button>
         </div>
-        <div class="code-wrap">
-          <textarea id="codeEditor" aria-label="可编辑的实例化代码" spellcheck="false"></textarea>
-        </div>
-        <p class="help">
-          代码中可直接使用 <code>AlgeoSdk</code>、<code>container</code>、<code>baseUrl</code>、<code>appId</code> 和
-          <code>shareId</code>。请保留 <code>return editor</code>，以便示例在再次执行前销毁旧实例。
-        </p>
-      </section>
+        <section class="tab-panel code-panel" id="codePanel" role="tabpanel" aria-labelledby="codeTab">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">实例化代码</h2>
+              <span class="card-note">可直接修改 fonts 配置</span>
+            </div>
+            <div class="actions">
+              <button class="button" id="resetButton" type="button">恢复默认</button>
+              <button class="button primary" id="runButton" type="button">重新执行</button>
+            </div>
+          </div>
+          <div class="code-wrap">
+            <textarea id="codeEditor" aria-label="可编辑的实例化代码" spellcheck="false"></textarea>
+          </div>
+          <p class="help">
+            代码中可直接使用 <code>AlgeoSdk</code>、<code>container</code>、<code>baseUrl</code>、<code>appId</code> 和
+            <code>shareId</code>。请保留 <code>return editor</code>，以便示例在再次执行前销毁旧实例。
+          </p>
+        </section>
+
+        <section class="tab-panel" id="filePanel" role="tabpanel" aria-labelledby="fileTab" hidden>
+          <div class="card-head">
+            <h2 class="card-title">文件导入与导出</h2>
+          </div>
+          <div class="panel-body">
+            <p class="font-tool-note">导入本地 JSON 文件到画板，或将当前文件导出为 JSON。</p>
+            <div class="actions">
+              <input id="fileInput" type="file" accept=".json,application/json" />
+              <button class="button" id="importButton" type="button">导入文件</button>
+              <button class="button" id="exportButton" type="button">导出文件</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="imagePanel" role="tabpanel" aria-labelledby="imageTab" hidden>
+          <div class="image-export">
+            <h2 class="card-title" id="imageExportTitle">导出当前画板 PNG 图片 · view</h2>
+            <div class="actions">
+              <label>像素倍率 <input id="imagePixelRatio" type="number" min="0.1" step="0.1" value="1" /></label>
+              <button class="button" id="readImageBoundsButton" type="button" disabled>读取画板视图参数</button>
+              <button class="button primary" id="exportImageButton" type="button" disabled>导出图片</button>
+            </div>
+            <h3 class="card-title image-group-title">2D 世界坐标视野</h3>
+            <div class="actions" aria-label="2D 导出视野参数">
+              <label>左 <input id="imageLeft" type="number" step="any" value="-5" /></label>
+              <label>上 <input id="imageTop" type="number" step="any" value="5" /></label>
+              <label>右 <input id="imageRight" type="number" step="any" value="5" /></label>
+              <label>下 <input id="imageBottom" type="number" step="any" value="-5" /></label>
+              <label>缩放 <input id="imageScale" type="number" min="0.1" step="any" value="50" /></label>
+            </div>
+            <span class="card-note">2D 缩放为每世界坐标单位像素数。</span>
+            <h3 class="card-title image-group-title">3D 相机与视口</h3>
+            <div class="camera-fields" aria-label="3D 导出视图参数">
+              <label>宽度（px）<input id="cameraWidth" type="number" min="1" step="1" placeholder="沿用画板" /></label>
+              <label>高度（px）<input id="cameraHeight" type="number" min="1" step="1" placeholder="沿用画板" /></label>
+              <label>中心 X<input id="cameraOffsetX" type="number" step="any" placeholder="沿用画板" /></label>
+              <label>中心 Y<input id="cameraOffsetY" type="number" step="any" placeholder="沿用画板" /></label>
+              <label>中心 Z<input id="cameraOffsetZ" type="number" step="any" placeholder="沿用画板" /></label>
+              <label>水平角（°）<input id="cameraYawDeg" type="number" step="any" placeholder="沿用画板" /></label>
+              <label>俯仰角（°）<input id="cameraPitchDeg" type="number" step="any" placeholder="沿用画板" /></label>
+              <label>缩放<input id="cameraScale" type="number" min="0.0001" step="any" placeholder="沿用画板" /></label>
+              <label>斜投影角（°）<input id="cameraObliqueAngleDeg" type="number" step="any" placeholder="沿用画板" /></label>
+              <label>退行缩放比<input id="cameraObliqueScaleRatio" type="number" min="0" step="any" placeholder="沿用画板" /></label>
+              <label>投影方式<select id="cameraProjection"><option value="">沿用画板</option><option value="orthographic">正交</option><option value="perspective">透视</option><option value="oblique">斜投影</option></select></label>
+              <label>画面截取<select id="cameraCropMode"><option value="">沿用画板</option><option value="off">不截取</option><option value="on">指定范围</option></select></label>
+            </div>
+            <div class="camera-fields" id="cameraCropFields" hidden>
+              <label>截取左（px）<input id="cameraCropLeft" type="number" min="0" step="any" /></label>
+              <label>截取上（px）<input id="cameraCropTop" type="number" min="0" step="any" /></label>
+              <label>截取右（px）<input id="cameraCropRight" type="number" min="0" step="any" /></label>
+              <label>截取下（px）<input id="cameraCropBottom" type="number" min="0" step="any" /></label>
+            </div>
+            <span class="card-note">导出时按当前画板类型使用对应参数。3D 可选项留空时沿用画板视图；未配置视口时默认 1024 × 1024，中心 X/Y/Z 须同时填写。角度使用度，截取范围以完整视口左上角为原点。</span>
+          </div>
+        </section>
+
+        <section class="tab-panel font-panel" id="fontPanel" role="tabpanel" aria-labelledby="fontTab" hidden>
+          <div class="card-head">
+            <h2 class="card-title" id="fontToolTitle">本地 TTF 转 Base64</h2>
+            <div class="actions">
+              <input id="fontFileInput" type="file" accept=".ttf,font/ttf" />
+              <button class="button" id="fontUploadButton" type="button">选择 TTF 文件</button>
+              <button class="button" id="fontCopyButton" type="button" disabled>复制 Base64</button>
+            </div>
+          </div>
+          <div class="font-tool-body">
+            <p class="font-tool-note" id="fontToolStatus" role="status">文件仅在浏览器本地转换，不会上传到服务器。</p>
+            <textarea id="fontBase64" aria-label="字体 Base64 数据" placeholder="选择本地 .ttf 字体后，在这里获取 Base64 数据" readonly spellcheck="false"></textarea>
+          </div>
+          <p class="help">将结果填入 <code>source.data</code>，并设置 <code>type: 'base64'</code>、<code>mimeType: 'font/ttf'</code>、<code>format: 'truetype'</code>。同时在 <code>catalog</code> 中添加相同的字体 <code>key</code>。</p>
+        </section>
+        <div class="status" id="status" role="status">准备执行实例化代码</div>
+      </aside>
     </div>
   </main>
 
@@ -291,9 +435,156 @@ return editor;`;
     const exportButton = document.getElementById('exportButton');
     const fileInput = document.getElementById('fileInput');
     const status = document.getElementById('status');
+    const exportImageButton = document.getElementById('exportImageButton');
+    const readImageBoundsButton = document.getElementById('readImageBoundsButton');
+    const imagePixelRatio = document.getElementById('imagePixelRatio');
+    const imageBoundsInputs = Object.fromEntries(['left', 'top', 'right', 'bottom', 'scale'].map(function (key) {
+      return [key, document.getElementById('image' + key[0].toUpperCase() + key.slice(1))];
+    }));
+    const cameraInputs = Object.fromEntries(['width', 'height', 'offsetX', 'offsetY', 'offsetZ', 'yawDeg', 'pitchDeg', 'scale', 'projection', 'obliqueAngleDeg', 'obliqueScaleRatio', 'cropMode'].map(function (key) {
+      return [key, document.getElementById('camera' + key[0].toUpperCase() + key.slice(1))];
+    }));
+    const cropInputs = Object.fromEntries(['left', 'top', 'right', 'bottom'].map(function (key) {
+      return [key, document.getElementById('cameraCrop' + key[0].toUpperCase() + key.slice(1))];
+    }));
+    function updateCropFields() {
+      document.getElementById('cameraCropFields').hidden = cameraInputs.cropMode.value !== 'on';
+    }
+    cameraInputs.cropMode.addEventListener('change', updateCropFields);
+
+    function collectCameraOptions() {
+      const camera = {};
+      const values = {};
+      Object.entries(cameraInputs).forEach(function ([key, input]) {
+        if (['projection', 'cropMode'].includes(key) || input.value.trim() === '') return;
+        const value = Number(input.value);
+        if (!Number.isFinite(value)) throw new Error('3D 参数必须是有限数值');
+        values[key] = value;
+      });
+      ['width', 'height'].forEach(function (key) {
+        if (values[key] !== undefined && (!Number.isInteger(values[key]) || values[key] <= 0)) throw new Error('3D 宽高必须是正整数');
+      });
+      if (values.scale !== undefined && values.scale <= 0) throw new Error('3D 缩放必须大于 0');
+      if (values.obliqueScaleRatio !== undefined && values.obliqueScaleRatio < 0) throw new Error('退行缩放比不能小于 0');
+      const offset = [values.offsetX, values.offsetY, values.offsetZ];
+      if (offset.some(function (value) { return value !== undefined; })) {
+        if (offset.some(function (value) { return value === undefined; })) throw new Error('3D 中心坐标 X、Y、Z 必须同时填写');
+        camera.offset = offset;
+      }
+      ['width', 'height', 'scale', 'obliqueScaleRatio'].forEach(function (key) {
+        if (values[key] !== undefined) camera[key] = values[key];
+      });
+      // getViewCamera3d 返回度数，exportImage 的角度覆盖项使用弧度。
+      [['yawDeg', 'yaw'], ['pitchDeg', 'pitch'], ['obliqueAngleDeg', 'obliqueAngle']].forEach(function ([source, target]) {
+        if (values[source] !== undefined) camera[target] = values[source] / 180 * Math.PI;
+      });
+      if (cameraInputs.projection.value) camera.projection = cameraInputs.projection.value;
+      if (cameraInputs.cropMode.value === 'off') camera.cropEnabled = false;
+      if (cameraInputs.cropMode.value === 'on') {
+        const crop = {};
+        Object.entries(cropInputs).forEach(function ([key, input]) {
+          const value = Number(input.value);
+          if (input.value.trim() === '' || !Number.isFinite(value)) throw new Error('请填写完整的 3D 截取范围');
+          crop[key] = value;
+        });
+        if (crop.left < 0 || crop.top < 0 || crop.right - crop.left < 1 || crop.bottom - crop.top < 1) throw new Error('截取范围必须非负，宽高至少为 1 像素');
+        camera.cropEnabled = true;
+        camera.crop = crop;
+      }
+      return camera;
+    }
     let editor = null;
 
     codeEditor.value = DEFAULT_CODE;
+
+    const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+    function selectTab(tab) {
+      tabs.forEach(function (item) {
+        const selected = item === tab;
+        item.setAttribute('aria-selected', String(selected));
+        item.tabIndex = selected ? 0 : -1;
+        document.getElementById(item.getAttribute('aria-controls')).hidden = !selected;
+      });
+    }
+    tabs.forEach(function (tab, index) {
+      tab.addEventListener('click', function () { selectTab(tab); });
+      tab.addEventListener('keydown', function (event) {
+        let nextIndex;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+        else if (event.key === 'ArrowLeft') nextIndex = (index + tabs.length - 1) % tabs.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = tabs.length - 1;
+        else return;
+        event.preventDefault();
+        selectTab(tabs[nextIndex]);
+        tabs[nextIndex].focus();
+      });
+    });
+
+    const fontFileInput = document.getElementById('fontFileInput');
+    const fontUploadButton = document.getElementById('fontUploadButton');
+    const fontCopyButton = document.getElementById('fontCopyButton');
+    const fontBase64 = document.getElementById('fontBase64');
+    const fontToolStatus = document.getElementById('fontToolStatus');
+
+    function setFontToolStatus(message, isError) {
+      fontToolStatus.textContent = message;
+      fontToolStatus.classList.toggle('error', Boolean(isError));
+    }
+
+    fontUploadButton.addEventListener('click', function () {
+      fontFileInput.click();
+    });
+
+    fontFileInput.addEventListener('change', async function () {
+      const file = fontFileInput.files && fontFileInput.files[0];
+      fontFileInput.value = '';
+      if (!file) return;
+
+      fontBase64.value = '';
+      fontCopyButton.disabled = true;
+      if (!/\.ttf$/i.test(file.name) || file.size === 0) {
+        setFontToolStatus('请选择非空的 .ttf 字体文件。', true);
+        return;
+      }
+
+      fontUploadButton.disabled = true;
+      setFontToolStatus('正在转换 ' + file.name + '…');
+      try {
+        const dataUrl = await new Promise(function (resolve, reject) {
+          const reader = new FileReader();
+          reader.onload = function () { resolve(reader.result); };
+          reader.onerror = function () { reject(reader.error || new Error('文件读取失败')); };
+          reader.onabort = function () { reject(new Error('文件读取已取消')); };
+          reader.readAsDataURL(file);
+        });
+        fontBase64.value = dataUrl.slice(dataUrl.indexOf(',') + 1);
+        fontCopyButton.disabled = false;
+        setFontToolStatus(file.name + ' · ' + file.size.toLocaleString() + ' 字节 · 已生成纯 Base64，可直接复制到 source.data。');
+      } catch (error) {
+        setFontToolStatus('转换失败：' + (error && error.message ? error.message : String(error)), true);
+      } finally {
+        fontUploadButton.disabled = false;
+      }
+    });
+
+    fontCopyButton.addEventListener('click', async function () {
+      if (!fontBase64.value) return;
+      try {
+        await navigator.clipboard.writeText(fontBase64.value);
+        setFontToolStatus('Base64 已复制，可粘贴到 source.data。');
+      } catch (error) {
+        // 非安全上下文或剪贴板权限受限时，尝试传统复制方式。
+        fontBase64.focus();
+        fontBase64.select();
+        try {
+          if (!document.execCommand('copy')) throw new Error('复制不可用');
+          setFontToolStatus('Base64 已复制，可粘贴到 source.data。');
+        } catch (copyError) {
+          setFontToolStatus('自动复制不可用，已选中全部数据，请按 Ctrl+C（Mac 为 ⌘C）复制。', true);
+        }
+      }
+    });
 
     function setStatus(message, isError) {
       status.textContent = message;
@@ -309,8 +600,11 @@ return editor;`;
     }
 
     async function runCode() {
+      if (runButton.disabled) return;
       runButton.disabled = true;
       resetButton.disabled = true;
+      exportImageButton.disabled = true;
+      readImageBoundsButton.disabled = true;
       setStatus('正在执行实例化代码…');
 
       try {
@@ -344,8 +638,103 @@ return editor;`;
       } finally {
         runButton.disabled = false;
         resetButton.disabled = false;
+        exportImageButton.disabled = !editor;
+        readImageBoundsButton.disabled = !editor;
       }
     }
+
+    async function withImageAction(action) {
+      if (!editor || runButton.disabled || importButton.disabled) return;
+      runButton.disabled = resetButton.disabled = importButton.disabled = true;
+      exportImageButton.disabled = readImageBoundsButton.disabled = true;
+      try {
+        await action(editor);
+      } catch (error) {
+        console.error(error);
+        setStatus('图片操作失败：' + (error && error.message ? error.message : String(error)), true);
+      } finally {
+        runButton.disabled = resetButton.disabled = importButton.disabled = false;
+        exportImageButton.disabled = readImageBoundsButton.disabled = !editor;
+      }
+    }
+
+    readImageBoundsButton.addEventListener('click', function () {
+      void withImageAction(async function (current) {
+        setStatus('正在读取当前画板的视图参数…');
+        const info = await current.slides.getInfo();
+        if (info.cameraMode === '3d') {
+          const view = await current.slides.getViewCamera3d(info.index);
+          if (!view) throw new Error('无法读取当前画板的 3D 视图参数');
+          Object.entries(cameraInputs).forEach(function ([key, input]) {
+            let value = view[key];
+            if (key.startsWith('offset')) value = view.offset && view.offset[['offsetX', 'offsetY', 'offsetZ'].indexOf(key)];
+            if (key === 'cropMode') value = view.crop ? 'on' : 'off';
+            input.value = value === undefined ? '' : String(value);
+          });
+          Object.entries(cropInputs).forEach(function ([key, input]) {
+            input.value = view.crop ? String(view.crop[key]) : '';
+          });
+          updateCropFields();
+          setStatus('已读取画板 ' + info.exportIndex + ' 的 3D 相机、视口与截取参数');
+          return;
+        }
+        if (info.cameraMode !== '2d') throw new Error('无法识别画板类型');
+        const bounds = await current.slides.getViewBounds(info.index);
+        if (!bounds) throw new Error('当前画板未设置有限画布，请手动填写下方 2D 视野参数。');
+        Object.entries(imageBoundsInputs).forEach(function ([key, input]) {
+          input.value = bounds[key] === undefined ? '' : String(bounds[key]);
+        });
+        setStatus('已读取画板 ' + info.exportIndex + ' 的有限画布尺寸');
+      });
+    });
+
+    exportImageButton.addEventListener('click', function () {
+      void withImageAction(async function (current) {
+        const pixelRatio = Number(imagePixelRatio.value);
+        if (!Number.isFinite(pixelRatio) || pixelRatio <= 0) throw new Error('像素倍率必须大于 0');
+        setStatus('正在以 view 模式导出当前画板…');
+        const info = await current.slides.getInfo();
+        const options = { mode: 'view', slideIndices: [info.exportIndex], format: 'png', pixelRatio };
+        if (info.cameraMode === '2d') {
+          const bounds = {};
+          Object.entries(imageBoundsInputs).forEach(function ([key, input]) {
+            if (key === 'scale' && input.value.trim() === '') return;
+            const value = Number(input.value);
+            if (input.value.trim() === '' || !Number.isFinite(value)) throw new Error('请填写有效的 2D 视野参数');
+            bounds[key] = value;
+          });
+          if (bounds.right <= bounds.left || bounds.top <= bounds.bottom) throw new Error('右边界必须大于左边界，上边界必须大于下边界');
+          if (bounds.scale !== undefined && bounds.scale <= 0) throw new Error('缩放必须大于 0');
+          options.viewBound = bounds;
+        } else if (info.cameraMode === '3d') {
+          const camera = collectCameraOptions();
+          if (camera.cropEnabled) {
+            const view = await current.slides.getViewCamera3d(info.index);
+            const width = camera.width ?? (view && view.width) ?? 1024;
+            const height = camera.height ?? (view && view.height) ?? 1024;
+            if (camera.crop.right > width || camera.crop.bottom > height) throw new Error('3D 截取范围不能超出完整视口宽高');
+          }
+          options.viewCamera3d = camera;
+        } else {
+          throw new Error('无法识别画板类型，请检查 SDK 与内嵌页面版本');
+        }
+        const images = await current.slides.exportImage(options);
+        const image = images[0];
+        if (!image) throw new Error('未返回图片');
+        const url = URL.createObjectURL(image.blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'algeo-custom-fonts-slide-' + info.exportIndex + '.png';
+        document.body.appendChild(link);
+        try {
+          link.click();
+        } finally {
+          link.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        }
+        setStatus('图片导出成功，已开始下载 PNG');
+      });
+    });
 
     runButton.addEventListener('click', runCode);
     resetButton.addEventListener('click', function () {
