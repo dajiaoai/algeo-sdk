@@ -1,0 +1,1711 @@
+{
+  "backgroundStyle": {
+    "background": {
+      "color": "#FFFFFF"
+    },
+    "grid": {},
+    "xaxis": {},
+    "yaxis": {}
+  },
+  "defaultStyle": {
+    "configuredTypes": [
+      "Point",
+      "Line",
+      "Segment",
+      "Ray",
+      "Circle",
+      "Arc",
+      "Ellipse",
+      "EllipticArc",
+      "Curve",
+      "Polygon",
+      "Region",
+      "Tick",
+      "BraceDimension",
+      "ArrowDimension",
+      "Angle",
+      "Point3D",
+      "Line3D",
+      "Segment3D",
+      "Circle3D",
+      "Angle3D",
+      "Curve3D",
+      "Plane3D",
+      "Polygon3D",
+      "Disk",
+      "Sphere",
+      "ConeSurface",
+      "CylinderSurface",
+      "Pyramid",
+      "Prism",
+      "Cone",
+      "Cylinder",
+      "Text",
+      "Slider",
+      "Button",
+      "*:label"
+    ],
+    "types": [
+      [
+        "Point",
+        {
+          "color": "#000000",
+          "pointSize": 5,
+          "dotType": "solid"
+        }
+      ],
+      [
+        "Line",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "lineDash": "solid"
+        }
+      ],
+      [
+        "Segment",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "lineDash": "solid",
+          "arrowType": "none",
+          "arrowStyle": "open_v",
+          "notation": "none"
+        }
+      ],
+      [
+        "Ray",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "lineDash": "solid"
+        }
+      ],
+      [
+        "Circle",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "lineDash": "solid",
+          "regionOpacity": 0
+        }
+      ],
+      [
+        "Arc",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "lineDash": "solid",
+          "arrowType": "none",
+          "arrowStyle": "open_v",
+          "notation": "none"
+        }
+      ],
+      [
+        "Ellipse",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "lineDash": "solid",
+          "regionOpacity": 0
+        }
+      ],
+      [
+        "EllipticArc",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "lineDash": "solid",
+          "arrowType": "none",
+          "arrowStyle": "open_v",
+          "notation": "none"
+        }
+      ],
+      [
+        "Curve",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "lineDash": "solid"
+        }
+      ],
+      [
+        "Polygon",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "lineDash": "solid",
+          "regionOpacity": 0
+        }
+      ],
+      [
+        "Region",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "lineDash": "solid",
+          "regionOpacity": 15
+        }
+      ],
+      [
+        "Tick",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "tickDirection": "positive",
+          "tickLength": 16
+        }
+      ],
+      [
+        "BraceDimension",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "dimensionHeight": 0
+        }
+      ],
+      [
+        "ArrowDimension",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "lineOpacity": 100,
+          "dimensionHeight": 32
+        }
+      ],
+      [
+        "Angle",
+        {
+          "color": "#000000",
+          "regionOpacity": 15,
+          "notation": "none",
+          "angleSize": 30,
+          "emphasizeRightAngle": true
+        }
+      ]
+    ],
+    "typeLabels": [],
+    "types3d": [
+      [
+        "Point3D",
+        {
+          "color": "#000000",
+          "pointSize": 1
+        }
+      ],
+      [
+        "Line3D",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed"
+        }
+      ],
+      [
+        "Segment3D",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed"
+        }
+      ],
+      [
+        "Circle3D",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed"
+        }
+      ],
+      [
+        "Angle3D",
+        {
+          "color": "#000000",
+          "regionOpacity": 19,
+          "notation": "none",
+          "angleSize": 30,
+          "emphasizeRightAngle": true
+        }
+      ],
+      [
+        "Curve3D",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed"
+        }
+      ],
+      [
+        "Plane3D",
+        {
+          "color": "#000000",
+          "regionOpacity": 19
+        }
+      ],
+      [
+        "Polygon3D",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed",
+          "regionOpacity": 0
+        }
+      ],
+      [
+        "Disk",
+        {
+          "color": "#000000",
+          "regionOpacity": 19
+        }
+      ],
+      [
+        "Sphere",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed",
+          "regionOpacity": 0
+        }
+      ],
+      [
+        "ConeSurface",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed",
+          "regionOpacity": 0
+        }
+      ],
+      [
+        "CylinderSurface",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed",
+          "regionOpacity": 0
+        }
+      ],
+      [
+        "Pyramid",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed",
+          "regionOpacity": 0
+        }
+      ],
+      [
+        "Prism",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed",
+          "regionOpacity": 0
+        }
+      ],
+      [
+        "Cone",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed",
+          "regionOpacity": 0
+        }
+      ],
+      [
+        "Cylinder",
+        {
+          "color": "#000000",
+          "lineWidth": 2,
+          "visibleLineStyle": "solid",
+          "hiddenLineStyle": "dashed",
+          "regionOpacity": 0
+        }
+      ]
+    ],
+    "typeLabels3d": [],
+    "defaultLabelStyle": {
+      "mode": "normal",
+      "font": "serif",
+      "fontSize": 20,
+      "fillColor": "#000000",
+      "align": "left"
+    },
+    "textType": {
+      "mode": "normal",
+      "font": "serif",
+      "fontSize": 24,
+      "fillColor": "#000000",
+      "fillOpacity": 100,
+      "strokeColor": "#FFFFFF",
+      "strokeOpacity": 0,
+      "align": "left",
+      "backgroundColor": "#FFFFFF",
+      "backgroundOpacity": 0,
+      "padding": 8,
+      "rounded": 0
+    },
+    "buttonType": {
+      "font": "sans-serif",
+      "fontSize": 20,
+      "textColor": "#000000",
+      "backgroundColor": "#FFFFFF",
+      "borderColor": "#000000",
+      "opacity": 100,
+      "width": 128,
+      "height": 40,
+      "rounded": 4
+    },
+    "sliderType": {
+      "shape": "dot",
+      "size": 16,
+      "color": "#000000",
+      "opacity": 100,
+      "trackColor": "#000000",
+      "trackHeight": 4,
+      "trackLength": 5,
+      "trackOpacity": 56,
+      "labelPosition": "slider"
+    }
+  },
+  "metadata": {
+    "exportedAt": "2026-11-04T09:39:41Z",
+    "version": "2",
+    "canvasMode": "3d"
+  },
+  "themes": [
+    {
+      "configuredTypes": [
+        "Point",
+        "Line",
+        "Segment",
+        "Ray",
+        "Circle",
+        "Arc",
+        "Ellipse",
+        "EllipticArc",
+        "Curve",
+        "Polygon",
+        "Region",
+        "Tick",
+        "BraceDimension",
+        "ArrowDimension",
+        "Angle",
+        "Point3D",
+        "Line3D",
+        "Segment3D",
+        "Circle3D",
+        "Angle3D",
+        "Curve3D",
+        "Plane3D",
+        "Polygon3D",
+        "Disk",
+        "Sphere",
+        "ConeSurface",
+        "CylinderSurface",
+        "Pyramid",
+        "Prism",
+        "Cone",
+        "Cylinder",
+        "Text",
+        "Slider",
+        "Button",
+        "*:label"
+      ],
+      "types": [
+        [
+          "Point",
+          {
+            "color": "#000000",
+            "pointSize": 8,
+            "dotType": "solid"
+          }
+        ],
+        [
+          "Line",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "lineDash": "solid"
+          }
+        ],
+        [
+          "Segment",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "lineDash": "solid",
+            "arrowType": "none",
+            "arrowStyle": "open_v",
+            "notation": "none"
+          }
+        ],
+        [
+          "Ray",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "lineDash": "solid"
+          }
+        ],
+        [
+          "Circle",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "lineDash": "solid",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Arc",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "lineDash": "solid",
+            "arrowType": "none",
+            "arrowStyle": "open_v",
+            "notation": "none"
+          }
+        ],
+        [
+          "Ellipse",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "lineDash": "solid",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "EllipticArc",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "lineDash": "solid",
+            "arrowType": "none",
+            "arrowStyle": "open_v",
+            "notation": "none"
+          }
+        ],
+        [
+          "Curve",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "lineDash": "solid"
+          }
+        ],
+        [
+          "Polygon",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "lineDash": "solid",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Region",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "lineDash": "solid",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Tick",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "tickDirection": "positive",
+            "tickLength": 16
+          }
+        ],
+        [
+          "BraceDimension",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "dimensionHeight": 0
+          }
+        ],
+        [
+          "ArrowDimension",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "lineOpacity": 100,
+            "dimensionHeight": 32
+          }
+        ],
+        [
+          "Angle",
+          {
+            "color": "#000000",
+            "regionOpacity": 15,
+            "notation": "none",
+            "angleSize": 30,
+            "emphasizeRightAngle": true
+          }
+        ]
+      ],
+      "typeLabels": [],
+      "name": "强调",
+      "types3d": [
+        [
+          "Point3D",
+          {
+            "color": "#000000",
+            "pointSize": 1.5
+          }
+        ],
+        [
+          "Line3D",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed"
+          }
+        ],
+        [
+          "Segment3D",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed"
+          }
+        ],
+        [
+          "Circle3D",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed"
+          }
+        ],
+        [
+          "Angle3D",
+          {
+            "color": "#000000",
+            "regionOpacity": 19,
+            "notation": "none",
+            "angleSize": 30,
+            "emphasizeRightAngle": true
+          }
+        ],
+        [
+          "Curve3D",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed"
+          }
+        ],
+        [
+          "Plane3D",
+          {
+            "color": "#000000",
+            "regionOpacity": 19
+          }
+        ],
+        [
+          "Polygon3D",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Disk",
+          {
+            "color": "#000000",
+            "regionOpacity": 19
+          }
+        ],
+        [
+          "Sphere",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "ConeSurface",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "CylinderSurface",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Pyramid",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Prism",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Cone",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Cylinder",
+          {
+            "color": "#000000",
+            "lineWidth": 3.5,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 0
+          }
+        ]
+      ],
+      "typeLabels3d": [],
+      "defaultLabelStyle": {
+        "mode": "normal",
+        "font": "serif",
+        "fontSize": 20,
+        "fillColor": "#000000",
+        "align": "left"
+      },
+      "textType": {
+        "mode": "normal",
+        "font": "serif",
+        "fontSize": 24,
+        "fillColor": "#000000",
+        "fillOpacity": 100,
+        "strokeColor": "#FFFFFF",
+        "strokeOpacity": 0,
+        "align": "left",
+        "backgroundColor": "#000000",
+        "backgroundOpacity": 8,
+        "padding": 8,
+        "rounded": 4
+      },
+      "buttonType": {
+        "font": "sans-serif",
+        "fontSize": 20,
+        "textColor": "#FFFFFF",
+        "backgroundColor": "#000000",
+        "borderColor": "#000000",
+        "opacity": 100,
+        "width": 128,
+        "height": 40,
+        "rounded": 4
+      },
+      "sliderType": {
+        "shape": "dot",
+        "size": 20,
+        "color": "#000000",
+        "opacity": 100,
+        "trackColor": "#000000",
+        "trackHeight": 5,
+        "trackLength": 5,
+        "trackOpacity": 70,
+        "labelPosition": "slider"
+      }
+    },
+    {
+      "configuredTypes": [
+        "Point",
+        "Line",
+        "Segment",
+        "Ray",
+        "Circle",
+        "Arc",
+        "Ellipse",
+        "EllipticArc",
+        "Curve",
+        "Polygon",
+        "Region",
+        "Tick",
+        "BraceDimension",
+        "ArrowDimension",
+        "Angle",
+        "Point3D",
+        "Line3D",
+        "Segment3D",
+        "Circle3D",
+        "Angle3D",
+        "Curve3D",
+        "Plane3D",
+        "Polygon3D",
+        "Disk",
+        "Sphere",
+        "ConeSurface",
+        "CylinderSurface",
+        "Pyramid",
+        "Prism",
+        "Cone",
+        "Cylinder",
+        "*:label"
+      ],
+      "types": [
+        [
+          "Point",
+          {
+            "color": "#666666",
+            "pointSize": 3,
+            "dotType": "solid"
+          }
+        ],
+        [
+          "Line",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "lineDash": "dashed"
+          }
+        ],
+        [
+          "Segment",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "lineDash": "dashed",
+            "arrowType": "none",
+            "arrowStyle": "open_v",
+            "notation": "none"
+          }
+        ],
+        [
+          "Ray",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "lineDash": "dashed"
+          }
+        ],
+        [
+          "Circle",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "lineDash": "dashed",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Arc",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "lineDash": "dashed",
+            "arrowType": "none",
+            "arrowStyle": "open_v",
+            "notation": "none"
+          }
+        ],
+        [
+          "Ellipse",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "lineDash": "dashed",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "EllipticArc",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "lineDash": "dashed",
+            "arrowType": "none",
+            "arrowStyle": "open_v",
+            "notation": "none"
+          }
+        ],
+        [
+          "Curve",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "lineDash": "dashed"
+          }
+        ],
+        [
+          "Polygon",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "lineDash": "dashed",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Region",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "lineDash": "dashed",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Tick",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "tickDirection": "positive",
+            "tickLength": 16
+          }
+        ],
+        [
+          "BraceDimension",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "dimensionHeight": 0
+          }
+        ],
+        [
+          "ArrowDimension",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "lineOpacity": 100,
+            "dimensionHeight": 32
+          }
+        ],
+        [
+          "Angle",
+          {
+            "color": "#666666",
+            "regionOpacity": 0,
+            "notation": "none",
+            "angleSize": 30,
+            "emphasizeRightAngle": true
+          }
+        ]
+      ],
+      "typeLabels": [],
+      "name": "辅助",
+      "types3d": [
+        [
+          "Point3D",
+          {
+            "color": "#666666",
+            "pointSize": 0.7
+          }
+        ],
+        [
+          "Line3D",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted"
+          }
+        ],
+        [
+          "Segment3D",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted"
+          }
+        ],
+        [
+          "Circle3D",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted"
+          }
+        ],
+        [
+          "Angle3D",
+          {
+            "color": "#666666",
+            "regionOpacity": 0,
+            "notation": "none",
+            "angleSize": 30,
+            "emphasizeRightAngle": true
+          }
+        ],
+        [
+          "Curve3D",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted"
+          }
+        ],
+        [
+          "Plane3D",
+          {
+            "color": "#666666",
+            "regionOpacity": 8
+          }
+        ],
+        [
+          "Polygon3D",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Disk",
+          {
+            "color": "#666666",
+            "regionOpacity": 8
+          }
+        ],
+        [
+          "Sphere",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "ConeSurface",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "CylinderSurface",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Pyramid",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Prism",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Cone",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Cylinder",
+          {
+            "color": "#666666",
+            "lineWidth": 1,
+            "visibleLineStyle": "dashed",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ]
+      ],
+      "typeLabels3d": [],
+      "defaultLabelStyle": {
+        "mode": "normal",
+        "font": "serif",
+        "fontSize": 18,
+        "fillColor": "#666666",
+        "align": "left"
+      }
+    },
+    {
+      "configuredTypes": [
+        "Point",
+        "Line",
+        "Segment",
+        "Ray",
+        "Circle",
+        "Arc",
+        "Ellipse",
+        "EllipticArc",
+        "Curve",
+        "Polygon",
+        "Region",
+        "Tick",
+        "BraceDimension",
+        "ArrowDimension",
+        "Angle",
+        "Point3D",
+        "Line3D",
+        "Segment3D",
+        "Circle3D",
+        "Angle3D",
+        "Curve3D",
+        "Plane3D",
+        "Polygon3D",
+        "Disk",
+        "Sphere",
+        "ConeSurface",
+        "CylinderSurface",
+        "Pyramid",
+        "Prism",
+        "Cone",
+        "Cylinder",
+        "*:label"
+      ],
+      "types": [
+        [
+          "Point",
+          {
+            "color": "#000000",
+            "pointSize": 5,
+            "dotType": "hollow"
+          }
+        ],
+        [
+          "Line",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "dashdot"
+          }
+        ],
+        [
+          "Segment",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "dashdot",
+            "arrowType": "none",
+            "arrowStyle": "open_v",
+            "notation": "none"
+          }
+        ],
+        [
+          "Ray",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "dashdot"
+          }
+        ],
+        [
+          "Circle",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "dashdot",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Arc",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "dashdot",
+            "arrowType": "none",
+            "arrowStyle": "open_v",
+            "notation": "none"
+          }
+        ],
+        [
+          "Ellipse",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "dashdot",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "EllipticArc",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "dashdot",
+            "arrowType": "none",
+            "arrowStyle": "open_v",
+            "notation": "none"
+          }
+        ],
+        [
+          "Curve",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "dashdot"
+          }
+        ],
+        [
+          "Polygon",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "dashdot",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Region",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "dashdot",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Tick",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "tickDirection": "positive",
+            "tickLength": 16
+          }
+        ],
+        [
+          "BraceDimension",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "dimensionHeight": 0
+          }
+        ],
+        [
+          "ArrowDimension",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "dimensionHeight": 32
+          }
+        ],
+        [
+          "Angle",
+          {
+            "color": "#000000",
+            "regionOpacity": 15,
+            "notation": "none",
+            "angleSize": 30,
+            "emphasizeRightAngle": true
+          }
+        ]
+      ],
+      "typeLabels": [],
+      "name": "对照",
+      "types3d": [
+        [
+          "Point3D",
+          {
+            "color": "#000000",
+            "pointSize": 1
+          }
+        ],
+        [
+          "Line3D",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted"
+          }
+        ],
+        [
+          "Segment3D",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted"
+          }
+        ],
+        [
+          "Circle3D",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted"
+          }
+        ],
+        [
+          "Angle3D",
+          {
+            "color": "#000000",
+            "regionOpacity": 19,
+            "notation": "none",
+            "angleSize": 30,
+            "emphasizeRightAngle": true
+          }
+        ],
+        [
+          "Curve3D",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted"
+          }
+        ],
+        [
+          "Plane3D",
+          {
+            "color": "#000000",
+            "regionOpacity": 19
+          }
+        ],
+        [
+          "Polygon3D",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Disk",
+          {
+            "color": "#000000",
+            "regionOpacity": 19
+          }
+        ],
+        [
+          "Sphere",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "ConeSurface",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "CylinderSurface",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Pyramid",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Prism",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Cone",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ],
+        [
+          "Cylinder",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "dashdot",
+            "hiddenLineStyle": "dotted",
+            "regionOpacity": 0
+          }
+        ]
+      ],
+      "typeLabels3d": [],
+      "defaultLabelStyle": {
+        "mode": "normal",
+        "font": "serif",
+        "fontSize": 20,
+        "fillColor": "#000000",
+        "align": "left"
+      }
+    },
+    {
+      "configuredTypes": [
+        "Circle",
+        "Ellipse",
+        "Polygon",
+        "Region",
+        "Angle",
+        "Angle3D",
+        "Plane3D",
+        "Polygon3D",
+        "Disk",
+        "Sphere",
+        "ConeSurface",
+        "CylinderSurface",
+        "Pyramid",
+        "Prism",
+        "Cone",
+        "Cylinder",
+        "*:label"
+      ],
+      "types": [
+        [
+          "Circle",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "solid",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Ellipse",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "solid",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Polygon",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "solid",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Region",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "lineOpacity": 100,
+            "lineDash": "solid",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Angle",
+          {
+            "color": "#000000",
+            "regionOpacity": 15,
+            "notation": "none",
+            "angleSize": 30,
+            "emphasizeRightAngle": true
+          }
+        ]
+      ],
+      "typeLabels": [],
+      "name": "区域",
+      "types3d": [
+        [
+          "Angle3D",
+          {
+            "color": "#000000",
+            "regionOpacity": 15,
+            "notation": "none",
+            "angleSize": 30,
+            "emphasizeRightAngle": true
+          }
+        ],
+        [
+          "Plane3D",
+          {
+            "color": "#000000",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Polygon3D",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Disk",
+          {
+            "color": "#000000",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Sphere",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "ConeSurface",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "CylinderSurface",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Pyramid",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Prism",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Cone",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 15
+          }
+        ],
+        [
+          "Cylinder",
+          {
+            "color": "#000000",
+            "lineWidth": 2,
+            "visibleLineStyle": "solid",
+            "hiddenLineStyle": "dashed",
+            "regionOpacity": 15
+          }
+        ]
+      ],
+      "typeLabels3d": [],
+      "defaultLabelStyle": {
+        "mode": "normal",
+        "font": "serif",
+        "fontSize": 20,
+        "fillColor": "#000000",
+        "align": "left"
+      }
+    },
+    {
+      "configuredTypes": [
+        "Text"
+      ],
+      "types": [],
+      "typeLabels": [],
+      "name": "标题",
+      "textType": {
+        "mode": "normal",
+        "font": "serif",
+        "fontSize": 36,
+        "fillColor": "#000000",
+        "fillOpacity": 100,
+        "strokeColor": "#FFFFFF",
+        "strokeOpacity": 0,
+        "align": "left",
+        "backgroundColor": "#FFFFFF",
+        "backgroundOpacity": 0,
+        "padding": 8,
+        "rounded": 0
+      }
+    },
+    {
+      "configuredTypes": [
+        "Text"
+      ],
+      "types": [],
+      "typeLabels": [],
+      "name": "正文",
+      "textType": {
+        "mode": "normal",
+        "font": "serif",
+        "fontSize": 24,
+        "fillColor": "#000000",
+        "fillOpacity": 100,
+        "strokeColor": "#FFFFFF",
+        "strokeOpacity": 0,
+        "align": "left",
+        "backgroundColor": "#FFFFFF",
+        "backgroundOpacity": 0,
+        "padding": 8,
+        "rounded": 0
+      }
+    }
+  ]
+}
