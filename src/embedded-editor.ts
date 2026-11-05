@@ -289,7 +289,9 @@ export class EmbeddedEditor extends EmbeddedTarget<
       await this.post('setFontConfig', { config: options.fonts });
     }
 
-    await this.post('setMasterTemplateCapabilities', {
+    // Optional configuration: older hosts ignore this message. Send it before
+    // the remaining initialization requests without requiring a response.
+    this.postEvent('setMasterTemplateCapabilities', {
       operations: MASTER_TEMPLATE_OPERATIONS.filter(
         (operation) => typeof this.masterTemplates[operation] === 'function',
       ),

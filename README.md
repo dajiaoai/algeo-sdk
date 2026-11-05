@@ -2,7 +2,7 @@
 
 大角几何内嵌画板 SDK，支持在任意网页中嵌入几何画板，通过 postMessage 与内嵌页通信。
 
-当前版本：**2.15.2**。版本变更与升级注意事项见 [GitHub Release](https://github.com/dajiaoai/algeo-sdk/releases/tag/2.15.2)。
+当前版本：**2.15.3**。版本变更与升级注意事项见 [GitHub Release](https://github.com/dajiaoai/algeo-sdk/releases/tag/2.15.3)。
 
 ## 交流与支持
 

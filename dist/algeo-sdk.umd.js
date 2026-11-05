@@ -4015,7 +4015,7 @@
     }
 
     /** SDK 版本号，构建时由 rollup 注入 */
-    const VERSION = '2.15.2';
+    const VERSION = '2.15.3';
     const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
     const DEFAULT_PRESENTATION_PATH = '/embed/present';
     const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4712,7 +4712,9 @@
             if (options.fonts) {
                 await this.post('setFontConfig', { config: options.fonts });
             }
-            await this.post('setMasterTemplateCapabilities', {
+            // Optional configuration: older hosts ignore this message. Send it before
+            // the remaining initialization requests without requiring a response.
+            this.postEvent('setMasterTemplateCapabilities', {
                 operations: MASTER_TEMPLATE_OPERATIONS.filter((operation) => typeof this.masterTemplates[operation] === 'function'),
             });
             await this.post('setResourceLibraryAvailability', {
