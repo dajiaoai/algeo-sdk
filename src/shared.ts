@@ -52,6 +52,8 @@ export interface AlgeoEditorUiConfig {
   toolboxPanel?: boolean;
   algebraPanel?: boolean;
   docPanel?: boolean;
+  /** 母版面板，默认关闭，需显式设为 true。 */
+  masterTemplatePanel?: boolean;
   helpEntry?: boolean;
   aiChatPanel?: boolean;
 }
@@ -123,6 +125,8 @@ export interface AlgeoEditorCreateOptions {
   fonts?: AlgeoFontConfig;
   /** 接入方提供的只读图片资源库。 */
   resourceLibrary?: ResourceLibraryProvider;
+  /** 只读系统母版；未声明 listSystem 时隐藏系统母版 Tab。 */
+  masterTemplates?: MasterTemplateCallbacks;
 }
 
 export interface ResourceLibraryQuery {
@@ -698,6 +702,7 @@ export type EmbedEventMessage =
   | AiCancelEvent;
 
 export type EmbedRequestMessage =
+  | MasterTemplateRequestMessage
   | SaveRequestMessage
   | AiRequestMessage
   | ResourceLibraryQueryMessage
@@ -828,3 +833,44 @@ export type KnownEventName =
   | 'aiCancel';
 
 export type TEventName<T extends string> = Extract<T, KnownEventName>;
+
+/** 母版数据由接入方映射；content 为大角母版 JSON 字符串。 */
+export interface MasterTemplateItem {
+  id: string;
+  name: string;
+  content: string;
+  created_at?: string;
+  edited_at?: string | null;
+}
+
+export interface MasterTemplateCallbacks {
+  listSystem?: () => Promise<MasterTemplateItem[]>;
+}
+
+export type MasterTemplateOperation = keyof MasterTemplateCallbacks;
+export const MASTER_TEMPLATE_OPERATIONS: MasterTemplateOperation[] = [
+  'listSystem',
+];
+
+export interface MasterTemplateRequestMessage {
+  type: 'masterTemplateRequest';
+  requestId: string;
+  operation: MasterTemplateOperation;
+  args: string[];
+}
+
+export function isMasterTemplateRequestMessage(
+  msg: unknown,
+): msg is MasterTemplateRequestMessage {
+  if (!msg || typeof msg !== 'object') return false;
+  const value = msg as Record<string, unknown>;
+  return (
+    value.type === 'masterTemplateRequest' &&
+    typeof value.requestId === 'string' &&
+    MASTER_TEMPLATE_OPERATIONS.includes(
+      value.operation as MasterTemplateOperation,
+    ) &&
+    Array.isArray(value.args) &&
+    value.args.every((arg) => typeof arg === 'string')
+  );
+}

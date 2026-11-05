@@ -2,7 +2,7 @@
 
 大角几何内嵌画板 SDK，支持在任意网页中嵌入几何画板，通过 postMessage 与内嵌页通信。
 
-当前版本：**2.15.1**。版本变更与升级注意事项见 [GitHub Release](https://github.com/dajiaoai/algeo-sdk/releases/tag/2.15.1)。
+当前版本：**2.15.2**。版本变更与升级注意事项见 [GitHub Release](https://github.com/dajiaoai/algeo-sdk/releases/tag/2.15.2)。
 
 ## 交流与支持
 
@@ -232,6 +232,24 @@ const editor = await createEditor(document.getElementById('editor-root'), {
 
 `query` 返回的资源必须具有非空且不重复的 `id`、非空 `name`、`image/*` MIME 类型和完整 HTTP(S) URL。`width`、`height`、`size` 如提供，必须是正整数。搜索条件变化、面板关闭或 SDK 销毁时，请求可能通过 `signal` 被取消。
 
+### 接入自有系统母版列表
+
+编辑模式支持系统母版列表、预览和应用。母版面板默认关闭，设置 `ui.masterTemplatePanel: true` 开启面板，并通过 `masterTemplates.listSystem` 提供列表数据。
+
+```typescript
+const editor = await sdk.createEditor(document.getElementById('editor')!, {
+  auth: { appId: 'your-app-id' },
+  ui: { masterTemplatePanel: true },
+  masterTemplates: {
+    listSystem: async () => myApi.listSystemTemplates(),
+  },
+});
+```
+
+配置 `listSystem` 后显示「系统母版」Tab。未配置该回调时，面板显示「未配置母版数据源」。
+
+`listSystem` 返回 `Promise<MasterTemplateItem[]>`，每项包含 `id: string`、`name: string`、`content: string`，以及可选的 `created_at: string`、`edited_at: string | null`。列表内 ID 必须唯一。`content` 为完整的母版 JSON 字符串，可来自宿主接口或本地数据。宿主负责认证与业务校验；回调抛出的错误消息会展示在编辑器中，请求超过 60 秒视为超时。
+
 ## API
 
 ### 常量
@@ -318,6 +336,7 @@ type AlgeoCreateOptions =
 | `initialContent` | `FileContentAny`               | -      | 初始化后自动注入的文件内容；SDK 会自动转换为最新格式       |
 | `initialMode`     | `'2d' \| '3d'`                | `'2d'` | 空白画板模式，仅在没有初始内容或分享文件时生效          |
 | `ui`             | `Partial<AlgeoEditorUiConfig>` | -      | 编辑器 UI 开关配置                                     |
+| `masterTemplates` | `MasterTemplateCallbacks` | - | 只读系统母版列表回调 |
 | `fonts`          | `AlgeoFontConfig`              | -      | 字体资源、字体选择器列表及默认字体配置                 |
 
 初始化优先级：`initialContent` > `shareId` > 指定 `initialMode` 的空画板。提供 `initialContent` 时不会请求分享文件；加载已有内容时保留内容中的画板模式。
@@ -330,6 +349,7 @@ type AlgeoCreateOptions =
 | `slidePanel`   | `boolean` | -       | 是否展示画板列表     |
 | `toolboxPanel` | `boolean` | -       | 是否展示工具栏       |
 | `algebraPanel` | `boolean` | -       | 是否展示代数面板     |
+| `masterTemplatePanel` | `boolean` | `false` | 是否展示母版面板，需显式开启 |
 | `docPanel`     | `boolean` | -       | 是否展示文档面板     |
 | `helpEntry`    | `boolean` | -       | 是否展示帮助入口     |
 | `aiChatPanel`  | `boolean` | `false` | 是否展示 AI 对话面板 |

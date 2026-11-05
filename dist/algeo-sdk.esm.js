@@ -4009,7 +4009,7 @@ function convertToLatest(content) {
 }
 
 /** SDK 版本号，构建时由 rollup 注入 */
-const VERSION = '2.15.1';
+const VERSION = '2.15.2';
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
 const DEFAULT_PRESENTATION_PATH = '/embed/present';
 const DEFAULT_EDITOR_PATH = '/embed/edit';
@@ -4134,6 +4134,19 @@ function buildEmbedSrc(options) {
     return mode === 'editor' && options.cameraMode
         ? `${src}?cameraMode=${encodeURIComponent(options.cameraMode)}`
         : src;
+}
+const MASTER_TEMPLATE_OPERATIONS = [
+    'listSystem',
+];
+function isMasterTemplateRequestMessage(msg) {
+    if (!msg || typeof msg !== 'object')
+        return false;
+    const value = msg;
+    return (value.type === 'masterTemplateRequest' &&
+        typeof value.requestId === 'string' &&
+        MASTER_TEMPLATE_OPERATIONS.includes(value.operation) &&
+        Array.isArray(value.args) &&
+        value.args.every((arg) => typeof arg === 'string'));
 }
 
 class EmbeddedTarget {
@@ -4296,7 +4309,8 @@ class EmbeddedTarget {
                 }
                 if ((isSaveRequestMessage(data) ||
                     isAiRequestMessage(data) ||
-                    isResourceLibraryRequestMessage(data)) &&
+                    isResourceLibraryRequestMessage(data) ||
+                    isMasterTemplateRequestMessage(data)) &&
                     this.handleRequestMessage(data, iframe.contentWindow)) {
                     return;
                 }
@@ -4491,9 +4505,40 @@ class EmbeddedPresentation extends EmbeddedTarget {
     }
 }
 
+/** 校验 iframe 参数和宿主返回值，所有操作只调用已声明的宿主回调。 */
+async function executeMasterTemplateCallback(callbacks, operation, args) {
+    if (operation !== 'listSystem' || !Array.isArray(args) || args.length !== 0) {
+        throw new Error('无效的母版请求参数');
+    }
+    const callback = callbacks[operation];
+    if (typeof callback !== 'function')
+        throw new Error(`宿主未配置 masterTemplates.${operation}`);
+    const result = await callback.call(callbacks);
+    const ids = new Set();
+    if (!Array.isArray(result) ||
+        !result.every((item) => {
+            if (!item ||
+                typeof item.id !== 'string' ||
+                !item.id.trim() ||
+                ids.has(item.id) ||
+                typeof item.name !== 'string' ||
+                typeof item.content !== 'string' ||
+                (item.created_at !== undefined &&
+                    typeof item.created_at !== 'string') ||
+                (item.edited_at != null && typeof item.edited_at !== 'string'))
+                return false;
+            ids.add(item.id);
+            return true;
+        }))
+        throw new Error('母版列表必须返回含唯一 id、name、content 的数组');
+    return result;
+}
+
 class EmbeddedEditor extends EmbeddedTarget {
     constructor(container) {
         super(container, 'editor');
+        this.masterTemplates = {};
+        this.masterTemplateRequests = new Set();
         this.resourceLibraryRequests = new Map();
         this.currentSlideIndex = 0;
         this.slideCount = 0;
@@ -4648,6 +4693,7 @@ class EmbeddedEditor extends EmbeddedTarget {
         }
         this.uiConfig = options.ui ? { ...options.ui } : {};
         this.resourceLibrary = options.resourceLibrary;
+        this.masterTemplates = options.masterTemplates ?? {};
         if (options.fonts) {
             validateFontConfig(options.fonts);
         }
@@ -4660,6 +4706,9 @@ class EmbeddedEditor extends EmbeddedTarget {
         if (options.fonts) {
             await this.post('setFontConfig', { config: options.fonts });
         }
+        await this.post('setMasterTemplateCapabilities', {
+            operations: MASTER_TEMPLATE_OPERATIONS.filter((operation) => typeof this.masterTemplates[operation] === 'function'),
+        });
         await this.post('setResourceLibraryAvailability', {
             available: Boolean(this.resourceLibrary),
         });
@@ -4698,6 +4747,10 @@ class EmbeddedEditor extends EmbeddedTarget {
         this.currentSlideIndex = Math.min(this.currentSlideIndex, Math.max(this.slideCount - 1, 0));
     }
     handleRequestMessage(message, sourceWindow) {
+        if (message.type === 'masterTemplateRequest') {
+            void this.handleMasterTemplateRequest(message, sourceWindow);
+            return true;
+        }
         if (message.type === 'resourceLibraryCancel') {
             this.resourceLibraryRequests.get(message.requestId)?.abort();
             this.resourceLibraryRequests.delete(message.requestId);
@@ -4718,10 +4771,41 @@ class EmbeddedEditor extends EmbeddedTarget {
         return false;
     }
     async destroy() {
+        this.masterTemplateRequests.clear();
         this.resourceLibraryRequests.forEach((controller) => controller.abort());
         this.resourceLibraryRequests.clear();
         this.cancelActiveAi('destroyed', true);
         await super.destroy();
+    }
+    async handleMasterTemplateRequest(message, sourceWindow) {
+        this.masterTemplateRequests.add(message.requestId);
+        try {
+            const result = await executeMasterTemplateCallback(this.masterTemplates, message.operation, message.args);
+            if (!this.masterTemplateRequests.has(message.requestId))
+                return;
+            sourceWindow.postMessage({
+                type: 'response',
+                requestId: message.requestId,
+                success: true,
+                result,
+            }, '*');
+        }
+        catch (error) {
+            if (!this.masterTemplateRequests.has(message.requestId))
+                return;
+            sourceWindow.postMessage({
+                type: 'response',
+                requestId: message.requestId,
+                success: false,
+                error: {
+                    code: EMBED_ERROR_CODES.BAD_REQUEST,
+                    message: error instanceof Error ? error.message : String(error),
+                },
+            }, '*');
+        }
+        finally {
+            this.masterTemplateRequests.delete(message.requestId);
+        }
     }
     async handleResourceLibraryQuery(message, sourceWindow) {
         const controller = new AbortController();

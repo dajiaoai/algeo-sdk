@@ -24,6 +24,8 @@ export interface AlgeoEditorUiConfig {
     toolboxPanel?: boolean;
     algebraPanel?: boolean;
     docPanel?: boolean;
+    /** 母版面板，默认关闭，需显式设为 true。 */
+    masterTemplatePanel?: boolean;
     helpEntry?: boolean;
     aiChatPanel?: boolean;
 }
@@ -83,6 +85,8 @@ export interface AlgeoEditorCreateOptions {
     fonts?: AlgeoFontConfig;
     /** 接入方提供的只读图片资源库。 */
     resourceLibrary?: ResourceLibraryProvider;
+    /** 只读系统母版；未声明 listSystem 时隐藏系统母版 Tab。 */
+    masterTemplates?: MasterTemplateCallbacks;
 }
 export interface ResourceLibraryQuery {
     /** 页码，从 1 开始。 */
@@ -524,7 +528,7 @@ export declare function validateFontConfig(config: AlgeoFontConfig): void;
 export declare function isResponseMessage(msg: unknown): msg is EmbedResponseMessage;
 export declare function isReadyMessage(msg: unknown): msg is EmbedReadyMessage;
 export type EmbedEventMessage = ContentChangeEvent | SlideChangeEvent | SaveSuccessEvent | AiCancelEvent;
-export type EmbedRequestMessage = SaveRequestMessage | AiRequestMessage | ResourceLibraryQueryMessage | ResourceLibraryCancelMessage;
+export type EmbedRequestMessage = MasterTemplateRequestMessage | SaveRequestMessage | AiRequestMessage | ResourceLibraryQueryMessage | ResourceLibraryCancelMessage;
 export declare function isSaveRequestMessage(msg: unknown): msg is SaveRequestMessage;
 export declare function isAiRequestMessage(msg: unknown): msg is AiRequestMessage;
 export declare function isResourceLibraryRequestMessage(msg: unknown): msg is ResourceLibraryQueryMessage | ResourceLibraryCancelMessage;
@@ -539,3 +543,23 @@ export interface EmbedInitOptions extends AlgeoSdkOptions {
 export declare function buildEmbedSrc(options: EmbedInitOptions): string;
 export type KnownEventName = 'ready' | 'contentChange' | 'slideChange' | 'save' | 'aiRequest' | 'aiCancel';
 export type TEventName<T extends string> = Extract<T, KnownEventName>;
+/** 母版数据由接入方映射；content 为大角母版 JSON 字符串。 */
+export interface MasterTemplateItem {
+    id: string;
+    name: string;
+    content: string;
+    created_at?: string;
+    edited_at?: string | null;
+}
+export interface MasterTemplateCallbacks {
+    listSystem?: () => Promise<MasterTemplateItem[]>;
+}
+export type MasterTemplateOperation = keyof MasterTemplateCallbacks;
+export declare const MASTER_TEMPLATE_OPERATIONS: MasterTemplateOperation[];
+export interface MasterTemplateRequestMessage {
+    type: 'masterTemplateRequest';
+    requestId: string;
+    operation: MasterTemplateOperation;
+    args: string[];
+}
+export declare function isMasterTemplateRequestMessage(msg: unknown): msg is MasterTemplateRequestMessage;

@@ -12,6 +12,7 @@ import {
   isEmbedEventMessage,
   isReadyMessage,
   isResourceLibraryRequestMessage,
+  isMasterTemplateRequestMessage,
   isResponseMessage,
   isSaveRequestMessage,
   type ReadyEvent,
@@ -257,7 +258,8 @@ export abstract class EmbeddedTarget<
         if (
           (isSaveRequestMessage(data) ||
             isAiRequestMessage(data) ||
-            isResourceLibraryRequestMessage(data)) &&
+            isResourceLibraryRequestMessage(data) ||
+            isMasterTemplateRequestMessage(data)) &&
           this.handleRequestMessage(data, iframe.contentWindow as Window)
         ) {
           return;

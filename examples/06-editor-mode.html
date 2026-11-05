@@ -45,11 +45,14 @@
         font-size: 0.8125rem;
         font-weight: 500;
         cursor: pointer;
-        transition: background 0.15s, border-color 0.15s;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
       }
 
       button:focus-visible,
-      select:focus-visible {
+      select:focus-visible,
+      textarea:focus-visible {
         outline: 3px solid #bfdbfe;
         outline-offset: 2px;
       }
@@ -198,6 +201,33 @@
         padding: 7px 10px;
       }
 
+      .ui-config-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 14px;
+        color: #475569;
+        font-size: 0.8125rem;
+      }
+
+      .ui-config-field textarea {
+        width: 100%;
+        min-height: 220px;
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        resize: vertical;
+        font:
+          0.8125rem/1.6 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+      }
+
+      .ui-config-field + .config-actions {
+        margin-top: 10px;
+      }
+
       .control-grid {
         border: 1px solid #e2e8f0;
         border-radius: 10px;
@@ -235,14 +265,30 @@
         font-size: 0.8125rem;
       }
 
-      .visibility-toggle:hover:not(:disabled) {
+      /* 按操作文字区分：显示为蓝色，隐藏为橙色。 */
+      .visibility-toggle[aria-pressed='false'] {
         border-color: #93c5fd;
         background: #eff6ff;
         color: #1d4ed8;
       }
 
-      .visibility-toggle:active:not(:disabled) {
+      .visibility-toggle[aria-pressed='false']:hover:not(:disabled) {
+        border-color: #60a5fa;
         background: #dbeafe;
+      }
+
+      .visibility-toggle[aria-pressed='true'] {
+        border-color: #fdba74;
+        background: #fff7ed;
+        color: #9a3412;
+      }
+
+      .visibility-toggle[aria-pressed='true']:hover:not(:disabled) {
+        border-color: #fb923c;
+        background: #ffedd5;
+      }
+
+      .visibility-toggle:active:not(:disabled) {
         box-shadow: inset 0 1px 2px rgb(15 23 42 / 12%);
       }
 
@@ -338,7 +384,10 @@
 
           <div class="side-column">
             <div class="controls">
-              <section class="config-section create-section" aria-labelledby="createHeading">
+              <section
+                class="config-section create-section"
+                aria-labelledby="createHeading"
+              >
                 <div class="section-heading">
                   <span class="section-number" aria-hidden="true">01</span>
                   <h2 id="createHeading">新建空白画板</h2>
@@ -352,7 +401,9 @@
                       <option value="3d">3D 立体画板</option>
                     </select>
                   </label>
-                  <button class="primary" id="createBlankBtn">创建空白画板</button>
+                  <button class="primary" id="createBlankBtn">
+                    创建空白画板
+                  </button>
                 </div>
               </section>
               <section class="config-section" aria-labelledby="configHeading">
@@ -360,13 +411,36 @@
                   <span class="section-number" aria-hidden="true">02</span>
                   <h2 id="configHeading">界面配置</h2>
                 </div>
-                <p>点击“显示 / 隐藏”调整对应模块，可随时读取当前配置。</p>
+                <p>
+                  可逐项切换或填写 UI 配置
+                  JSON，配置立即应用，并在新建画板时保留。
+                </p>
                 <div class="config-actions">
-                  <button class="secondary" id="readConfigBtn">读取当前配置</button>
+                  <button class="secondary" id="readConfigBtn">
+                    读取当前配置
+                  </button>
                   <button class="secondary" id="showAllBtn">全部显示</button>
                   <button class="secondary" id="hideAllBtn">全部隐藏</button>
                 </div>
                 <div class="control-grid" id="controlGrid"></div>
+                <label class="ui-config-field" for="uiConfigInput">
+                  UI 配置 JSON（支持只填写需要修改的字段）
+                  <textarea id="uiConfigInput" spellcheck="false"></textarea>
+                </label>
+                <div class="config-actions">
+                  <button class="primary" id="applyConfigBtn">
+                    应用 JSON 配置
+                  </button>
+                  <button class="secondary" id="resetConfigBtn">
+                    恢复默认配置
+                  </button>
+                </div>
+                <p>
+                  母版面板和 AI 面板默认关闭。母版列表需在创建参数的
+                  <code>masterTemplates</code> 中配置
+                  <code>listSystem</code> 回调，未配置时不显示系统母版
+                  Tab。可在系统母版列表中预览和应用母版。
+                </p>
               </section>
             </div>
           </div>
@@ -392,6 +466,9 @@
       const readConfigBtn = document.getElementById('readConfigBtn');
       const showAllBtn = document.getElementById('showAllBtn');
       const hideAllBtn = document.getElementById('hideAllBtn');
+      const uiConfigInput = document.getElementById('uiConfigInput');
+      const applyConfigBtn = document.getElementById('applyConfigBtn');
+      const resetConfigBtn = document.getElementById('resetConfigBtn');
 
       const uiFields = [
         { key: 'navbar', label: '顶部导航栏' },
@@ -399,13 +476,26 @@
         { key: 'toolboxPanel', label: '工具面板' },
         { key: 'algebraPanel', label: '代数面板' },
         { key: 'docPanel', label: '笔记面板' },
+        { key: 'masterTemplatePanel', label: '母版面板' },
         { key: 'helpEntry', label: '帮助入口' },
         { key: 'aiChatPanel', label: 'AI 面板' },
       ];
 
+      // 与内嵌编辑模式的默认值保持一致，并显式传给创建参数 editor.ui。
+      const defaultUiConfig = {
+        navbar: true,
+        slidePanel: true,
+        toolboxPanel: true,
+        algebraPanel: true,
+        docPanel: true,
+        masterTemplatePanel: false,
+        helpEntry: true,
+        aiChatPanel: false,
+      };
+
       let sdk = null;
       let isInitializing = false;
-      let currentUiConfig = null;
+      let currentUiConfig = { ...defaultUiConfig };
 
       function log(message, payload) {
         const lines = [new Date().toLocaleTimeString() + ' ' + message];
@@ -427,7 +517,8 @@
       }
 
       function updateToggleButtons(config) {
-        currentUiConfig = config;
+        currentUiConfig = { ...config };
+        uiConfigInput.value = JSON.stringify(config, null, 2);
         controlGrid.querySelectorAll('button[data-key]').forEach((button) => {
           const key = button.getAttribute('data-key');
           if (!key) {
@@ -435,8 +526,12 @@
           }
           const visible = Boolean(config[key]);
           button.textContent = visible ? '隐藏' : '显示';
+          button.setAttribute('aria-pressed', String(visible));
           const field = uiFields.find(({ key: fieldKey }) => fieldKey === key);
-          button.setAttribute('aria-label', button.textContent + (field?.label || key));
+          button.setAttribute(
+            'aria-label',
+            button.textContent + (field?.label || key),
+          );
         });
       }
 
@@ -501,6 +596,38 @@
       }
 
       renderUiControls();
+      updateToggleButtons(currentUiConfig);
+
+      applyConfigBtn.onclick = async () => {
+        try {
+          const config = JSON.parse(uiConfigInput.value);
+          if (!config || typeof config !== 'object' || Array.isArray(config)) {
+            throw new Error('UI 配置必须是 JSON 对象');
+          }
+          for (const [key, value] of Object.entries(config)) {
+            if (!uiFields.some((field) => field.key === key)) {
+              throw new Error('未知的 UI 配置字段：' + key);
+            }
+            if (typeof value !== 'boolean') {
+              throw new Error(key + ' 必须为 true 或 false');
+            }
+          }
+          await setUiConfig(config, 'JSON');
+          uiConfigInput.removeAttribute('aria-invalid');
+        } catch (e) {
+          uiConfigInput.setAttribute('aria-invalid', 'true');
+          log('应用 UI 配置失败', { message: e.message || String(e) });
+        }
+      };
+
+      resetConfigBtn.onclick = async () => {
+        try {
+          await setUiConfig({ ...defaultUiConfig }, 'reset');
+          uiConfigInput.removeAttribute('aria-invalid');
+        } catch (e) {
+          log('恢复默认配置失败', { message: e.message || String(e) });
+        }
+      };
 
       readConfigBtn.onclick = async () => {
         try {
@@ -540,6 +667,7 @@
         const initialMode = initialModeSelect.value;
         const editorOptions = {
           auth: { appId },
+          ui: { ...currentUiConfig },
           ...(blank ? { initialMode } : { shareId }),
         };
         const buttons = document.querySelectorAll('button');
@@ -547,6 +675,7 @@
           button.disabled = true;
         });
         initialModeSelect.disabled = true;
+        uiConfigInput.disabled = true;
         updatePanel(
           blank
             ? '正在创建 ' + initialMode.toUpperCase() + ' 空白画板...'
@@ -561,7 +690,6 @@
         try {
           const previousSdk = sdk;
           sdk = null;
-          currentUiConfig = null;
           if (previousSdk) {
             await previousSdk.destroy();
           }
@@ -589,6 +717,7 @@
           });
           createBlankBtn.disabled = false;
           initialModeSelect.disabled = false;
+          uiConfigInput.disabled = !sdk;
         }
       }
 

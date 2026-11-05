@@ -1,6 +1,6 @@
 {
   "name": "@dajiaoai/algeo-sdk",
-  "version": "2.15.1",
+  "version": "2.15.2",
   "description": "大角几何内嵌画板 SDK，支持 iframe 挂载与 postMessage 通信",
   "main": "dist/algeo-sdk.cjs.js",
   "module": "dist/algeo-sdk.esm.js",
@@ -13,6 +13,7 @@
   "scripts": {
     "build": "rollup -c",
     "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test tests/*.test.mjs",
     "examples": "npx serve .",
     "release": "npm run build && npm publish --access public"
   },

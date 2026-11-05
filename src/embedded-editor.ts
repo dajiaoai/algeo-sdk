@@ -1,3 +1,4 @@
+import { executeMasterTemplateCallback } from './master-templates';
 import { EmbeddedTarget } from './embedded-target';
 import {
   convertToLatest,
@@ -5,6 +6,9 @@ import {
 } from '@dajiaoai/algeo-protocol';
 import {
   AlgeoError,
+  MASTER_TEMPLATE_OPERATIONS,
+  type MasterTemplateCallbacks,
+  type MasterTemplateRequestMessage,
   type AiApi,
   type AiCancelEvent,
   type AiDraftPayloadV1,
@@ -63,6 +67,8 @@ export class EmbeddedEditor extends EmbeddedTarget<
   EmbeddedEditorEventName,
   EmbeddedEditorEventListenerMap
 > {
+  private masterTemplates: MasterTemplateCallbacks = {};
+  private readonly masterTemplateRequests = new Set<string>();
   private resourceLibrary?: ResourceLibraryProvider;
   private readonly resourceLibraryRequests = new Map<string, AbortController>();
   readonly document: DocumentApi;
@@ -117,9 +123,12 @@ export class EmbeddedEditor extends EmbeddedTarget<
         return result.viewBounds;
       },
       getViewCamera3d: async (index?: number) => {
-        const result = await this.post<GetViewCamera3dResult>('getViewCamera3d', {
-          ...(index === undefined ? {} : { index }),
-        });
+        const result = await this.post<GetViewCamera3dResult>(
+          'getViewCamera3d',
+          {
+            ...(index === undefined ? {} : { index }),
+          },
+        );
         return result.viewCamera3d;
       },
       setViewCamera3d: async (options: SetViewCamera3dOptions) => {
@@ -233,7 +242,9 @@ export class EmbeddedEditor extends EmbeddedTarget<
     } catch (error) {
       // REPL execution can fail after applying some operations.
       if (error instanceof AlgeoError) {
-        const details = error.details as { state?: EditorReplState } | undefined;
+        const details = error.details as
+          | { state?: EditorReplState }
+          | undefined;
         if (details?.state) this.applyReplState(details.state);
       }
       throw error;
@@ -261,6 +272,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
 
     this.uiConfig = options.ui ? { ...options.ui } : {};
     this.resourceLibrary = options.resourceLibrary;
+    this.masterTemplates = options.masterTemplates ?? {};
 
     if (options.fonts) {
       validateFontConfig(options.fonts);
@@ -276,6 +288,12 @@ export class EmbeddedEditor extends EmbeddedTarget<
     if (options.fonts) {
       await this.post('setFontConfig', { config: options.fonts });
     }
+
+    await this.post('setMasterTemplateCapabilities', {
+      operations: MASTER_TEMPLATE_OPERATIONS.filter(
+        (operation) => typeof this.masterTemplates[operation] === 'function',
+      ),
+    });
 
     await this.post('setResourceLibraryAvailability', {
       available: Boolean(this.resourceLibrary),
@@ -338,6 +356,11 @@ export class EmbeddedEditor extends EmbeddedTarget<
     message: EmbedRequestMessage,
     sourceWindow: Window,
   ): boolean {
+    if (message.type === 'masterTemplateRequest') {
+      void this.handleMasterTemplateRequest(message, sourceWindow);
+      return true;
+    }
+
     if (message.type === 'resourceLibraryCancel') {
       this.resourceLibraryRequests.get(message.requestId)?.abort();
       this.resourceLibraryRequests.delete(message.requestId);
@@ -363,10 +386,51 @@ export class EmbeddedEditor extends EmbeddedTarget<
   }
 
   override async destroy(): Promise<void> {
+    this.masterTemplateRequests.clear();
     this.resourceLibraryRequests.forEach((controller) => controller.abort());
     this.resourceLibraryRequests.clear();
     this.cancelActiveAi('destroyed', true);
     await super.destroy();
+  }
+
+  private async handleMasterTemplateRequest(
+    message: MasterTemplateRequestMessage,
+    sourceWindow: Window,
+  ): Promise<void> {
+    this.masterTemplateRequests.add(message.requestId);
+    try {
+      const result = await executeMasterTemplateCallback(
+        this.masterTemplates,
+        message.operation,
+        message.args,
+      );
+      if (!this.masterTemplateRequests.has(message.requestId)) return;
+      sourceWindow.postMessage(
+        {
+          type: 'response',
+          requestId: message.requestId,
+          success: true,
+          result,
+        },
+        '*',
+      );
+    } catch (error) {
+      if (!this.masterTemplateRequests.has(message.requestId)) return;
+      sourceWindow.postMessage(
+        {
+          type: 'response',
+          requestId: message.requestId,
+          success: false,
+          error: {
+            code: EMBED_ERROR_CODES.BAD_REQUEST,
+            message: error instanceof Error ? error.message : String(error),
+          },
+        },
+        '*',
+      );
+    } finally {
+      this.masterTemplateRequests.delete(message.requestId);
+    }
   }
 
   private async handleResourceLibraryQuery(
