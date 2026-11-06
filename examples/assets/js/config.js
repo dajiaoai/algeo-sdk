@@ -3,7 +3,7 @@
   var DEFAULT_CONFIG = {
     baseUrl: 'https://dajiaoai.com/',
     appId: 'YTVJDQZR',
-    shareId: '33TA3484',
+    shareId: 'OFUIG9TT',
   };
 
   function readStoredConfig() {

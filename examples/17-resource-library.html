@@ -202,6 +202,54 @@
       padding: 15px;
     }
 
+    .editor-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .entry-help {
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      border: 1px solid #087f67;
+      border-radius: 50%;
+      color: #fff;
+      background: #079474;
+      box-shadow: 0 2px 6px rgb(7 148 116 / 24%);
+      font-size: 15px;
+      font-weight: 700;
+      transition: background .15s ease, box-shadow .15s ease;
+    }
+
+    .entry-help:hover,
+    .entry-help:focus-visible {
+      border-color: #066653;
+      background: #087f67;
+      box-shadow: 0 0 0 4px #e2f6f1;
+      outline: 2px solid #43a992;
+      outline-offset: 2px;
+    }
+
+    .entry-tooltip {
+      position: fixed;
+      z-index: 1000;
+      width: min(640px, calc(100vw - 32px));
+      padding: 8px;
+      border: 1px solid #dde3ec;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 12px 40px rgb(36 50 75 / 20%);
+    }
+
+    .entry-tooltip img {
+      display: block;
+      width: 100%;
+      max-height: calc(100dvh - 48px);
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
     .toolbar {
       display: grid;
       grid-template-columns: 1fr 92px auto;
@@ -419,7 +467,10 @@
     <div class="workspace">
       <section class="card editor-card">
         <div class="card-head">
-          <h2 class="title">内嵌画板</h2>
+          <div class="editor-title">
+            <h2 class="title">内嵌画板</h2>
+            <button class="entry-help" id="entryHelp" type="button" aria-label="资源库入口帮助" aria-describedby="entryTooltip">?</button>
+          </div>
           <div class="file-actions">
             <button class="file-action" id="importBtn" type="button" disabled>导入文件</button>
             <button class="file-action" id="exportBtn" type="button" disabled>导出文件</button>
@@ -465,9 +516,50 @@
     </div>
   </main>
 
+  <div class="entry-tooltip" id="entryTooltip" role="tooltip" hidden>
+    <img src="./assets/imgs/resource-library/entry-guide.png" alt="资源库入口：打开左侧工具面板，搜索“图片”，点击图片工具。" decoding="async" />
+  </div>
+
   <script src="../dist/algeo-sdk.umd.js"></script>
   <script src="./assets/js/config.js"></script>
   <script>
+    const entryHelp = document.getElementById('entryHelp');
+    const entryTooltip = document.getElementById('entryTooltip');
+    function positionEntryTooltip() {
+      const anchor = entryHelp.getBoundingClientRect();
+      const popup = entryTooltip.getBoundingClientRect();
+      entryTooltip.style.left = `${Math.max(16, Math.min(anchor.left, window.innerWidth - popup.width - 16))}px`;
+      const top = anchor.bottom + 8 + popup.height <= window.innerHeight - 16
+        ? anchor.bottom + 8
+        : anchor.top - popup.height - 8;
+      entryTooltip.style.top = `${Math.max(16, Math.min(top, window.innerHeight - popup.height - 16))}px`;
+    }
+    function showEntryTooltip() {
+      entryTooltip.hidden = false;
+      positionEntryTooltip();
+    }
+    function hideEntryTooltip(event) {
+      if (event && (entryHelp.contains(event.relatedTarget) || entryTooltip.contains(event.relatedTarget))) return;
+      entryTooltip.hidden = true;
+    }
+    entryHelp.addEventListener('mouseenter', showEntryTooltip);
+    entryHelp.addEventListener('focus', showEntryTooltip);
+    entryHelp.addEventListener('click', showEntryTooltip);
+    entryHelp.addEventListener('mouseleave', hideEntryTooltip);
+    entryHelp.addEventListener('blur', hideEntryTooltip);
+    entryTooltip.addEventListener('mouseleave', hideEntryTooltip);
+    entryTooltip.querySelector('img').addEventListener('load', () => {
+      if (!entryTooltip.hidden) positionEntryTooltip();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') entryTooltip.hidden = true;
+    });
+    document.addEventListener('pointerdown', (event) => {
+      if (!entryHelp.contains(event.target) && !entryTooltip.contains(event.target)) entryTooltip.hidden = true;
+    });
+    window.addEventListener('resize', () => { entryTooltip.hidden = true; });
+    document.addEventListener('scroll', () => { entryTooltip.hidden = true; }, true);
+
     const ALL_ITEMS = [
       ['geometry-01', '蓝色几何积木.jpg', 'photo-1635070041078-e363dbe005cb'],
       ['geometry-02', '圆与空间结构.jpg', 'photo-1509228468518-180dd4864904'],
