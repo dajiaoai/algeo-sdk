@@ -73,6 +73,7 @@
         info.setAttribute('aria-label', '当前 Algeo Base URL');
         document.body.appendChild(info);
       }
+      var isCustomBaseUrl = config.baseUrl.replace(/\/+$/, '') !== DEFAULT_CONFIG.baseUrl.replace(/\/+$/, '');
       info.title = '当前示例使用的 Base URL：' + config.baseUrl;
       info.textContent = 'baseurl · ' + config.baseUrl;
       Object.assign(info.style, {
@@ -83,15 +84,15 @@
         maxWidth: 'min(52vw, 360px)',
         padding: '3px 7px',
         overflow: 'hidden',
-        color: '#64748b',
-        background: 'rgba(255, 255, 255, 0.78)',
-        border: '1px solid rgba(148, 163, 184, 0.24)',
+        color: isCustomBaseUrl ? '#92400e' : '#64748b',
+        background: isCustomBaseUrl ? '#fffbeb' : 'rgba(255, 255, 255, 0.78)',
+        border: isCustomBaseUrl ? '1px solid #f59e0b' : '1px solid rgba(148, 163, 184, 0.24)',
         borderRadius: '999px',
-        boxShadow: '0 1px 4px rgba(15, 23, 42, 0.06)',
+        boxShadow: isCustomBaseUrl ? '0 2px 8px rgba(180, 83, 9, 0.18)' : '0 1px 4px rgba(15, 23, 42, 0.06)',
         font: '10px/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
-        opacity: '0.62',
+        opacity: isCustomBaseUrl ? '1' : '0.62',
         pointerEvents: 'none',
       });
     }
