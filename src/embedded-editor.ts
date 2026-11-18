@@ -6,6 +6,7 @@ import {
 } from '@dajiaoai/algeo-protocol';
 import {
   AlgeoError,
+  isLocalFileHost,
   MASTER_TEMPLATE_OPERATIONS,
   type MasterTemplateCallbacks,
   type MasterTemplateRequestMessage,
@@ -263,7 +264,7 @@ export class EmbeddedEditor extends EmbeddedTarget<
     options: AlgeoEditorCreateOptions = {},
     baseUrl?: string,
   ): Promise<void> {
-    if (!options.auth?.appId?.trim()) {
+    if (!options.auth?.appId?.trim() && !isLocalFileHost()) {
       throw new AlgeoError(
         '编辑模式需要提供 auth.appId。',
         EMBED_ERROR_CODES.MISSING_APP_ID,

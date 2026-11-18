@@ -42,6 +42,10 @@ export interface AlgeoSdkOptions {
 
 export type AlgeoEmbedMode = 'presentation' | 'editor';
 
+export function isLocalFileHost(): boolean {
+  return typeof window !== 'undefined' && window.location.protocol === 'file:';
+}
+
 export interface AlgeoEditorAuthOptions {
   appId: string;
 }
@@ -813,15 +817,21 @@ export function buildEmbedSrc(options: EmbedInitOptions): string {
   const baseUrl = normalizeBaseUrl(options.baseUrl ?? DEFAULT_EMBED_BASE);
   const mode = normalizeMode(options.mode);
   const path = getEmbedPath(mode);
-  const appId = options.auth?.appId?.trim() ?? '';
+  const localFile = isLocalFileHost();
+  const appId = options.auth?.appId?.trim() || (localFile ? 'local' : '');
   const initialId = options.initialId?.trim();
 
   const src = `${baseUrl}${path}/${encodeURIComponent(appId)}${
     initialId ? `/${encodeURIComponent(initialId)}` : ''
   }`;
-  return mode === 'editor' && options.cameraMode
-    ? `${src}?cameraMode=${encodeURIComponent(options.cameraMode)}`
-    : src;
+  const params = new URLSearchParams();
+  if (mode === 'editor' && options.cameraMode) {
+    params.set('cameraMode', options.cameraMode);
+  }
+  if (mode === 'editor' && localFile) {
+    params.set('localFile', '1');
+  }
+  return params.size ? `${src}?${params}` : src;
 }
 
 export type KnownEventName =

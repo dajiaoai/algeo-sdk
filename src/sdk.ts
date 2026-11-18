@@ -7,6 +7,7 @@ import {
   type AlgeoPresentationCreateOptions,
   EMBED_ERROR_CODES,
   normalizeBaseUrl,
+  isLocalFileHost,
 } from './shared';
 
 export type EmbeddedInstance = EmbeddedEditor | EmbeddedPresentation;
@@ -17,6 +18,8 @@ const WHITELIST_CHECK_PATH = '/api/whitelist/check';
 async function checkPresentationWhitelist(
   options: AlgeoPresentationCreateOptions,
 ): Promise<AlgeoError | null> {
+  if (isLocalFileHost()) return null;
+
   const appId = options.auth?.appId?.trim() ?? '';
   const host = window.location.hostname.trim();
   const url = new URL(

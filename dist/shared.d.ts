@@ -15,6 +15,7 @@ export interface AlgeoSdkOptions {
     initialId?: string;
 }
 export type AlgeoEmbedMode = 'presentation' | 'editor';
+export declare function isLocalFileHost(): boolean;
 export interface AlgeoEditorAuthOptions {
     appId: string;
 }

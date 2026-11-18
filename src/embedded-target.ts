@@ -11,6 +11,7 @@ import {
   isAiRequestMessage,
   isEmbedEventMessage,
   isReadyMessage,
+  isLocalFileHost,
   isResourceLibraryRequestMessage,
   isMasterTemplateRequestMessage,
   isResponseMessage,
@@ -212,6 +213,17 @@ export abstract class EmbeddedTarget<
         }
 
         const { data } = e;
+        if (
+          data?.type === 'localFileHostCheck' &&
+          typeof data.requestId === 'string' &&
+          isLocalFileHost()
+        ) {
+          iframe.contentWindow?.postMessage(
+            { type: 'localFileHostConfirmed', requestId: data.requestId },
+            '*',
+          );
+          return;
+        }
         if (isReadyMessage(data)) {
           if (this._ready) {
             return;

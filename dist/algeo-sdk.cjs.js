@@ -4011,11 +4011,14 @@ function convertToLatest(content) {
 }
 
 /** SDK 版本号，构建时由 rollup 注入 */
-const VERSION = '2.16.0';
+const VERSION = '2.16.1';
 const DEFAULT_EMBED_BASE = 'https://dajiaoai.com';
 const DEFAULT_PRESENTATION_PATH = '/embed/present';
 const DEFAULT_EDITOR_PATH = '/embed/edit';
 const EMBED_TIMEOUT_MS = 30000;
+function isLocalFileHost() {
+    return typeof window !== 'undefined' && window.location.protocol === 'file:';
+}
 let requestIdCounter = 0;
 function generateRequestId() {
     return `req-${Date.now()}-${++requestIdCounter}`;
@@ -4130,12 +4133,18 @@ function buildEmbedSrc(options) {
     const baseUrl = normalizeBaseUrl(options.baseUrl ?? DEFAULT_EMBED_BASE);
     const mode = normalizeMode(options.mode);
     const path = getEmbedPath(mode);
-    const appId = options.auth?.appId?.trim() ?? '';
+    const localFile = isLocalFileHost();
+    const appId = options.auth?.appId?.trim() || (localFile ? 'local' : '');
     const initialId = options.initialId?.trim();
     const src = `${baseUrl}${path}/${encodeURIComponent(appId)}${initialId ? `/${encodeURIComponent(initialId)}` : ''}`;
-    return mode === 'editor' && options.cameraMode
-        ? `${src}?cameraMode=${encodeURIComponent(options.cameraMode)}`
-        : src;
+    const params = new URLSearchParams();
+    if (mode === 'editor' && options.cameraMode) {
+        params.set('cameraMode', options.cameraMode);
+    }
+    if (mode === 'editor' && localFile) {
+        params.set('localFile', '1');
+    }
+    return params.size ? `${src}?${params}` : src;
 }
 const MASTER_TEMPLATE_OPERATIONS = [
     'listSystem',
@@ -4280,6 +4289,12 @@ class EmbeddedTarget {
                     return;
                 }
                 const { data } = e;
+                if (data?.type === 'localFileHostCheck' &&
+                    typeof data.requestId === 'string' &&
+                    isLocalFileHost()) {
+                    iframe.contentWindow?.postMessage({ type: 'localFileHostConfirmed', requestId: data.requestId }, '*');
+                    return;
+                }
                 if (isReadyMessage(data)) {
                     if (this._ready) {
                         return;
@@ -4690,7 +4705,7 @@ class EmbeddedEditor extends EmbeddedTarget {
         this.historyCurrentIndex = state.historyCurrentIndex;
     }
     async initialize(options = {}, baseUrl) {
-        if (!options.auth?.appId?.trim()) {
+        if (!options.auth?.appId?.trim() && !isLocalFileHost()) {
             throw new AlgeoError('编辑模式需要提供 auth.appId。', EMBED_ERROR_CODES.MISSING_APP_ID);
         }
         this.uiConfig = options.ui ? { ...options.ui } : {};
@@ -5203,6 +5218,8 @@ class EmbeddedEditor extends EmbeddedTarget {
 const WHITELIST_CHECK_BASE_URL = 'https://open.dajiaoai.com/console';
 const WHITELIST_CHECK_PATH = '/api/whitelist/check';
 async function checkPresentationWhitelist(options) {
+    if (isLocalFileHost())
+        return null;
     const appId = options.auth?.appId?.trim() ?? '';
     const host = window.location.hostname.trim();
     const url = new URL(`${normalizeBaseUrl(WHITELIST_CHECK_BASE_URL)}${WHITELIST_CHECK_PATH}`);

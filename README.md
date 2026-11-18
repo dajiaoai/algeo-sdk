@@ -2,7 +2,7 @@
 
 大角几何内嵌画板 SDK，支持在任意网页中嵌入几何画板，通过 postMessage 与内嵌页通信。
 
-当前版本：**2.16.0**。版本变更与升级注意事项见 [GitHub Release](https://github.com/dajiaoai/algeo-sdk/releases/tag/2.16.0)。
+当前版本：**2.16.1**。版本变更与升级注意事项见 [GitHub Release](https://github.com/dajiaoai/algeo-sdk/releases/tag/2.16.1)。
 
 ## 交流与支持
 
@@ -34,6 +34,15 @@ npm install @dajiaoai/algeo-sdk
 ```
 
 ## 使用方式
+
+### 本地 HTML 文件
+
+通过 `file://` 直接打开 HTML 时，演示和编辑模式都可以省略 `auth` 或将 `appId` 留空。
+
+```javascript
+const presentation = await createPresentation(container, { shareId: '33TA3484' });
+const editor = await createEditor(container);
+```
 
 ### 方式一：演示模式
 
