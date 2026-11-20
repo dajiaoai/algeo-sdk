@@ -1,3 +1,4 @@
+import { logSdk } from './sdkLogger';
 import {
   AlgeoError,
   type AlgeoErrorPayload,
@@ -44,6 +45,41 @@ export type AlgeoEmbedMode = 'presentation' | 'editor';
 
 export function isLocalFileHost(): boolean {
   return typeof window !== 'undefined' && window.location.protocol === 'file:';
+}
+
+export function isLocalLoopbackHost(): boolean {
+  if (typeof window === 'undefined') return false;
+  const { protocol, hostname } = window.location;
+  return (
+    (protocol === 'http:' || protocol === 'https:') &&
+    ['localhost', '127.0.0.1'].includes(hostname)
+  );
+}
+
+export function readEmbedAppId(auth?: AlgeoEditorAuthOptions): string {
+  const appId = auth?.appId?.trim() ?? '';
+  if (!appId) {
+    logSdk('notice', {
+      title: '未配置应用 ID（auth.appId）',
+      lines: [
+        '注册应用 > 配置域名白名单 > 填写 auth.appId',
+        '开放平台  https://open.dajiaoai.com/console',
+        '使用许可  https://open.dajiaoai.com/sdk/2/auth',
+        '',
+        '版权 © 大角几何',
+      ],
+    });
+  }
+  return appId;
+}
+
+export function requireHttpHostForAppId(appId: string): void {
+  if (appId && isLocalFileHost()) {
+    throw new AlgeoError(
+      'file:// 没有可校验的宿主域名。请通过本地 HTTP 服务打开页面，将该主机加入应用白名单后重试。',
+      EMBED_ERROR_CODES.BAD_REQUEST,
+    );
+  }
 }
 
 export interface AlgeoEditorAuthOptions {
@@ -817,19 +853,23 @@ export function buildEmbedSrc(options: EmbedInitOptions): string {
   const baseUrl = normalizeBaseUrl(options.baseUrl ?? DEFAULT_EMBED_BASE);
   const mode = normalizeMode(options.mode);
   const path = getEmbedPath(mode);
-  const localFile = isLocalFileHost();
-  const appId = options.auth?.appId?.trim() || (localFile ? 'local' : '');
+  const appId = options.auth?.appId?.trim();
+  const localFile = !appId && isLocalFileHost();
+  const localLoopback = !appId && isLocalLoopbackHost();
   const initialId = options.initialId?.trim();
+  const initialPath = initialId ? `/${encodeURIComponent(initialId)}` : '';
 
-  const src = `${baseUrl}${path}/${encodeURIComponent(appId)}${
-    initialId ? `/${encodeURIComponent(initialId)}` : ''
-  }`;
+  const routeAppId = appId || (localFile || localLoopback ? 'local' : 'public');
+  const src = `${baseUrl}${path}/${encodeURIComponent(routeAppId)}${initialPath}`;
   const params = new URLSearchParams();
   if (mode === 'editor' && options.cameraMode) {
     params.set('cameraMode', options.cameraMode);
   }
   if (mode === 'editor' && localFile) {
     params.set('localFile', '1');
+  }
+  if (mode === 'editor' && localLoopback) {
+    params.set('localLoopback', '1');
   }
   return params.size ? `${src}?${params}` : src;
 }

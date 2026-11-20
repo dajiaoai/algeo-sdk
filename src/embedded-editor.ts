@@ -7,6 +7,9 @@ import {
 import {
   AlgeoError,
   isLocalFileHost,
+  isLocalLoopbackHost,
+  readEmbedAppId,
+  requireHttpHostForAppId,
   MASTER_TEMPLATE_OPERATIONS,
   type MasterTemplateCallbacks,
   type MasterTemplateRequestMessage,
@@ -264,7 +267,9 @@ export class EmbeddedEditor extends EmbeddedTarget<
     options: AlgeoEditorCreateOptions = {},
     baseUrl?: string,
   ): Promise<void> {
-    if (!options.auth?.appId?.trim() && !isLocalFileHost()) {
+    const appId = readEmbedAppId(options.auth);
+    requireHttpHostForAppId(appId);
+    if (!appId && !isLocalFileHost() && !isLocalLoopbackHost()) {
       throw new AlgeoError(
         '编辑模式需要提供 auth.appId。',
         EMBED_ERROR_CODES.MISSING_APP_ID,

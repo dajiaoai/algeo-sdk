@@ -35,9 +35,9 @@ npm install @dajiaoai/algeo-sdk
 
 ## 使用方式
 
-### 本地 HTML 文件
+### 本地使用
 
-通过 `file://` 直接打开 HTML 时，演示和编辑模式都可以省略 `auth` 或将 `appId` 留空。
+通过 `file://` 直接打开本地文件，或通过 `localhost`、`127.0.0.1` 访问本地服务时，演示和编辑模式都可以省略 `auth`。本地联调应用授权时，请使用本地 HTTP 服务并配置 `auth.appId` 和域名白名单。详见 [SDK 鉴权说明](https://open.dajiaoai.com/sdk/2/auth)。
 
 ```javascript
 const presentation = await createPresentation(container, { shareId: '33TA3484' });
@@ -301,7 +301,7 @@ create(container, {
 
 演示模式快捷入口。该函数负责真正创建并初始化 `EmbeddedPresentation`。
 
-创建成功后，SDK 会额外调用 `https://open.dajiaoai.com/console/api/whitelist/check`，使用 `options.auth.appId` 与当前页面 `hostname` 做白名单校验。若未命中白名单，iframe 仍会完成初始化并呈现页面，`createPresentation` 仍会成功返回实例，但后续 `loadShareById`、`loadFile`、`switchSlide`、`getSlideCount`、`repl` 等演示模式 API 会被拒绝，并在控制台输出包含方法名的错误，便于接入方感知并处理。
+`createPresentation` 初始化时会加载画板。首次调用 `switchSlide` 等需要授权的方法时，SDK 才校验应用和宿主主机名。校验失败时，该方法返回错误。
 
 ```javascript
 create(container, {

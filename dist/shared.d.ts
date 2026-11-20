@@ -16,6 +16,9 @@ export interface AlgeoSdkOptions {
 }
 export type AlgeoEmbedMode = 'presentation' | 'editor';
 export declare function isLocalFileHost(): boolean;
+export declare function isLocalLoopbackHost(): boolean;
+export declare function readEmbedAppId(auth?: AlgeoEditorAuthOptions): string;
+export declare function requireHttpHostForAppId(appId: string): void;
 export interface AlgeoEditorAuthOptions {
     appId: string;
 }

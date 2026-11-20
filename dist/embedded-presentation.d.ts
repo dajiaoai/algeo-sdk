@@ -5,12 +5,15 @@ export declare class EmbeddedPresentation extends EmbeddedTarget<EmbeddedPresent
     private currentContent?;
     private currentSlideIndex;
     private slideCount;
+    private appId;
+    private whitelistCheck?;
     private whitelistError?;
     private uiConfig;
     constructor(container: HTMLElement);
     initialize(options?: AlgeoPresentationCreateOptions, baseUrl?: string): Promise<void>;
     protected acceptsEventMessage(): boolean;
     setWhitelistError(error: AlgeoError): void;
+    private checkWhitelist;
     private ensureWhitelistAccess;
     loadShareById(id: string): Promise<LoadShareByIdResult>;
     loadFile(content: FileContentAny): Promise<LoadFileResult>;

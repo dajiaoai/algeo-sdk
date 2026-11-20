@@ -1,5 +1,33 @@
 'use strict';
 
+const SDK_LOGO = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 36 36">
+  <g clip-path="url(#a)">
+    <path stroke="#A668B8" stroke-width="3.819" d="m30.261 29.85-5.368-23.9c-.163-.723-1.126-.875-1.503-.237l-9.082 15.349a.818.818 0 0 0 .288 1.12l14.45 8.551a.818.818 0 0 0 1.215-.884Z"/>
+    <path stroke="#01B88B" stroke-width="3.819" d="M5.335 11.746V30.12c6.605.315 14.644.647 15.468-8.963.165-1.922-.34-4.035-.824-5.9-.851-3.276-3.854-5.913-12.59-5.913"/>
+    <path fill="#A668B8" d="m16.483 13.62 2.182-3.682 3.273 1.91-3.682 6.137-1.773-4.364Z"/>
+  </g>
+  <defs>
+    <clipPath id="a">
+      <path fill="#fff" d="M0 0h36v36H0z"/>
+    </clipPath>
+  </defs>
+</svg>`;
+const BADGE_STYLE = 'background-color: #f1faf7; background-position: 9px center;' +
+    'background-repeat: no-repeat; background-size: 24px 24px;' +
+    'border: 1px solid #9cd4c5; border-radius: 4px; padding: 6px 12px 6px 42px;' +
+    'color: #123e35; font-size: 14px; font-weight: bold;';
+const TITLE_STYLE = 'background-color: #174e42; color: #fff; font-weight: bold; padding: 2px 8px;';
+const DIVIDER = '+------------------------------------------------------+';
+function logSdk(...entry) {
+    if (entry[0] === 'debug') {
+        const [, message, ...details] = entry;
+        console.debug('[Algeo SDK]', message, ...details);
+        return;
+    }
+    const [, { title, lines }] = entry;
+    console.info(`%cALGEO SDK  /  大角几何%c\n\n${DIVIDER}\n|  %c%s%c\n%s\n${DIVIDER}`, `background-image: url(data:image/svg+xml;base64,${btoa(SDK_LOGO)});${BADGE_STYLE}`, '', TITLE_STYLE, title, '', ['|', ...lines.map((line) => (line ? `|  ${line}` : '|'))].join('\n'));
+}
+
 var util;
 (function (util) {
     util.assertEqual = (_) => { };
@@ -4019,6 +4047,34 @@ const EMBED_TIMEOUT_MS = 30000;
 function isLocalFileHost() {
     return typeof window !== 'undefined' && window.location.protocol === 'file:';
 }
+function isLocalLoopbackHost() {
+    if (typeof window === 'undefined')
+        return false;
+    const { protocol, hostname } = window.location;
+    return ((protocol === 'http:' || protocol === 'https:') &&
+        ['localhost', '127.0.0.1'].includes(hostname));
+}
+function readEmbedAppId(auth) {
+    const appId = auth?.appId?.trim() ?? '';
+    if (!appId) {
+        logSdk('notice', {
+            title: '未配置应用 ID（auth.appId）',
+            lines: [
+                '注册应用 > 配置域名白名单 > 填写 auth.appId',
+                '开放平台  https://open.dajiaoai.com/console',
+                '使用许可  https://open.dajiaoai.com/sdk/2/auth',
+                '',
+                '版权 © 大角几何',
+            ],
+        });
+    }
+    return appId;
+}
+function requireHttpHostForAppId(appId) {
+    if (appId && isLocalFileHost()) {
+        throw new AlgeoError('file:// 没有可校验的宿主域名。请通过本地 HTTP 服务打开页面，将该主机加入应用白名单后重试。', EMBED_ERROR_CODES.BAD_REQUEST);
+    }
+}
 let requestIdCounter = 0;
 function generateRequestId() {
     return `req-${Date.now()}-${++requestIdCounter}`;
@@ -4133,16 +4189,22 @@ function buildEmbedSrc(options) {
     const baseUrl = normalizeBaseUrl(options.baseUrl ?? DEFAULT_EMBED_BASE);
     const mode = normalizeMode(options.mode);
     const path = getEmbedPath(mode);
-    const localFile = isLocalFileHost();
-    const appId = options.auth?.appId?.trim() || (localFile ? 'local' : '');
+    const appId = options.auth?.appId?.trim();
+    const localFile = !appId && isLocalFileHost();
+    const localLoopback = !appId && isLocalLoopbackHost();
     const initialId = options.initialId?.trim();
-    const src = `${baseUrl}${path}/${encodeURIComponent(appId)}${initialId ? `/${encodeURIComponent(initialId)}` : ''}`;
+    const initialPath = initialId ? `/${encodeURIComponent(initialId)}` : '';
+    const routeAppId = appId || (localFile || localLoopback ? 'local' : 'public');
+    const src = `${baseUrl}${path}/${encodeURIComponent(routeAppId)}${initialPath}`;
     const params = new URLSearchParams();
     if (mode === 'editor' && options.cameraMode) {
         params.set('cameraMode', options.cameraMode);
     }
     if (mode === 'editor' && localFile) {
         params.set('localFile', '1');
+    }
+    if (mode === 'editor' && localLoopback) {
+        params.set('localLoopback', '1');
     }
     return params.size ? `${src}?${params}` : src;
 }
@@ -4243,6 +4305,7 @@ class EmbeddedTarget {
                 ...options,
                 mode: this.embedMode,
             });
+            const iframeOrigin = new URL(src, window.location.href).origin;
             let settled = false;
             let initTimeoutId;
             const finalizeFailure = (error) => {
@@ -4293,6 +4356,19 @@ class EmbeddedTarget {
                     typeof data.requestId === 'string' &&
                     isLocalFileHost()) {
                     iframe.contentWindow?.postMessage({ type: 'localFileHostConfirmed', requestId: data.requestId }, '*');
+                    return;
+                }
+                if (data?.type === 'localLoopbackHostCheck' &&
+                    typeof data.requestId === 'string' &&
+                    !options.auth?.appId?.trim() &&
+                    isLocalLoopbackHost()) {
+                    iframe.contentWindow?.postMessage({ type: 'localLoopbackHostConfirmed', requestId: data.requestId }, iframeOrigin);
+                    return;
+                }
+                if (this.embedMode === 'editor' &&
+                    e.origin === iframeOrigin &&
+                    data?.type === 'embedEditAuthorizationFailed') {
+                    finalizeFailure(new AlgeoError('白名单校验未通过。请在开放平台将当前主机加入应用白名单后重试。', EMBED_ERROR_CODES.BAD_REQUEST));
                     return;
                 }
                 if (isReadyMessage(data)) {
@@ -4427,6 +4503,7 @@ class EmbeddedPresentation extends EmbeddedTarget {
         super(container, 'presentation');
         this.currentSlideIndex = 0;
         this.slideCount = 0;
+        this.appId = '';
         this.uiConfig = {
             logo: true,
             slidePanel: true,
@@ -4436,19 +4513,30 @@ class EmbeddedPresentation extends EmbeddedTarget {
         this.mode = {
             getUiConfig: () => ({ ...this.uiConfig }),
             setUiConfig: async (config) => {
+                await this.ensureWhitelistAccess('setUiConfig');
                 await this.post('setUiConfig', { config });
                 this.uiConfig = {
                     ...this.uiConfig,
                     ...config,
                 };
             },
-            setMasterTemplate: (template) => {
-                this.ensureWhitelistAccess('setMasterTemplate');
+            setMasterTemplate: async (template) => {
+                await this.ensureWhitelistAccess('setMasterTemplate');
                 return this.post('setMasterTemplate', { template });
             },
         };
     }
     async initialize(options = {}, baseUrl) {
+        const appId = readEmbedAppId(options.auth);
+        if (!this.iframe) {
+            this.appId = appId;
+            this.whitelistCheck = undefined;
+        }
+        // 未配置应用的部署页面按默认样式展示公开分享。
+        if (!appId && !isLocalFileHost() && !isLocalLoopbackHost()) {
+            await this.init({ baseUrl, initialId: options.shareId });
+            return;
+        }
         this.uiConfig = {
             logo: true,
             slidePanel: true,
@@ -4467,7 +4555,7 @@ class EmbeddedPresentation extends EmbeddedTarget {
         if (options.fonts) {
             await this.post('setFontConfig', { config: options.fonts });
         }
-        await this.mode.setUiConfig(this.uiConfig);
+        await this.post('setUiConfig', { config: this.uiConfig });
     }
     acceptsEventMessage() {
         return false;
@@ -4475,16 +4563,44 @@ class EmbeddedPresentation extends EmbeddedTarget {
     setWhitelistError(error) {
         this.whitelistError = error;
     }
-    ensureWhitelistAccess(methodName) {
-        if (!this.whitelistError) {
-            return;
+    async checkWhitelist(appId) {
+        if (!appId) {
+            if (isLocalFileHost() || isLocalLoopbackHost())
+                return;
+            throw new AlgeoError('正式接入演示模式需要提供 auth.appId。', EMBED_ERROR_CODES.MISSING_APP_ID);
         }
-        const error = new AlgeoError(`演示模式调用 ${methodName} 被白名单限制。${this.whitelistError.message}`, this.whitelistError.code, this.whitelistError.details);
-        console.error(error);
-        throw error;
+        requireHttpHostForAppId(appId);
+        const host = window.location.hostname;
+        const url = new URL('https://open.dajiaoai.com/console/api/whitelist/check');
+        url.searchParams.set('appId', appId);
+        url.searchParams.set('host', host);
+        try {
+            const response = await fetch(url.toString(), { cache: 'no-store' });
+            if (response.ok && (await response.json()).matched === true)
+                return;
+        }
+        catch {
+            // 网络或响应解析失败时按鉴权失败处理。
+        }
+        throw new AlgeoError(`白名单校验未通过，appId="${appId}"，host="${host}"。请在开放平台将该主机加入应用白名单后重试。`, EMBED_ERROR_CODES.BAD_REQUEST);
+    }
+    async ensureWhitelistAccess(methodName) {
+        try {
+            if (this.whitelistError)
+                throw this.whitelistError;
+            this.whitelistCheck ?? (this.whitelistCheck = this.checkWhitelist(this.appId));
+            await this.whitelistCheck;
+        }
+        catch (cause) {
+            if (!(cause instanceof AlgeoError))
+                throw cause;
+            const error = new AlgeoError(`演示模式调用 ${methodName} 被白名单限制。${cause.message}`, cause.code, cause.details);
+            console.error(error);
+            throw error;
+        }
     }
     async loadShareById(id) {
-        this.ensureWhitelistAccess('loadShareById');
+        await this.ensureWhitelistAccess('loadShareById');
         const result = await this.post('loadShareById', {
             id,
         });
@@ -4494,7 +4610,7 @@ class EmbeddedPresentation extends EmbeddedTarget {
         return result;
     }
     async loadFile(content) {
-        this.ensureWhitelistAccess('loadFile');
+        await this.ensureWhitelistAccess('loadFile');
         const latestContent = convertToLatest(content);
         const result = await this.post('loadContent', {
             content: latestContent,
@@ -4505,19 +4621,19 @@ class EmbeddedPresentation extends EmbeddedTarget {
         return result;
     }
     async switchSlide(index) {
-        this.ensureWhitelistAccess('switchSlide');
+        await this.ensureWhitelistAccess('switchSlide');
         const result = await this.post('switchSlide', { index });
         this.currentSlideIndex = index;
         return result;
     }
     async getSlideCount() {
-        this.ensureWhitelistAccess('getSlideCount');
+        await this.ensureWhitelistAccess('getSlideCount');
         const result = await this.post('getSlideCount', {});
         this.slideCount = result.count;
         return result;
     }
     async repl(command) {
-        this.ensureWhitelistAccess('repl');
+        await this.ensureWhitelistAccess('repl');
         return this.post('repl', { command });
     }
 }
@@ -4705,7 +4821,9 @@ class EmbeddedEditor extends EmbeddedTarget {
         this.historyCurrentIndex = state.historyCurrentIndex;
     }
     async initialize(options = {}, baseUrl) {
-        if (!options.auth?.appId?.trim() && !isLocalFileHost()) {
+        const appId = readEmbedAppId(options.auth);
+        requireHttpHostForAppId(appId);
+        if (!appId && !isLocalFileHost() && !isLocalLoopbackHost()) {
             throw new AlgeoError('编辑模式需要提供 auth.appId。', EMBED_ERROR_CODES.MISSING_APP_ID);
         }
         this.uiConfig = options.ui ? { ...options.ui } : {};
@@ -5215,35 +5333,6 @@ class EmbeddedEditor extends EmbeddedTarget {
     }
 }
 
-const WHITELIST_CHECK_BASE_URL = 'https://open.dajiaoai.com/console';
-const WHITELIST_CHECK_PATH = '/api/whitelist/check';
-async function checkPresentationWhitelist(options) {
-    if (isLocalFileHost())
-        return null;
-    const appId = options.auth?.appId?.trim() ?? '';
-    const host = window.location.hostname.trim();
-    const url = new URL(`${normalizeBaseUrl(WHITELIST_CHECK_BASE_URL)}${WHITELIST_CHECK_PATH}`);
-    url.searchParams.set('appId', appId);
-    url.searchParams.set('host', host);
-    let matched = false;
-    try {
-        const response = await fetch(url.toString(), {
-            method: 'GET',
-            cache: 'no-store',
-        });
-        if (response.ok) {
-            const payload = (await response.json());
-            matched = payload.matched === true;
-        }
-    }
-    catch {
-        matched = false;
-    }
-    if (matched) {
-        return null;
-    }
-    return new AlgeoError(`白名单校验未通过，appId="${appId || '(empty)'}"，host="${host || '(empty)'}"。`, EMBED_ERROR_CODES.BAD_REQUEST);
-}
 async function createEditorInstance(container, options = {}, baseUrl) {
     const editor = new EmbeddedEditor(container);
     await editor.initialize(options, baseUrl);
@@ -5252,10 +5341,6 @@ async function createEditorInstance(container, options = {}, baseUrl) {
 async function createPresentationInstance(container, options = {}, baseUrl) {
     const presentation = new EmbeddedPresentation(container);
     await presentation.initialize(options, baseUrl);
-    const whitelistError = await checkPresentationWhitelist(options);
-    if (whitelistError) {
-        presentation.setWhitelistError(whitelistError);
-    }
     return presentation;
 }
 function createEmbeddedInstance(container, options) {

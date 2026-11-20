@@ -12,6 +12,7 @@ import {
   isEmbedEventMessage,
   isReadyMessage,
   isLocalFileHost,
+  isLocalLoopbackHost,
   isResourceLibraryRequestMessage,
   isMasterTemplateRequestMessage,
   isResponseMessage,
@@ -151,6 +152,7 @@ export abstract class EmbeddedTarget<
         ...options,
         mode: this.embedMode,
       });
+      const iframeOrigin = new URL(src, window.location.href).origin;
 
       let settled = false;
       let initTimeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -221,6 +223,31 @@ export abstract class EmbeddedTarget<
           iframe.contentWindow?.postMessage(
             { type: 'localFileHostConfirmed', requestId: data.requestId },
             '*',
+          );
+          return;
+        }
+        if (
+          data?.type === 'localLoopbackHostCheck' &&
+          typeof data.requestId === 'string' &&
+          !options.auth?.appId?.trim() &&
+          isLocalLoopbackHost()
+        ) {
+          iframe.contentWindow?.postMessage(
+            { type: 'localLoopbackHostConfirmed', requestId: data.requestId },
+            iframeOrigin,
+          );
+          return;
+        }
+        if (
+          this.embedMode === 'editor' &&
+          e.origin === iframeOrigin &&
+          data?.type === 'embedEditAuthorizationFailed'
+        ) {
+          finalizeFailure(
+            new AlgeoError(
+              '白名单校验未通过。请在开放平台将当前主机加入应用白名单后重试。',
+              EMBED_ERROR_CODES.BAD_REQUEST,
+            ),
           );
           return;
         }
