@@ -164,6 +164,7 @@
     const shareId = params.has('shareId')
       ? params.get('shareId').trim()
       : config.shareId;
+    const AlgeoSdk = await window.ALGEO_CONFIG_API.loadSdk();
     sdk = await AlgeoSdk.create(get('algeo-container'), {
       baseUrl: config.baseUrl,
       mode,
@@ -175,7 +176,7 @@
     if (typeof sdk.repl !== 'function') {
       sdk.destroy();
       sdk = undefined;
-      throw new Error('当前 SDK 不支持此模式的 REPL，请先构建最新版本。');
+      throw new Error('当前 SDK 不支持此模式的 REPL，请在示例首页切换 SDK 版本。');
     }
   } catch (error) {
     appendOutput('初始化', error.message || String(error), true);

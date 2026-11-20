@@ -272,9 +272,9 @@
     </div>
   </div>
 
-  <script src="../dist/algeo-sdk.umd.js"></script>
   <script src="./assets/js/config.js"></script>
-  <script>
+  <script type="module">
+    await window.ALGEO_CONFIG_API.loadSdk();
     const { baseUrl, appId, shareId } = window.ALGEO_CONFIG;
     const container = document.getElementById('algeo-container');
     const status = document.getElementById('status');

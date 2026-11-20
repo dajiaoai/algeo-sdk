@@ -450,9 +450,9 @@
     </div>
   </div>
 
-  <script src="../dist/algeo-sdk.umd.js"></script>
   <script src="./assets/js/config.js"></script>
-  <script>
+  <script type="module">
+    await window.ALGEO_CONFIG_API.loadSdk();
     const {
       baseUrl: BASE_URL,
       appId: APP_ID,

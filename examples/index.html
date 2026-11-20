@@ -11,7 +11,7 @@
         ? path.replace(/[^/]*$/, '') || '/'
         : path;
       if (!dir.endsWith('/')) dir += '/';
-      var base = location.origin + dir;
+      var base = location.protocol === 'file:' ? new URL('.', location.href).href : location.origin + dir;
       document.write('<base href="' + base + '">');
     })();
   </script>
@@ -160,6 +160,8 @@
 
     .config-panel {
       display: none;
+      position: relative;
+      z-index: 2;
       margin: -16px 0 28px;
       padding: 18px;
       background: rgba(255, 255, 255, 0.86);
@@ -175,9 +177,9 @@
 
     .config-form {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
-      align-items: end;
+      align-items: start;
     }
 
     .config-field {
@@ -186,13 +188,18 @@
       min-width: 0;
     }
 
+    .config-field[hidden] {
+      display: none;
+    }
+
     .config-field label {
       color: var(--muted);
       font-size: 13px;
       font-weight: 700;
     }
 
-    .config-field input {
+    .config-field input,
+    .config-field select {
       width: 100%;
       min-height: 38px;
       padding: 0 11px;
@@ -204,14 +211,129 @@
       background: #fff;
     }
 
-    .config-field input:focus {
+    .config-field input:focus,
+    .config-field select:focus {
       border-color: rgba(18, 103, 233, 0.55);
       box-shadow: 0 0 0 3px rgba(18, 103, 233, 0.1);
     }
 
+    .config-sdk-value {
+      grid-column: span 2;
+    }
+
+    .sdk-version-picker {
+      position: relative;
+    }
+
+    .sdk-version-picker input {
+      padding-right: 44px;
+    }
+
+    .sdk-version-toggle {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      bottom: 4px;
+      display: grid;
+      width: 32px;
+      place-items: center;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .sdk-version-toggle:hover,
+    .sdk-version-picker.is-open .sdk-version-toggle {
+      color: var(--brand);
+      background: #eef3ff;
+    }
+
+    .sdk-version-toggle::after {
+      width: 7px;
+      height: 7px;
+      border: solid currentColor;
+      border-width: 0 1.5px 1.5px 0;
+      content: '';
+      transform: translateY(-2px) rotate(45deg);
+    }
+
+    .sdk-version-picker.is-open .sdk-version-toggle::after {
+      transform: translateY(2px) rotate(225deg);
+    }
+
+    .sdk-version-menu {
+      position: absolute;
+      z-index: 1;
+      inset: calc(100% + 6px) 0 auto;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 12px 32px rgba(24, 32, 47, 0.14);
+    }
+
+    .sdk-version-options {
+      max-height: 220px;
+      max-height: min(220px, 36dvh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .sdk-version-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 36px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      color: var(--ink);
+      font: 14px/1.4 ui-monospace, Consolas, monospace;
+      cursor: pointer;
+    }
+
+    .sdk-version-option:hover,
+    .sdk-version-option[data-active] {
+      color: var(--brand);
+      background: #eef3ff;
+    }
+
+    .sdk-version-option[aria-selected="true"]::after {
+      content: '✓';
+      color: var(--brand);
+    }
+
+    .sdk-version-status {
+      margin: 0;
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .sdk-version-status:empty,
+    .config-status:empty,
+    .config-sdk-path[hidden] {
+      display: none;
+    }
+
     .config-actions {
+      grid-column: 1 / -1;
       display: flex;
       gap: 8px;
+    }
+
+    .config-sdk-path {
+      grid-column: 1 / -1;
+      overflow-wrap: anywhere;
+    }
+
+    .config-sdk-path output {
+      padding: 8px 11px;
+      border-radius: 6px;
+      background: #f1f5fb;
+      color: var(--muted);
+      font: 12px/1.5 ui-monospace, Consolas, monospace;
     }
 
     .config-actions button {
@@ -728,6 +850,10 @@
         grid-template-columns: 1fr;
       }
 
+      .config-sdk-value {
+        grid-column: 1 / -1;
+      }
+
       .config-actions {
         flex-wrap: wrap;
       }
@@ -888,6 +1014,35 @@
         <div class="config-field">
           <label for="configShareId">Share ID（可选）</label>
           <input id="configShareId" name="shareId" type="text" autocomplete="off" placeholder="留空打开空白画板" />
+        </div>
+        <div class="config-field">
+          <label for="configSdkSource">SDK 来源</label>
+          <select id="configSdkSource" name="sdkSource">
+            <option value="custom">自定义路径</option>
+            <option value="npm">npmjs</option>
+          </select>
+        </div>
+        <div class="config-field" id="configSdkVersionField" hidden>
+          <label for="configSdkVersion">npmjs 版本</label>
+          <div class="sdk-version-picker" id="configSdkVersionPicker">
+            <input id="configSdkVersion" name="sdkVersion" type="text" autocomplete="off" spellcheck="false"
+              placeholder="搜索版本号" role="combobox" aria-autocomplete="list" aria-expanded="false"
+              aria-controls="configSdkVersions" required disabled />
+            <button class="sdk-version-toggle" type="button" tabindex="-1" aria-label="展开或收起版本列表"></button>
+            <div class="sdk-version-menu" hidden>
+              <div class="sdk-version-options" id="configSdkVersions" role="listbox" aria-label="npmjs 已发布版本"></div>
+              <p class="sdk-version-status" role="status"></p>
+            </div>
+          </div>
+        </div>
+        <div class="config-field config-sdk-value" id="configSdkCustomUrlField">
+          <label for="configSdkCustomUrl">自定义 SDK 路径</label>
+          <input id="configSdkCustomUrl" name="sdkCustomUrl" type="text" autocomplete="off"
+            placeholder="../dist/algeo-sdk.umd.js" required disabled />
+        </div>
+        <div class="config-field config-sdk-path" id="configSdkPath" hidden>
+          <label for="configSdkUrl">SDK 加载地址</label>
+          <output id="configSdkUrl" for="configSdkSource configSdkVersion configSdkCustomUrl"></output>
         </div>
         <div class="config-actions">
           <button class="save" type="submit">保存</button>
@@ -1167,6 +1322,7 @@
     </p>
   </aside>
   <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/sdk-version-picker.js"></script>
   <script>
     (function () {
       var panel = document.getElementById('configPanel');
@@ -1177,6 +1333,18 @@
       var baseUrlInput = document.getElementById('configBaseUrl');
       var appIdInput = document.getElementById('configAppId');
       var shareIdInput = document.getElementById('configShareId');
+      var sdkSourceInput = document.getElementById('configSdkSource');
+      var sdkVersionInput = document.getElementById('configSdkVersion');
+      var sdkVersionField = document.getElementById('configSdkVersionField');
+      var sdkCustomUrlInput = document.getElementById('configSdkCustomUrl');
+      var sdkCustomUrlField = document.getElementById('configSdkCustomUrlField');
+      var sdkUrlOutput = document.getElementById('configSdkUrl');
+      var sdkPath = document.getElementById('configSdkPath');
+      var configApi = window.ALGEO_CONFIG_API;
+      var sdkVersionPicker = window.createSdkVersionPicker(
+        document.getElementById('configSdkVersionPicker'),
+        configApi.getNpmVersions
+      );
       var developerGroup = document.getElementById('developerGroup');
       var developerGroupClose = document.getElementById('developerGroupClose');
 
@@ -1184,6 +1352,41 @@
         baseUrlInput.value = config.baseUrl || '';
         appIdInput.value = config.appId || '';
         shareIdInput.value = config.shareId || '';
+        sdkSourceInput.value = config.sdkSource;
+        sdkVersionInput.value = config.sdkVersion;
+        sdkCustomUrlInput.value = config.sdkCustomUrl;
+        updateSdkFields();
+      }
+
+      function readForm() {
+        return {
+          baseUrl: baseUrlInput.value,
+          appId: appIdInput.value,
+          shareId: shareIdInput.value,
+          sdkSource: sdkSourceInput.value,
+          sdkVersion: sdkVersionInput.value.trim(),
+          sdkCustomUrl: sdkCustomUrlInput.value.trim(),
+        };
+      }
+
+      function updateSdkUrl() {
+        sdkVersionInput.setCustomValidity('');
+        sdkCustomUrlInput.setCustomValidity('');
+        try {
+          sdkUrlOutput.textContent = configApi.getSdkUrl(readForm());
+        } catch (error) {
+          sdkUrlOutput.textContent = '';
+          var field = sdkSourceInput.value === 'npm' ? sdkVersionInput : sdkCustomUrlInput;
+          field.setCustomValidity(error.message);
+        }
+        sdkPath.hidden = !sdkUrlOutput.textContent;
+      }
+
+      function updateSdkFields() {
+        sdkVersionPicker.close();
+        sdkVersionInput.disabled = sdkVersionField.hidden = sdkSourceInput.value !== 'npm';
+        sdkCustomUrlInput.disabled = sdkCustomUrlField.hidden = sdkSourceInput.value !== 'custom';
+        updateSdkUrl();
       }
 
       function setStatus(text) {
@@ -1191,29 +1394,36 @@
       }
 
       fillForm(window.ALGEO_CONFIG);
+      sdkSourceInput.addEventListener('change', function () {
+        if (sdkSourceInput.value === 'npm') {
+          sdkVersionInput.value = window.ALGEO_CONFIG_DEFAULTS.sdkVersion;
+        }
+        updateSdkFields();
+      });
+      sdkVersionInput.addEventListener('input', updateSdkUrl);
+      sdkVersionInput.addEventListener('change', updateSdkUrl);
+      sdkCustomUrlInput.addEventListener('input', updateSdkUrl);
 
       toggle.addEventListener('click', function () {
         var isOpen = panel.classList.toggle('is-open');
         toggle.setAttribute('aria-expanded', String(isOpen));
         if (isOpen) {
-          fillForm(window.ALGEO_CONFIG_API.get());
+          fillForm(configApi.get());
           baseUrlInput.focus();
+        } else {
+          sdkVersionPicker.close();
         }
       });
 
       form.addEventListener('submit', function (event) {
         event.preventDefault();
-        var next = window.ALGEO_CONFIG_API.set({
-          baseUrl: baseUrlInput.value,
-          appId: appIdInput.value,
-          shareId: shareIdInput.value,
-        });
+        var next = configApi.set(readForm());
         fillForm(next);
         setStatus('已保存到本地浏览器存储，新打开或刷新的示例页会使用该配置。');
       });
 
       reset.addEventListener('click', function () {
-        var next = window.ALGEO_CONFIG_API.reset();
+        var next = configApi.reset();
         fillForm(next);
         setStatus('已恢复为 config.js 默认配置。');
       });

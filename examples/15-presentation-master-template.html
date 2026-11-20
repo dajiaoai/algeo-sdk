@@ -457,9 +457,9 @@
       </div>
     </div>
 
-    <script src="../dist/algeo-sdk.umd.js"></script>
     <script src="./assets/js/config.js"></script>
-    <script>
+    <script type="module">
+      await window.ALGEO_CONFIG_API.loadSdk();
       const { baseUrl: BASE_URL, appId: APP_ID } = window.ALGEO_CONFIG;
       const DEFAULT_SHARE_ID = '0VP4B7WN';
       const REQUESTED_MODE = new URLSearchParams(window.location.search).get(
