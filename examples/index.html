@@ -1018,14 +1018,14 @@
         <div class="config-field">
           <label for="configSdkSource">SDK 来源</label>
           <select id="configSdkSource" name="sdkSource">
-            <option value="custom">自定义路径</option>
+            <option value="custom" selected>自定义路径</option>
             <option value="npm">npmjs</option>
           </select>
         </div>
         <div class="config-field" id="configSdkVersionField" hidden>
           <label for="configSdkVersion">npmjs 版本</label>
           <div class="sdk-version-picker" id="configSdkVersionPicker">
-            <input id="configSdkVersion" name="sdkVersion" type="text" autocomplete="off" spellcheck="false"
+            <input id="configSdkVersion" name="sdkVersion" type="text" value="latest" autocomplete="off" spellcheck="false"
               placeholder="搜索版本号" role="combobox" aria-autocomplete="list" aria-expanded="false"
               aria-controls="configSdkVersions" required disabled />
             <button class="sdk-version-toggle" type="button" tabindex="-1" aria-label="展开或收起版本列表"></button>
@@ -1038,7 +1038,7 @@
         <div class="config-field config-sdk-value" id="configSdkCustomUrlField">
           <label for="configSdkCustomUrl">自定义 SDK 路径</label>
           <input id="configSdkCustomUrl" name="sdkCustomUrl" type="text" autocomplete="off"
-            placeholder="../dist/algeo-sdk.umd.js" required disabled />
+            value="../dist/algeo-sdk.umd.js" required />
         </div>
         <div class="config-field config-sdk-path" id="configSdkPath" hidden>
           <label for="configSdkUrl">SDK 加载地址</label>
@@ -1321,7 +1321,7 @@
       微信扫码加入交流社群
     </p>
   </aside>
-  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/config.js?v=2"></script>
   <script src="./assets/js/sdk-version-picker.js"></script>
   <script>
     (function () {
@@ -1352,9 +1352,9 @@
         baseUrlInput.value = config.baseUrl || '';
         appIdInput.value = config.appId || '';
         shareIdInput.value = config.shareId || '';
-        sdkSourceInput.value = config.sdkSource;
-        sdkVersionInput.value = config.sdkVersion;
-        sdkCustomUrlInput.value = config.sdkCustomUrl;
+        sdkSourceInput.value = config.sdkSource === 'npm' ? 'npm' : 'custom';
+        sdkVersionInput.value = config.sdkVersion || sdkVersionInput.defaultValue;
+        sdkCustomUrlInput.value = config.sdkCustomUrl || sdkCustomUrlInput.defaultValue;
         updateSdkFields();
       }
 
@@ -1396,7 +1396,7 @@
       fillForm(window.ALGEO_CONFIG);
       sdkSourceInput.addEventListener('change', function () {
         if (sdkSourceInput.value === 'npm') {
-          sdkVersionInput.value = window.ALGEO_CONFIG_DEFAULTS.sdkVersion;
+          sdkVersionInput.value = sdkVersionInput.defaultValue;
         }
         updateSdkFields();
       });
